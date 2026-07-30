@@ -7,7 +7,7 @@ import {
 	submissionsApi,
 	type ProblemDetailDto,
 } from "@binary/api";
-import { Badge, Container, Panel } from "@binary/ui";
+import { Badge, Container, Markdown, Panel } from "@binary/ui";
 import { difficultyTone, pickName } from "@/features/problem-catalog";
 import { SubmitPanel } from "@/features/submission";
 import { formatMemory, formatSeconds } from "@/shared/format";
@@ -109,13 +109,6 @@ export default async function ProblemPage({ params }: PageProps) {
 					</ul>
 				)}
 
-				{/*
-				 * Shart hozircha oddiy matn sifatida chiqadi. Markdown + LaTeX
-				 * render qilish alohida bosqich: remark/rehype zanjiri, KaTeX,
-				 * va eng muhimi — setter yarim ishonchli, ya'ni sanitizatsiya
-				 * qoidalarini qaror qilib olish kerak. Uni shu yerda shosha-pisha
-				 * qilish stored XSS uchun ochiq yo'l qoldiradi.
-				 */}
 				<Section title={t("statement")}>{statement.legend}</Section>
 				{statement.input_format && (
 					<Section title={t("inputFormat")}>{statement.input_format}</Section>
@@ -158,10 +151,12 @@ function Section({ title, children }: { title: string; children: string }) {
 	return (
 		<section className="mt-7">
 			<h2 className="text-lg font-bold">{title}</h2>
-			{/* `whitespace-pre-wrap`: shartdagi satr ko'chirishlari ma'noli. */}
-			<p className="mt-2 whitespace-pre-wrap text-[15.5px] text-fg-secondary">
-				{children}
-			</p>
+			{/*
+			 * Markdown + LaTeX serverda render qilinadi, ya'ni brauzerga
+			 * `react-markdown` ham, KaTeX ham yuborilmaydi — faqat tayyor
+			 * HTML. Qidiruv tizimi ham shartni to'liq ko'radi.
+			 */}
+			<Markdown className="mt-1">{children}</Markdown>
 		</section>
 	);
 }
@@ -187,7 +182,22 @@ function Sample({
 	);
 }
 
+/**
+ * Meta tavsif uchun shartning boshini oladi.
+ *
+ * Markdown belgilari OLIB TASHLANADI: qidiruv natijasida `**qalin**` yoki
+ * `$x^2$` ko'rinishi saytni tashlandiq qilib ko'rsatadi. To'liq markdown
+ * tahlilchisini bu yerga ulash ortiqcha — 155 belgilik tavsif uchun
+ * eng ko'p uchraydigan belgilarni olib tashlash yetarli.
+ */
 function summarize(legend: string): string {
-	const flat = legend.replace(/\s+/g, " ").trim();
+	const flat = legend
+		.replace(/`{1,3}[^`]*`{1,3}/g, " ") // kod
+		.replace(/\$\$?[^$]*\$\$?/g, " ") // LaTeX
+		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1") // havola va rasm — matni qoladi
+		.replace(/[*_~>#|]/g, "") // qolgan belgilash
+		.replace(/\s+/g, " ")
+		.trim();
+
 	return flat.length > 155 ? `${flat.slice(0, 152)}…` : flat;
 }
