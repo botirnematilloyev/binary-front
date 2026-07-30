@@ -17,12 +17,19 @@ export function Container({
 	);
 }
 
-/** Chegarali oq panel — ro'yxatlar, kartalar va yon paneller uchun asos. */
+/**
+ * Chegarali oq panel — ro'yxatlar, kartalar va yon paneller uchun asos.
+ *
+ * `children` ixtiyoriy: yuklanish skeleti bo'sh panel bo'ladi va u
+ * qonuniy holat. Majburiy qilinsa chaqiruvchi `<Panel>{null}</Panel>`
+ * yozishga majbur bo'lardi — bu qoidani kuchaytirmaydi, faqat shovqin
+ * qo'shadi.
+ */
 export function Panel({
 	children,
 	className,
 }: {
-	children: ReactNode;
+	children?: ReactNode;
 	className?: string;
 }) {
 	return (

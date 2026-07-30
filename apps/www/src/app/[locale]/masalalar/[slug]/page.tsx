@@ -144,7 +144,11 @@ export default async function ProblemPage({ params }: PageProps) {
 
 				{statement.notes && <Section title={t("notes")}>{statement.notes}</Section>}
 
-				<SubmitPanel slug={slug} languages={languages.languages} />
+				<SubmitPanel
+					slug={slug}
+					problemId={problem.id}
+					languages={languages.languages}
+				/>
 			</article>
 		</Container>
 	);

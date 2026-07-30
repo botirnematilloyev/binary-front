@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import type { LanguageDto } from "@binary/api";
 import { Button, Panel } from "@binary/ui";
 import { useSession } from "@/shared/session";
 import { useSubmission } from "../use-submission";
+import { SubmissionHistory } from "./submission-history";
 import { VerdictCard } from "./verdict-card";
 
 /**
@@ -23,9 +24,11 @@ import { VerdictCard } from "./verdict-card";
  */
 export function SubmitPanel({
 	slug,
+	problemId,
 	languages,
 }: {
 	slug: string;
+	problemId: number;
 	languages: LanguageDto[];
 }) {
 	const t = useTranslations("submission");
@@ -35,6 +38,19 @@ export function SubmitPanel({
 	const [language, setLanguage] = useState(languages[0]?.code ?? "");
 	const [code, setCode] = useState("");
 	const [localError, setLocalError] = useState<string | null>(null);
+
+	// Yakuniy verdikt kelganda tarixni qayta yuklash uchun hisoblagich.
+	const [historyKey, setHistoryKey] = useState(0);
+	// Bir xil yechim uchun ikki marta ortmasligi kerak: `state` obyekti
+	// polling davomida bir necha marta yangilanadi.
+	const lastFinalId = useRef<number | null>(null);
+
+	useEffect(() => {
+		if (state.phase !== "final") return;
+		if (lastFinalId.current === state.submission.id) return;
+		lastFinalId.current = state.submission.id;
+		setHistoryKey((n) => n + 1);
+	}, [state]);
 
 	const busy = state.phase === "submitting" || state.phase === "watching";
 
@@ -154,6 +170,8 @@ export function SubmitPanel({
 				state.phase === "timeout") && (
 				<VerdictCard submission={state.submission} stillJudging={state.phase === "timeout"} />
 			)}
+
+			<SubmissionHistory problemId={problemId} reloadKey={historyKey} />
 		</section>
 	);
 }
