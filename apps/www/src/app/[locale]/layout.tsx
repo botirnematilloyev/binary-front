@@ -4,6 +4,7 @@ import { JetBrains_Mono, Manrope, Poppins } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { themeInitScript } from "@binary/tokens";
+import { SessionProvider } from "@/features/auth";
 import { routing } from "@/i18n/routing";
 import { localeOf, LOCALES } from "@/shared/i18n/locales";
 import { SiteHeader } from "@/widgets/site-header";
@@ -121,8 +122,16 @@ export default async function LocaleLayout({
 				 * ya'ni butun lug'at bundle'ga tushmaydi.
 				 */}
 				<NextIntlClientProvider>
-					<SiteHeader />
-					{children}
+					{/*
+					 * `SessionProvider` bu yerda, ILDIZDA: sessiya sarlavhaga
+					 * ham, sahifa ichidagi yechim yuborish formasiga ham kerak.
+					 * Pastroqqa qo'yilsa ikkita alohida provider paydo bo'lardi
+					 * va har biri `/me` ni alohida so'rardi.
+					 */}
+					<SessionProvider>
+						<SiteHeader />
+						{children}
+					</SessionProvider>
 				</NextIntlClientProvider>
 			</body>
 		</html>

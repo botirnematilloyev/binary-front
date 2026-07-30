@@ -5,7 +5,29 @@
   },
   "nav": {
     "home": "Bosh sahifa",
-    "problems": "Masalalar"
+    "problems": "Masalalar",
+    "login": "Kirish",
+    "logout": "Chiqish",
+    "profile": "Profil"
+  },
+  "auth": {
+    "title": "Kirish",
+    "metaDescription": "Telegram bot orqali bir necha soniyada kiring — parol kerak emas.",
+    "lead": "Parol yo'q. Telegram bot sizga bir martalik kod beradi.",
+    "step1": "Botni ochib <code>/login</code> buyrug'ini yuboring",
+    "step2": "Bot 6 xonali kod qaytaradi",
+    "step3": "Kodni shu yerga kiriting",
+    "openBot": "Botni ochish",
+    "codeLabel": "Kod",
+    "codePlaceholder": "000000",
+    "submit": "Kirish",
+    "submitting": "Tekshirilyapti…",
+    "codeTooShort": "Kod 6 xonadan iborat bo'lishi kerak",
+    "invalidCode": "Kod noto'g'ri yoki muddati o'tgan. Botdan yangi kod oling.",
+    "tooMany": "Juda ko'p urinish bo'ldi. Bir necha daqiqadan keyin qayta urinib ko'ring.",
+    "offline": "Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.",
+    "genericError": "Kirishda xatolik yuz berdi. Qayta urinib ko'ring.",
+    "expiryNote": "Kod 2 daqiqa amal qiladi."
   },
   "language": {
     "label": "Til"

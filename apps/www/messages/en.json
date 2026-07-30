@@ -5,7 +5,29 @@
   },
   "nav": {
     "home": "Home",
-    "problems": "Problems"
+    "problems": "Problems",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "profile": "Profile"
+  },
+  "auth": {
+    "title": "Sign in",
+    "metaDescription": "Sign in through the Telegram bot in seconds — no password needed.",
+    "lead": "No password. The Telegram bot gives you a one-time code.",
+    "step1": "Open the bot and send <code>/login</code>",
+    "step2": "The bot replies with a 6-digit code",
+    "step3": "Enter that code here",
+    "openBot": "Open the bot",
+    "codeLabel": "Code",
+    "codePlaceholder": "000000",
+    "submit": "Sign in",
+    "submitting": "Checking…",
+    "codeTooShort": "The code must be 6 digits",
+    "invalidCode": "The code is wrong or has expired. Get a new one from the bot.",
+    "tooMany": "Too many attempts. Please try again in a few minutes.",
+    "offline": "Could not reach the server. Check your connection and try again.",
+    "genericError": "Could not sign in. Please try again.",
+    "expiryNote": "The code is valid for 2 minutes."
   },
   "language": {
     "label": "Language"

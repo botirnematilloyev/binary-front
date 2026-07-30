@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Container } from "@binary/ui";
 import { Link } from "@/i18n/navigation";
+import { AuthMenu } from "./auth-menu";
 import { LanguageSwitcher } from "./language-switcher";
 import { NavLink } from "./nav-link";
 
@@ -37,10 +38,7 @@ export async function SiteHeader() {
 				</nav>
 
 				<LanguageSwitcher />
-
-				{/* Kirish/Ro'yxatdan tugmalari va profil avatari keyingi
-				    bosqichda: ular sessiya holatiga bog'liq, va tokenni
-				    qayerda saqlash — alohida muhokama talab qiladigan qaror. */}
+				<AuthMenu />
 			</Container>
 		</header>
 	);
