@@ -9,11 +9,12 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { authApi, type AuthDto, type MeDto } from "@binary/api";
+import { ApiError, authApi, type AuthDto, type MeDto } from "@binary/api";
 import {
 	clearSession,
 	getRefreshToken,
 	refreshSession,
+	SessionExpiredError,
 	setSession,
 	subscribe,
 	watchOtherTabs,
@@ -67,23 +68,51 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 			if (current !== generation.current) return;
 			setUser(me);
 			setStatus("authenticated");
-		} catch {
+		} catch (cause) {
 			if (current !== generation.current) return;
-			clearSession();
-			setUser(null);
-			setStatus("anonymous");
+
+			/*
+			 * FAQAT haqiqiy auth xatosi sessiyani o'chiradi.
+			 *
+			 * Oldin bu blok `catch { clearSession() }` edi va aynan shu
+			 * login'ni buzardi: `signIn` `/me` so'rovini boshlagach sahifa
+			 * darhol boshqa manzilga o'tardi, navigatsiya so'rovni BEKOR
+			 * qilardi, bekor qilingan so'rov esa istisno tashlardi — va bu
+			 * blok uni "sessiya tugadi" deb tushunib refresh tokenni
+			 * o'chirardi. Yangi sahifa yuklanganda token yo'q edi.
+			 *
+			 * Tarmoq uzilishi ham xuddi shunday zararli edi: bir marta
+			 * internet uzilsa foydalanuvchi tizimdan chiqib qolardi.
+			 */
+			const isAuthFailure =
+				cause instanceof SessionExpiredError ||
+				(cause instanceof ApiError && cause.status === 401);
+
+			if (isAuthFailure) {
+				clearSession();
+				setUser(null);
+				setStatus("anonymous");
+				return;
+			}
+
+			// Boshqa xato: sessiya tegilmaydi, keyingi urinishda tiklanadi.
+			// Holat esa "loading" da qotib qolmasligi kerak.
+			setStatus((previous) => (previous === "loading" ? "anonymous" : previous));
 		}
 	}, []);
 
 	useEffect(() => {
+		// Obuna FAQAT sessiya tugashini kuzatadi.
+		//
+		// Oldin u sessiya paydo bo'lganda ham `loadUser` chaqirardi, ya'ni
+		// `signIn` va `refreshSession` ning har biri qo'shimcha `/me`
+		// so'roviga sabab bo'lardi. Endi foydalanuvchini KIM sessiyani
+		// o'rnatgan bo'lsa, o'sha yuklaydi — bitta sessiya, bitta so'rov.
 		const unsubscribe = subscribe((auth) => {
-			if (auth === null) {
-				generation.current++;
-				setUser(null);
-				setStatus("anonymous");
-			} else {
-				void loadUser();
-			}
+			if (auth !== null) return;
+			generation.current++;
+			setUser(null);
+			setStatus("anonymous");
 		});
 		const unwatch = watchOtherTabs();
 
@@ -92,8 +121,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 		if (getRefreshToken()) {
 			void refreshSession().then((auth) => {
 				if (auth === null) setStatus("anonymous");
-				// Muvaffaqiyatli bo'lsa `subscribe` allaqachon `loadUser` ni
-				// ishga tushirgan.
+				else void loadUser();
 			});
 		} else {
 			setStatus("anonymous");
@@ -105,12 +133,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 		};
 	}, [loadUser]);
 
-	const signIn = useCallback(async (auth: AuthDto) => {
-		setSession(auth);
-		// `subscribe` `loadUser` ni chaqiradi; bu yerda kutish shart emas,
-		// lekin chaqiruvchi `await` qilsa login tugaganini bilishi kerak.
-		await Promise.resolve();
-	}, []);
+	const signIn = useCallback(
+		async (auth: AuthDto) => {
+			setSession(auth);
+			// `loadUser` KUTILADI. Chaqiruvchi (login formasi) shundan keyin
+			// sahifani almashtiradi — aks holda navigatsiya `/me` so'rovini
+			// bekor qiladi va sessiya yarim o'rnatilgan holda qoladi.
+			await loadUser();
+		},
+		[loadUser],
+	);
 
 	const signOut = useCallback(async () => {
 		// Serverga xabar berish MUHIM: usiz refresh token DB'da tirik

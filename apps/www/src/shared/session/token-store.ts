@@ -1,6 +1,6 @@
 "use client";
 
-import { ApiError, authApi, type AuthDto } from "@binary/api";
+import { ApiError, ApiTransportError, authApi, type AuthDto } from "@binary/api";
 
 /**
  * Token saqlash — faqat brauzerda.
@@ -212,7 +212,13 @@ async function runRefresh(): Promise<AuthDto | null> {
 		const auth = await authApi.refresh(refreshToken);
 		setSession(auth);
 		return auth;
-	} catch {
+	} catch (cause) {
+		// Tarmoq uzilishi yoki sahifadan chiqib ketish tufayli bekor
+		// qilingan so'rov — bu sessiya tugagani EMAS. Uni shunday deb
+		// hisoblash foydalanuvchini bir marta internet uzilganda tizimdan
+		// chiqarib yuborardi (va aynan shu login oqimini buzgan edi).
+		if (cause instanceof ApiTransportError) return null;
+
 		// Muddati o'tgan, bekor qilingan, yoki qayta ishlatish
 		// aniqlangan — uchtasida ham javob bir xil: sessiya tugadi.
 		clearSession();
