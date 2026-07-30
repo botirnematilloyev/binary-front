@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+.env
+.env.local
+.env*.local
+
+.DS_Store
+
+# .idea/ ni butunlay chiqarib tashlamaymiz: WebStorm o'zining
+# `.idea/.gitignore` faylini yaratadi va foydalanuvchiga xos narsalarni
+# (workspace.xml va hokazo) allaqachon filtrlaydi. Qolgani — modul va VCS
+# sozlamalari — loyihaga tegishli.

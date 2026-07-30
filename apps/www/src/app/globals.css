@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* Tokenlar Tailwind'dan KEYIN import qilinadi: `@theme inline` bloki
+ * Tailwind'ning standart palitrasini bizning semantik nomlarimiz bilan
+ * to'ldirishi kerak. */
+@import "@binary/tokens/css";
+
+/* Tailwind v4 sinflarni fayllarni skanerlab topadi, lekin workspace
+ * paketlari `node_modules` ichida symlink bo'lib turadi va standart
+ * skanerlashga tushmaydi. Usiz `@binary/ui` dagi hamma sinf produkt
+ * build'ida yo'qoladi — dev'da ishlab, prodda buziladigan turdagi xato. */
+@source "../../../../packages/ui/src";
+
+@layer base {
+	body {
+		background-color: var(--color-canvas);
+		color: var(--color-fg);
+		font-family: var(--font-sans);
+		font-size: 15px;
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	/* Shablonda sarlavhalar Poppins, qolgan matn Manrope. */
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-display);
+		letter-spacing: -0.01em;
+	}
+
+	::placeholder {
+		color: var(--color-fg-subtle);
+	}
+}

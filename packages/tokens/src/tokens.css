@@ -1,0 +1,130 @@
+/*
+ * Dizayn tokenlari.
+ *
+ * Ikki qatlam, ataylab:
+ *
+ *   1. `[data-theme="..."]` bloklari — XOM palitra. Faqat shu yerda
+ *      hex qiymatlar yoziladi. Yangi tema qo'shish = yangi blok.
+ *   2. `@theme inline` — Tailwind utility'larini shu o'zgaruvchilarga
+ *      BOG'LAYDI. `inline` shart: usiz Tailwind qiymatni nusxalaydi va
+ *      tema almashtirilganda rang o'zgarmaydi.
+ *
+ * Nomlar SEMANTIK, rang nomi emas: `--color-accent`, `--color-blue-500`
+ * emas. Sabab amaliy — kelajakdagi "terminal" temasida accent yashil
+ * bo'lishi mumkin, va o'sha kunda 200 ta komponentda `blue` so'zi
+ * yozilgan bo'lsa, tema qo'shish refaktoringga aylanadi.
+ *
+ * Shriftlar bu yerda E'LON QILINMAYDI: ularni `next/font` beradi
+ * (`--font-sans` va hokazo), shunda fayllar o'z domenimizdan yuklanadi
+ * va Google'ga tashqi so'rov ketmaydi.
+ */
+
+/* ── light: yagona to'ldirilgan tema (shablondan olingan) ─────────────
+ *
+ * Fon oq emas, issiq qog'oz rangida (#fdfdfb) — shablonning butun
+ * xarakteri shunda, oddiy `#fff` ga almashtirilsa dizayn buziladi.
+ */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Sirtlar */
+  --binary-canvas: #fdfdfb;
+  --binary-surface: #ffffff;
+  --binary-surface-subtle: #fafaf7;
+  --binary-surface-muted: #f3f3ef;
+  --binary-surface-hover: #f3f3ef;
+
+  /* Chegaralar */
+  --binary-border: #ecece7;
+  --binary-border-strong: #dcdcd6;
+  --binary-border-hover: #b9b9b1;
+
+  /* Matn */
+  --binary-fg: #14161a;
+  --binary-fg-secondary: #3f4650;
+  --binary-fg-muted: #6b7280;
+  --binary-fg-subtle: #9aa0a6;
+  --binary-fg-inverted: #ffffff;
+
+  /* Asosiy harakat */
+  --binary-accent: #2b50d8;
+  --binary-accent-hover: #1f3fb0;
+  --binary-accent-tint: #eef1fd;
+  --binary-accent-fg: #ffffff;
+
+  /* Verdikt ranglari — `accepted` */
+  --binary-success: #1f8a4c;
+  --binary-success-soft: #4aab73;
+  --binary-success-tint: #e9f5ee;
+
+  /* Verdikt ranglari — `wrong_answer`, `runtime_error` */
+  --binary-danger: #c93d3d;
+  --binary-danger-tint: #fbe9e9;
+
+  /* Verdikt ranglari — `time_limit`, kutilayotgan holat */
+  --binary-warning: #b26205;
+  --binary-warning-tint: #fbf1e2;
+
+  /* Tanga / do'kon */
+  --binary-gold: #f5c518;
+  --binary-gold-border: #d9a80e;
+}
+
+/* Keyingi temalar shu yerga qo'shiladi: [data-theme="dark"] { … }
+ *
+ * Muhim: yangi tema YUQORIDAGI ro'yxatning HAMMASINI qayta e'lon
+ * qilishi shart. Yarim to'ldirilgan tema light qiymatlarini meros qilib
+ * oladi va natijada o'qilmaydigan aralashma chiqadi. Buni `index.ts`
+ * dagi `ThemeName` turi va tema ro'yxati nazorat qiladi. */
+
+@theme inline {
+  --color-canvas: var(--binary-canvas);
+  --color-surface: var(--binary-surface);
+  --color-surface-subtle: var(--binary-surface-subtle);
+  --color-surface-muted: var(--binary-surface-muted);
+  --color-surface-hover: var(--binary-surface-hover);
+
+  --color-border-default: var(--binary-border);
+  --color-border-strong: var(--binary-border-strong);
+  --color-border-hover: var(--binary-border-hover);
+
+  --color-fg: var(--binary-fg);
+  --color-fg-secondary: var(--binary-fg-secondary);
+  --color-fg-muted: var(--binary-fg-muted);
+  --color-fg-subtle: var(--binary-fg-subtle);
+  --color-fg-inverted: var(--binary-fg-inverted);
+
+  --color-accent: var(--binary-accent);
+  --color-accent-hover: var(--binary-accent-hover);
+  --color-accent-tint: var(--binary-accent-tint);
+  --color-accent-fg: var(--binary-accent-fg);
+
+  --color-success: var(--binary-success);
+  --color-success-soft: var(--binary-success-soft);
+  --color-success-tint: var(--binary-success-tint);
+
+  --color-danger: var(--binary-danger);
+  --color-danger-tint: var(--binary-danger-tint);
+
+  --color-warning: var(--binary-warning);
+  --color-warning-tint: var(--binary-warning-tint);
+
+  --color-gold: var(--binary-gold);
+  --color-gold-border: var(--binary-gold-border);
+
+  /* Shrift oilalari — qiymatlarni `next/font` o'rnatadi. */
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), var(--font-manrope), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Shablondagi radiuslar: karta 10, tugma 8, tabletka 20. */
+  --radius-card: 0.625rem;
+  --radius-control: 0.5rem;
+  --radius-pill: 1.25rem;
+
+  --shadow-popover: 0 10px 28px rgb(20 22 26 / 0.09);
+
+  /* Shablonning konteyner keni — nav, main va footer bir xil. */
+  --spacing-content: 67.5rem;
+}

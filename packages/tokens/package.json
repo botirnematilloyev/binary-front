@@ -1,0 +1,10 @@
+{
+  "name": "@binary/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./css": "./src/tokens.css"
+  }
+}
