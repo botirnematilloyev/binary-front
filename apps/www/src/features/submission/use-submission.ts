@@ -7,7 +7,7 @@ import {
 	submissionsApi,
 	type SubmissionDto,
 } from "@binary/api";
-import { SessionExpiredError, useSession, withFreshToken } from "@/shared/session";
+import { SessionExpiredError, useSession, withFreshToken } from "@binary/session";
 
 /**
  * Xato KODI qaytariladi, tarjima qilingan matn emas.

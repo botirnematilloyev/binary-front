@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@import "@binary/tokens/css";
+
+/* Tailwind v4 workspace paketlarini sukut bo'yicha skanerlamaydi —
+ * usiz `@binary/ui` dagi sinflar prod build'da yo'qoladi. */
+@source "../../../../packages/ui/src";
+
+@layer base {
+	body {
+		background-color: var(--color-canvas);
+		color: var(--color-fg);
+		font-family: var(--font-sans);
+		font-size: 15px;
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-display);
+		letter-spacing: -0.01em;
+	}
+
+	::placeholder {
+		color: var(--color-fg-subtle);
+	}
+}

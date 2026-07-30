@@ -5,7 +5,7 @@ import { useFormatter, useNow, useTranslations } from "next-intl";
 import { submissionsApi, type SubmissionDto } from "@binary/api";
 import { Badge, Button, Panel } from "@binary/ui";
 import { formatMemory, formatMs } from "@/shared/format";
-import { useSession, withFreshToken } from "@/shared/session";
+import { useSession, withFreshToken } from "@binary/session";
 import { verdictTone } from "../model";
 
 /** Masala sahifasida ko'rsatiladigan urinishlar soni. */

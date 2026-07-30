@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@binary/api": "*",
+    "@binary/session": "*",
     "@binary/tokens": "*",
     "@binary/ui": "*",
     "next": "^16.2.12",

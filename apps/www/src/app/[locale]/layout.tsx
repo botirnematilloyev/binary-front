@@ -5,7 +5,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { themeInitScript } from "@binary/tokens";
 import { routing } from "@/i18n/routing";
-import { SessionProvider } from "@/shared/session";
+import { SessionProvider } from "@binary/session";
 import { localeOf, LOCALES } from "@/shared/i18n/locales";
 import { SiteHeader } from "@/widgets/site-header";
 import "../globals.css";

@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useSession } from "@/shared/session";
+import { useSession } from "@binary/session";
 
 /**
  * Sarlavhadagi sessiya qismi.

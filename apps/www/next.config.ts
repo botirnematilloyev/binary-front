@@ -6,7 +6,7 @@ const config: NextConfig = {
 	// shuning uchun ularni Next o'zi kompilyatsiya qiladi. Har paketga
 	// alohida build sozlash mumkin edi, lekin bu ikkita build zanjirini
 	// va source map muammosini keltirib chiqaradi.
-	transpilePackages: ["@binary/api", "@binary/tokens", "@binary/ui"],
+	transpilePackages: ["@binary/api", "@binary/session", "@binary/tokens", "@binary/ui"],
 
 	// Prodda nginx ortida ishlaydi va konteynerda yig'iladi.
 	output: "standalone",
