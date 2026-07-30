@@ -7,7 +7,7 @@ import {
 	submissionsApi,
 	type SubmissionDto,
 } from "@binary/api";
-import { useSession } from "@/features/auth";
+import { SessionExpiredError, useSession, withFreshToken } from "@/shared/session";
 
 /**
  * Xato KODI qaytariladi, tarjima qilingan matn emas.
@@ -53,7 +53,7 @@ const POLL_DELAYS_MS = [800, 1000, 1300, 1700, 2200, 2800];
 const POLL_MAX_MS = 90_000;
 
 export function useSubmission(slug: string) {
-	const { getToken, status: sessionStatus } = useSession();
+	const { status: sessionStatus } = useSession();
 	const [state, setState] = useState<SubmitState>({ phase: "idle" });
 
 	// Har yangi yuborish oldingi pollingni bekor qiladi. Usiz eski
@@ -72,50 +72,53 @@ export function useSubmission(slug: string) {
 	// va so'rovlar bekorga davom etadi.
 	useEffect(() => stop, [stop]);
 
-	const watch = useCallback(
-		(id: number, startedAt: number, attempt: number, mine: number) => {
-			const delay = POLL_DELAYS_MS[Math.min(attempt, POLL_DELAYS_MS.length - 1)] ?? 2800;
+	const watch = useCallback((id: number, startedAt: number, attempt: number, mine: number) => {
+		const delay = POLL_DELAYS_MS[Math.min(attempt, POLL_DELAYS_MS.length - 1)] ?? 2800;
 
-			timer.current = setTimeout(async () => {
+		timer.current = setTimeout(async () => {
+			if (mine !== generation.current) return;
+
+			try {
+				// `withFreshToken` — tokenni so'rov OLDIDAN tekshiradi.
+				// Polling uzoq davom etishi mumkin va aynan shu vaqt
+				// oralig'ida access token eskirishi mumkin.
+				const submission = await withFreshToken((token) =>
+					submissionsApi.getSubmission(id, { token }),
+				);
 				if (mine !== generation.current) return;
 
-				const token = getToken();
-				if (!token) {
+				if (submission.is_final) {
+					setState({ phase: "final", submission });
+					return;
+				}
+
+				if (Date.now() - startedAt > POLL_MAX_MS) {
+					setState({ phase: "timeout", submission });
+					return;
+				}
+
+				setState({ phase: "watching", submission });
+				watch(id, startedAt, attempt + 1, mine);
+			} catch (cause) {
+				if (mine !== generation.current) return;
+
+				// Sessiya tugashi qayta urinish bilan tuzalmaydi — darhol
+				// to'xtaymiz. Qolgan xatolar (tarmoq uzilishi, 502) esa
+				// baholash to'xtaganini BILDIRMAYDI, shuning uchun umumiy
+				// vaqt tugagunicha davom etamiz.
+				if (cause instanceof SessionExpiredError) {
 					setState({ phase: "error", code: "loginRequired" });
 					return;
 				}
 
-				try {
-					const submission = await submissionsApi.getSubmission(id, { token });
-					if (mine !== generation.current) return;
-
-					if (submission.is_final) {
-						setState({ phase: "final", submission });
-						return;
-					}
-
-					if (Date.now() - startedAt > POLL_MAX_MS) {
-						setState({ phase: "timeout", submission });
-						return;
-					}
-
-					setState({ phase: "watching", submission });
-					watch(id, startedAt, attempt + 1, mine);
-				} catch {
-					if (mine !== generation.current) return;
-					// Bitta so'rov yiqilishi baholash to'xtaganini bildirmaydi
-					// (tarmoq uzilishi, 502). Shuning uchun darhol xatoga
-					// o'tmaymiz — vaqt tugagunicha davom etamiz.
-					if (Date.now() - startedAt > POLL_MAX_MS) {
-						setState({ phase: "error", code: "genericError" });
-						return;
-					}
-					watch(id, startedAt, attempt + 1, mine);
+				if (Date.now() - startedAt > POLL_MAX_MS) {
+					setState({ phase: "error", code: "genericError" });
+					return;
 				}
-			}, delay);
-		},
-		[getToken],
-	);
+				watch(id, startedAt, attempt + 1, mine);
+			}
+		}, delay);
+	}, []);
 
 	const submit = useCallback(
 		async (language: string, sourceCode: string) => {
@@ -127,16 +130,12 @@ export function useSubmission(slug: string) {
 				return;
 			}
 
-			const token = getToken();
-			if (!token) {
-				setState({ phase: "error", code: "loginRequired" });
-				return;
-			}
-
 			setState({ phase: "submitting" });
 
 			try {
-				const submission = await submissionsApi.submit(slug, { language, sourceCode }, { token });
+				const submission = await withFreshToken((token) =>
+					submissionsApi.submit(slug, { language, sourceCode }, { token }),
+				);
 				if (mine !== generation.current) return;
 
 				// Judge shunchalik tez bo'lishi mumkin (biz 20 ms ko'rdik),
@@ -154,7 +153,7 @@ export function useSubmission(slug: string) {
 				setState({ phase: "error", code: codeFor(cause) });
 			}
 		},
-		[slug, sessionStatus, getToken, stop, watch],
+		[slug, sessionStatus, stop, watch],
 	);
 
 	const reset = useCallback(() => {
@@ -166,6 +165,9 @@ export function useSubmission(slug: string) {
 }
 
 function codeFor(cause: unknown): SubmitErrorCode {
+	// `withFreshToken` ikki marta urinib ham 401 olgan — bu haqiqatan
+	// sessiya tugagani.
+	if (cause instanceof SessionExpiredError) return "loginRequired";
 	if (cause instanceof ApiTransportError) return "offline";
 
 	if (cause instanceof ApiError) {

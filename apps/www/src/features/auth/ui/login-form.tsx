@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError, ApiTransportError, authApi } from "@binary/api";
 import { Button } from "@binary/ui";
-import { useSession } from "../session-provider";
+import { useSession } from "@/shared/session";
 
 const CODE_LENGTH = 6;
 

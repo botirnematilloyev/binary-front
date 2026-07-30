@@ -28,8 +28,18 @@ interface SessionContextValue {
 	/** Login formasi shu orqali sessiyani boshlaydi. */
 	signIn: (auth: AuthDto) => Promise<void>;
 	signOut: () => Promise<void>;
-	/** Har so'rovda qayta o'qiladi — komponentda saqlab qo'yilmaydi. */
-	getToken: () => string | null;
+	/*
+	 * `getToken` ATAYLAB yo'q.
+	 *
+	 * U bor edi va aynan shu tuzoqni yasadi: komponent tokenni oladi,
+	 * lekin u eskirgan bo'lishi mumkin — brauzer fon tabidagi taymerni
+	 * sekinlashtirgani uchun yangilash kechikadi. Natijada so'rov 401
+	 * oladi va foydalanuvchi "sessiya tugadi" ko'radi, holbuki refresh
+	 * token joyida va sahifani yangilash muammoni hal qiladi.
+	 *
+	 * O'rniga `withFreshToken(...)` ishlatiladi: u so'rov OLDIDAN
+	 * muddatni tekshiradi va 401 bo'lsa bir marta qayta uradi.
+	 */
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -121,7 +131,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 	}, []);
 
 	const value = useMemo<SessionContextValue>(
-		() => ({ status, user, signIn, signOut, getToken: getAccessToken }),
+		() => ({ status, user, signIn, signOut }),
 		[status, user, signIn, signOut],
 	);
 

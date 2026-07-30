@@ -4,7 +4,7 @@ import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import type { LanguageDto } from "@binary/api";
 import { Button, Panel } from "@binary/ui";
-import { useSession } from "@/features/auth";
+import { useSession } from "@/shared/session";
 import { useSubmission } from "../use-submission";
 import { VerdictCard } from "./verdict-card";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { authApi, type AuthDto } from "@binary/api";
+import { ApiError, authApi, type AuthDto } from "@binary/api";
 
 /**
  * Token saqlash — faqat brauzerda.
@@ -57,6 +57,60 @@ function assertBrowser(): void {
 
 export function getAccessToken(): string | null {
 	return tokens?.accessToken ?? null;
+}
+
+/** Sessiya tugagan va qayta login kerak. */
+export class SessionExpiredError extends Error {
+	constructor() {
+		super("Sessiya tugadi");
+		this.name = "SessionExpiredError";
+	}
+}
+
+/**
+ * Amal qilib turgan access token qaytaradi, kerak bo'lsa yangilaydi.
+ *
+ * Bu `scheduleRefresh` taymerini ALMASHTIRMAYDI, uni to'ldiradi.
+ * Taymerga yolg'iz ishonib bo'lmaydi: brauzer fon tabidagi `setTimeout`
+ * ni daqiqalarga cho'zadi, ya'ni tab orqada turganda yangilash kechikadi
+ * va keyingi so'rov 401 oladi. Bu taxmin emas — amalda ko'rilgan xato:
+ * tab bir necha daqiqa orqada turgandan keyin yechim yuborish "sessiya
+ * tugadi" berardi, sahifani yangilagandan keyin esa ishlardi.
+ *
+ * Tekshiruv SO'ROV OLDIDAN bajarilsa, taymer kechikkanining ahamiyati
+ * yo'q.
+ */
+export async function getValidAccessToken(): Promise<string | null> {
+	if (tokens && tokens.expiresAt * 1000 - Date.now() > REFRESH_MARGIN_MS) {
+		return tokens.accessToken;
+	}
+	const auth = await refreshSession();
+	return auth?.access_token ?? null;
+}
+
+/**
+ * Autentifikatsiya talab qiladigan so'rovni bajaradi va 401 bo'lsa BIR
+ * MARTA qayta uradi.
+ *
+ * Nega yuqoridagi tekshiruvdan tashqari yana bu ham kerak: mijoz soati
+ * serverdan bir necha sekund oldinda bo'lishi, sessiyaning boshqa tabda
+ * bekor qilinishi, yoki tokenning aynan so'rov ketayotgan lahzada
+ * eskirishi. Bir marta — chunki ikkinchi 401 haqiqatan sessiya
+ * tugaganini bildiradi va cheksiz sikl kerak emas.
+ */
+export async function withFreshToken<T>(call: (token: string) => Promise<T>): Promise<T> {
+	const token = await getValidAccessToken();
+	if (!token) throw new SessionExpiredError();
+
+	try {
+		return await call(token);
+	} catch (cause) {
+		if (!(cause instanceof ApiError) || cause.status !== 401) throw cause;
+
+		const auth = await refreshSession();
+		if (!auth) throw new SessionExpiredError();
+		return await call(auth.access_token);
+	}
 }
 
 export function getRefreshToken(): string | null {

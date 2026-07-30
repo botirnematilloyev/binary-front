@@ -109,7 +109,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		alternates: { languages: languagesOf(href, ALL_LOCALES) },
 	}));
 
-	const { translations, meta } = await collectProblems();
+	let collected: Awaited<ReturnType<typeof collectProblems>>;
+	try {
+		collected = await collectProblems();
+	} catch (cause) {
+		// Sitemap build paytida yasaladi, ya'ni API nosozligi DEPLOY'ni
+		// to'xtatadi. Bu almashtirish noto'g'ri: bir soatga masala
+		// havolalari yo'q sitemap — yiqilgan deploydan ancha arzon
+		// yo'qotish, va Google baribir qayta so'raydi.
+		//
+		// Amalda ko'rilgan holat: ketma-ket build'lar backend rate
+		// limiterini (RATE_LIMIT_PER_MINUTE) uyg'otdi va build 429 bilan
+		// to'xtadi.
+		console.error("sitemap: masalalar ro'yxati olinmadi, faqat statik sahifalar", cause);
+		return staticPages;
+	}
+
+	const { translations, meta } = collected;
 
 	const problemPages: MetadataRoute.Sitemap = [...meta.entries()].map(([slug, info]) => {
 		const href = { pathname: "/masalalar/[slug]", params: { slug } } as const;

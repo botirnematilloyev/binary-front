@@ -1,11 +1,8 @@
-export { SessionProvider, useSession, type SessionStatus } from "./session-provider";
-export { LoginForm } from "./ui/login-form";
-
 /**
- * `token-store` ATAYLAB eksport qilinmaydi.
+ * `features/auth` — faqat LOGIN OQIMI.
  *
- * Unga faqat `SessionProvider` murojaat qiladi. Ochiq qoldirilsa, biror
- * komponent `getAccessToken()` ni to'g'ridan-to'g'ri chaqirib, React
- * holatidan tashqarida ishlay boshlardi — natijada sessiya tugaganda UI
- * yangilanmasdan qolardi. Token kerak bo'lsa `useSession().getToken()`.
+ * Sessiyaning o'zi (`SessionProvider`, `useSession`, token saqlash)
+ * `@/shared/session` da: unga har feature murojaat qilishi mumkin, va
+ * feature feature'dan import qilmaydi.
  */
+export { LoginForm } from "./ui/login-form";
