@@ -3,19 +3,20 @@ import type { Difficulty, ProblemSummaryDto } from "@binary/api";
 
 /*
  * `Record<Difficulty, T>` ATAYLAB — `Record<string, T>` yoki `switch`
- * `default` bilan emas.
+ * `default` bilan emas. Backend to'rtinchi qiyinlik darajasi qo'shsa,
+ * `Difficulty` union'i o'sadi va bu map KOMPILYATSIYADA xato beradi:
+ * "to'rtinchi kalit yo'q". `default` shoxi bo'lsa, yangi daraja jimgina
+ * kulrang badge bo'lib chiqardi.
  *
- * Backend to'rtinchi qiyinlik darajasi qo'shsa, `Difficulty` union'i
- * o'sadi va bu ikkita map KOMPILYATSIYADA xato beradi: "to'rtinchi kalit
- * yo'q". `default` shoxi bo'lsa, yangi daraja jimgina "neutral" kulrang
- * badge bo'lib chiqardi va buni faqat kimdir sezsa bilib olardik.
+ * Matnli YORLIQ bu yerda YO'Q — u tarjima fayllarida (`difficulty.easy`).
+ * Ayni shu ajratish muhim: rang — mahsulot qarori va u tilga bog'liq emas,
+ * yorliq esa to'rt tilda boshqa-boshqa. Ikkisi bir joyda bo'lsa, yangi til
+ * qo'shish uchun mapper'ga tegishga to'g'ri kelardi.
+ *
+ * Yorliqning to'liqligini `messages/*.json` nazorat qiladi: komponentda
+ * `t(difficulty)` yozilgani uchun tarjima fayliga qo'shilmagan yangi
+ * daraja ham tur xatosi beradi.
  */
-const DIFFICULTY_LABEL: Record<Difficulty, string> = {
-	easy: "Oson",
-	medium: "O'rta",
-	hard: "Qiyin",
-};
-
 const DIFFICULTY_TONE: Record<Difficulty, NonNullable<BadgeProps["tone"]>> = {
 	easy: "success",
 	medium: "warning",
@@ -26,9 +27,9 @@ export interface ProblemRow {
 	id: number;
 	slug: string;
 	title: string;
-	/** Sarlavha so'ralgan tilda kelmasa, `lang` shu haqda xabar beradi. */
+	/** Sarlavha so'ralgan tilda kelmasa, `titleLang` shu haqda xabar beradi. */
 	titleLang: string;
-	difficultyLabel: string;
+	difficulty: Difficulty;
 	difficultyTone: NonNullable<BadgeProps["tone"]>;
 	limits: string;
 }
@@ -47,10 +48,16 @@ export function toProblemRow(dto: ProblemSummaryDto): ProblemRow {
 		slug: dto.slug,
 		title: dto.title,
 		titleLang: dto.lang,
-		difficultyLabel: DIFFICULTY_LABEL[dto.difficulty],
+		difficulty: dto.difficulty,
 		difficultyTone: DIFFICULTY_TONE[dto.difficulty],
 		limits: `${formatSeconds(dto.time_limit_ms)} · ${formatMemory(dto.memory_limit_kb)}`,
 	};
+}
+
+export function difficultyTone(
+	difficulty: Difficulty,
+): NonNullable<BadgeProps["tone"]> {
+	return DIFFICULTY_TONE[difficulty];
 }
 
 export function formatSeconds(ms: number): string {
@@ -63,7 +70,13 @@ export function formatMemory(kb: number): string {
 	return kb >= 1024 ? `${Math.round(kb / 1024)} MB` : `${kb} KB`;
 }
 
-/** Ko'p tilli nomdan mavjud bo'lganini tanlaydi: so'ralgan → uz → birinchi. */
-export function pickName(name: Record<string, string>, lang: string): string {
-	return name[lang] ?? name["uz"] ?? Object.values(name)[0] ?? "";
+/**
+ * Ko'p tilli nomdan mavjud bo'lganini tanlaydi: so'ralgan → uz → birinchi.
+ *
+ * Bu backendning statement fallback qoidasi bilan AYNAN bir xil bo'lishi
+ * kerak, aks holda fan nomi bir tilda, masala sarlavhasi boshqa tilda
+ * chiqadi.
+ */
+export function pickName(name: Record<string, string>, apiLang: string): string {
+	return name[apiLang] ?? name["uz"] ?? Object.values(name)[0] ?? "";
 }

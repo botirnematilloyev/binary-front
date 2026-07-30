@@ -1,3 +1,4 @@
+import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
@@ -18,4 +19,6 @@ const config: NextConfig = {
 	typedRoutes: true,
 };
 
-export default config;
+// Plugin `src/i18n/request.ts` ni topib, server komponentlariga tarjima
+// kontekstini ulab beradi.
+export default createNextIntlPlugin("./src/i18n/request.ts")(config);

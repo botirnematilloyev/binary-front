@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ApiError, problemsApi, type ProblemDetailDto } from "@binary/api";
 import { Badge, Container, Panel } from "@binary/ui";
-import { formatMemory, formatSeconds, pickName } from "@/features/problem-catalog";
+import {
+	difficultyTone,
+	formatMemory,
+	formatSeconds,
+	pickName,
+} from "@/features/problem-catalog";
+import { buildAlternates } from "@/shared/i18n/alternates";
+import { apiLangOf, segmentsFromApiLangs, type Locale } from "@/shared/i18n/locales";
 
 export const revalidate = 300;
 
 interface PageProps {
-	params: Promise<{ slug: string }>;
+	params: Promise<{ locale: Locale; slug: string }>;
 }
 
 /**
@@ -18,9 +26,9 @@ interface PageProps {
  * ikkita chaqiruv bitta HTTP so'rovga aylanadi. Shuning uchun "props
  * orqali uzatish" kabi qo'l bilan keshlash kerak emas.
  */
-async function loadProblem(slug: string): Promise<ProblemDetailDto> {
+async function loadProblem(slug: string, locale: Locale): Promise<ProblemDetailDto> {
 	try {
-		return await problemsApi.getProblem(slug, "uz", { revalidate });
+		return await problemsApi.getProblem(slug, apiLangOf(locale), { revalidate });
 	} catch (error) {
 		// Backend nashr qilinmagan masala uchun ham 404 qaytaradi, 403 emas —
 		// aks holda mavjud emasligini tekshirib slug'larni sanab chiqish
@@ -31,34 +39,39 @@ async function loadProblem(slug: string): Promise<ProblemDetailDto> {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-	const { slug } = await params;
-	const problem = await loadProblem(slug);
+	const { locale, slug } = await params;
+	const problem = await loadProblem(slug, locale);
 
-	const path = `/masalalar/${slug}`;
+	// Backend `statement.lang` da matn HAQIQATAN qaysi tilda qaytganini
+	// aytadi — so'ralgan til emas. Tarjima bo'lmasa u `uz` ga tushadi, va
+	// kanonik manzil ayni shu tilga ishora qilishi kerak: aks holda
+	// `/ru/masalalar/x` va `/masalalar/x` bir xil matn bilan ikkita
+	// o'z-o'zini kanonik deb e'lon qiluvchi URL bo'lib qoladi.
+	const contentLocale = segmentsFromApiLangs([problem.statement.lang])[0] ?? "uz";
 
 	return {
 		title: problem.statement.title,
 		description: summarize(problem.statement.legend),
-		alternates: {
-			// Kanonik manzil bittada bo'lishi shart: aks holda `?lang=ru`
-			// va `?lang=uz` Google uchun ikkita alohida sahifa bo'lib
-			// ko'rinadi va ikkalasi bir-birining reytingini yeydi.
-			canonical: path,
-			// Backend `available_langs` ni beradi — hreflang aynan shundan
-			// quriladi, qo'lda yozilgan ro'yxatdan emas, chunki tarjimasi
-			// yo'q tilni ko'rsatish Google'da xato hisoblanadi.
-			languages: Object.fromEntries(
-				problem.available_langs.map((lang) => [lang, `${path}?lang=${lang}`]),
-			),
-		},
+		alternates: buildAlternates(
+			{ pathname: "/masalalar/[slug]", params: { slug } },
+			{
+				canonicalLocale: contentLocale,
+				availableLocales: segmentsFromApiLangs(problem.available_langs),
+			},
+		),
 		openGraph: { title: problem.statement.title, type: "article" },
 	};
 }
 
 export default async function ProblemPage({ params }: PageProps) {
-	const { slug } = await params;
-	const problem = await loadProblem(slug);
+	const { locale, slug } = await params;
+	setRequestLocale(locale);
+
+	const problem = await loadProblem(slug, locale);
 	const { statement } = problem;
+
+	const t = await getTranslations("problem");
+	const tDifficulty = await getTranslations("difficulty");
 
 	return (
 		<Container className="py-9">
@@ -66,14 +79,14 @@ export default async function ProblemPage({ params }: PageProps) {
 				<div className="flex items-center gap-2.5">
 					<span className="font-mono text-[12.5px] text-fg-subtle">#{problem.id}</span>
 					<Badge tone={difficultyTone(problem.difficulty)} size="sm">
-						{difficultyLabel(problem.difficulty)}
+						{tDifficulty(problem.difficulty)}
 					</Badge>
 				</div>
 
 				<h1 className="mt-2 text-[28px] font-bold">{statement.title}</h1>
 
 				<p className="mt-2 font-mono text-[12.5px] text-fg-muted">
-					Vaqt: {formatSeconds(problem.time_limit_ms)} · Xotira:{" "}
+					{t("time")}: {formatSeconds(problem.time_limit_ms)} · {t("memory")}:{" "}
 					{formatMemory(problem.memory_limit_kb)}
 				</p>
 
@@ -81,7 +94,7 @@ export default async function ProblemPage({ params }: PageProps) {
 					<ul className="mt-3 flex flex-wrap gap-1.5">
 						{problem.topics.map((topic) => (
 							<li key={topic.id}>
-								<Badge size="sm">{pickName(topic.name, "uz")}</Badge>
+								<Badge size="sm">{pickName(topic.name, apiLangOf(locale))}</Badge>
 							</li>
 						))}
 					</ul>
@@ -94,23 +107,23 @@ export default async function ProblemPage({ params }: PageProps) {
 				 * qoidalarini qaror qilib olish kerak. Uni shu yerda shosha-pisha
 				 * qilish stored XSS uchun ochiq yo'l qoldiradi.
 				 */}
-				<Section title="Shart">{statement.legend}</Section>
+				<Section title={t("statement")}>{statement.legend}</Section>
 				{statement.input_format && (
-					<Section title="Kirish formati">{statement.input_format}</Section>
+					<Section title={t("inputFormat")}>{statement.input_format}</Section>
 				)}
 				{statement.output_format && (
-					<Section title="Chiqish formati">{statement.output_format}</Section>
+					<Section title={t("outputFormat")}>{statement.output_format}</Section>
 				)}
 
 				{problem.samples.length > 0 && (
 					<section className="mt-7">
-						<h2 className="text-lg font-bold">Namunalar</h2>
+						<h2 className="text-lg font-bold">{t("samples")}</h2>
 						<div className="mt-3 flex flex-col gap-3">
 							{problem.samples.map((sample) => (
 								<Panel key={sample.ordinal} className="grid sm:grid-cols-2">
-									<Sample label="Kirish" value={sample.input} />
+									<Sample label={t("sampleInput")} value={sample.input} />
 									<Sample
-										label="Chiqish"
+										label={t("sampleOutput")}
 										value={sample.expected_output}
 										className="border-t border-border-default sm:border-t-0 sm:border-l"
 									/>
@@ -120,7 +133,7 @@ export default async function ProblemPage({ params }: PageProps) {
 					</section>
 				)}
 
-				{statement.notes && <Section title="Izoh">{statement.notes}</Section>}
+				{statement.notes && <Section title={t("notes")}>{statement.notes}</Section>}
 			</article>
 		</Container>
 	);
@@ -157,22 +170,6 @@ function Sample({
 			</pre>
 		</div>
 	);
-}
-
-/*
- * Bu ikkitasi `problem-catalog` dagi map'larning egizagi. Ular hozir
- * takrorlanmoqda — ATAYLAB emas, va keyingi bosqichda `packages/ui` yoki
- * umumiy `problem` feature'iga chiqariladi. Uchinchi joyda kerak bo'lishi
- * — chiqarish uchun trigger.
- */
-function difficultyLabel(difficulty: ProblemDetailDto["difficulty"]): string {
-	return { easy: "Oson", medium: "O'rta", hard: "Qiyin" }[difficulty];
-}
-
-function difficultyTone(
-	difficulty: ProblemDetailDto["difficulty"],
-): "success" | "warning" | "danger" {
-	return ({ easy: "success", medium: "warning", hard: "danger" } as const)[difficulty];
 }
 
 function summarize(legend: string): string {

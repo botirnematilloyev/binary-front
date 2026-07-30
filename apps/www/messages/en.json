@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "siteTitle": "binary.uz — competitive programming problems",
+    "siteDescription": "Solve algorithm and math problems with instant automated judging. Python, C++ and Go are supported."
+  },
+  "nav": {
+    "home": "Home",
+    "problems": "Problems"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "home": {
+    "title": "Write code, see the result instantly",
+    "subtitle": "Algorithm and math problems. Your solution is judged automatically — in Python, C++ or Go.",
+    "cta": "Browse problems"
+  },
+  "problems": {
+    "title": "Problems",
+    "metaDescription": "A collection of algorithm and math problems. Each one has time and memory limits, sample tests and instant judging.",
+    "subjects": "SUBJECTS",
+    "all": "All",
+    "columnId": "ID",
+    "columnProblem": "PROBLEM",
+    "columnDifficulty": "DIFFICULTY",
+    "columnLimits": "LIMITS",
+    "emptyTitle": "No problems found",
+    "emptyHint": "Try changing the filters."
+  },
+  "problem": {
+    "statement": "Statement",
+    "inputFormat": "Input format",
+    "outputFormat": "Output format",
+    "samples": "Examples",
+    "notes": "Note",
+    "sampleInput": "Input",
+    "sampleOutput": "Output",
+    "time": "Time",
+    "memory": "Memory"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "hint": "The page could not be loaded. Try again — if the problem persists, come back a little later.",
+    "retry": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "hint": "The address may have changed, or the problem is not published yet.",
+    "cta": "Back to problems"
+  }
+}

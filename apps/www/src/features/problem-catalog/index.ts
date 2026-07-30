@@ -7,5 +7,11 @@
  */
 export { ProblemTable } from "./ui/problem-table";
 export { SubjectFilter } from "./ui/subject-filter";
-export { formatMemory, formatSeconds, pickName, toProblemRow } from "./model";
+export {
+	difficultyTone,
+	formatMemory,
+	formatSeconds,
+	pickName,
+	toProblemRow,
+} from "./model";
 export type { ProblemRow } from "./model";

@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "siteTitle": "binary.uz — algoritmik masalalar platformasi",
+    "siteDescription": "Algoritmlar va matematikadan masalalar yechib, kodingizni darhol tekshirtiring. Python, C++ va Go qo'llab-quvvatlanadi."
+  },
+  "nav": {
+    "home": "Bosh sahifa",
+    "problems": "Masalalar"
+  },
+  "language": {
+    "label": "Til"
+  },
+  "home": {
+    "title": "Kod yozing, darhol natijani ko'ring",
+    "subtitle": "Algoritmlar va matematikadan masalalar. Yechimingiz avtomatik tekshiriladi — Python, C++ yoki Go da.",
+    "cta": "Masalalarni ko'rish"
+  },
+  "problems": {
+    "title": "Masalalar",
+    "metaDescription": "Algoritmlar va matematikadan masalalar to'plami. Har biri uchun vaqt va xotira limiti, namunali testlar va darhol tekshirish.",
+    "subjects": "FANLAR",
+    "all": "Barchasi",
+    "columnId": "ID",
+    "columnProblem": "MASALA",
+    "columnDifficulty": "QIYINLIK",
+    "columnLimits": "LIMIT",
+    "emptyTitle": "Masala topilmadi",
+    "emptyHint": "Filtrlarni o'zgartirib ko'ring."
+  },
+  "problem": {
+    "statement": "Shart",
+    "inputFormat": "Kirish formati",
+    "outputFormat": "Chiqish formati",
+    "samples": "Namunalar",
+    "notes": "Izoh",
+    "sampleInput": "Kirish",
+    "sampleOutput": "Chiqish",
+    "time": "Vaqt",
+    "memory": "Xotira"
+  },
+  "difficulty": {
+    "easy": "Oson",
+    "medium": "O'rta",
+    "hard": "Qiyin"
+  },
+  "error": {
+    "title": "Nimadir ishlamadi",
+    "hint": "Sahifani yuklashda xatolik yuz berdi. Qayta urinib ko'ring — muammo davom etsa, birozdan keyin qayting.",
+    "retry": "Qayta urinish"
+  },
+  "notFound": {
+    "title": "Sahifa topilmadi",
+    "hint": "Manzil o'zgargan bo'lishi mumkin, yoki masala hali nashr qilinmagan.",
+    "cta": "Masalalarga qaytish"
+  }
+}

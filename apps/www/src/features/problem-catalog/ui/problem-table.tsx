@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Badge, Panel } from "@binary/ui";
+import { Link } from "@/i18n/navigation";
 import type { ProblemRow } from "../model";
 
 /**
@@ -8,15 +9,19 @@ import type { ProblemRow } from "../model";
  * backendda ataylab kesilgan (`problem_stats` — tezlik uchun, keyinroq).
  * Bo'sh yoki to'qib chiqarilgan ustun jadvalni to'ldiradi, lekin
  * foydalanuvchiga yolg'on aytadi.
+ *
+ * Server komponenti bo'lgani uchun tarjimani `getTranslations` beradi —
+ * `useTranslations` client hook va bu yerda kerak emas.
  */
-export function ProblemTable({ rows }: { rows: ProblemRow[] }) {
+export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
+	const t = await getTranslations("problems");
+	const tDifficulty = await getTranslations("difficulty");
+
 	if (rows.length === 0) {
 		return (
 			<Panel className="px-6 py-14 text-center">
-				<p className="font-semibold">Masala topilmadi</p>
-				<p className="mt-1 text-sm text-fg-muted">
-					Filtrlarni o'zgartirib ko'ring.
-				</p>
+				<p className="font-semibold">{t("emptyTitle")}</p>
+				<p className="mt-1 text-sm text-fg-muted">{t("emptyHint")}</p>
 			</Panel>
 		);
 	}
@@ -28,18 +33,10 @@ export function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 			<table className="w-full border-collapse text-sm">
 				<thead>
 					<tr className="border-b border-border-default bg-surface-subtle text-left">
-						<th className="w-16 px-4 py-2.5 text-[11px] font-bold tracking-wide text-fg-subtle">
-							ID
-						</th>
-						<th className="px-4 py-2.5 text-[11px] font-bold tracking-wide text-fg-subtle">
-							MASALA
-						</th>
-						<th className="w-28 px-4 py-2.5 text-[11px] font-bold tracking-wide text-fg-subtle">
-							QIYINLIK
-						</th>
-						<th className="w-40 px-4 py-2.5 text-right text-[11px] font-bold tracking-wide text-fg-subtle">
-							LIMIT
-						</th>
+						<Th className="w-16">{t("columnId")}</Th>
+						<Th>{t("columnProblem")}</Th>
+						<Th className="w-28">{t("columnDifficulty")}</Th>
+						<Th className="w-40 text-right">{t("columnLimits")}</Th>
 					</tr>
 				</thead>
 				<tbody>
@@ -60,7 +57,7 @@ export function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 								 * element yasaydi.
 								 */}
 								<Link
-									href={`/masalalar/${row.slug}`}
+									href={{ pathname: "/masalalar/[slug]", params: { slug: row.slug } }}
 									className="font-semibold text-fg hover:text-accent"
 								>
 									{row.title}
@@ -68,7 +65,7 @@ export function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 							</td>
 							<td className="px-4 py-3">
 								<Badge tone={row.difficultyTone} size="sm">
-									{row.difficultyLabel}
+									{tDifficulty(row.difficulty)}
 								</Badge>
 							</td>
 							<td className="px-4 py-3 text-right font-mono text-[12px] text-fg-muted">
@@ -79,5 +76,15 @@ export function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 				</tbody>
 			</table>
 		</Panel>
+	);
+}
+
+function Th({ children, className }: { children: string; className?: string }) {
+	return (
+		<th
+			className={`px-4 py-2.5 text-[11px] font-bold tracking-wide text-fg-subtle ${className ?? ""}`}
+		>
+			{children}
+		</th>
 	);
 }
