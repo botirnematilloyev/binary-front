@@ -157,21 +157,19 @@ export function ProblemList() {
 									</td>
 									<td className="px-4 py-2.5 text-right whitespace-nowrap">
 										{/*
+										 * BITTA havola. Oldin "Shart" va "Testlar" alohida
+										 * edi va setter qaysi birini bosishni o'ylab
+										 * turardi — ikkalasi ham bir masalaning ichi.
+										 *
 										 * Obyekt shakli, satr emas: `typedRoutes` bilan
-										 * `pathname` mavjud marshrutlar ro'yxatiga
-										 * tekshiriladi, query esa erkin qoladi.
+										 * `pathname` mavjud marshrutlarga tekshiriladi,
+										 * query esa erkin qoladi.
 										 */}
 										<Link
 											href={{ pathname: "/masalalar/tahrir", query: { id: problem.id } }}
 											className="text-sm font-semibold text-accent hover:text-accent-hover"
 										>
-											Shart
-										</Link>
-										<Link
-											href={{ pathname: "/masalalar/testlar", query: { id: problem.id } }}
-											className="ml-3 text-sm font-semibold text-accent hover:text-accent-hover"
-										>
-											Testlar
+											Ochish
 										</Link>
 									</td>
 								</tr>

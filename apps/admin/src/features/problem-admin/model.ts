@@ -24,7 +24,15 @@ export interface StatementValues {
 	notes: string;
 }
 
-export interface ProblemFormValues {
+/**
+ * Masalaning o'zi — shartsiz.
+ *
+ * Shart alohida tur, chunki u KO'P bo'lishi mumkin (har til uchun bitta),
+ * sozlamalar esa bitta. Ularni bitta obyektda ushlash ish maydonida
+ * chalkashlik yasardi: `values.statement` qaysi til ekani noaniq bo'lib
+ * qolardi.
+ */
+export interface ProblemSettingsValues {
 	slug: string;
 	subjectId: number;
 	difficulty: Difficulty;
@@ -32,6 +40,10 @@ export interface ProblemFormValues {
 	memoryLimitKb: number;
 	sort: number;
 	source: string;
+}
+
+/** Yaratish formasi uchun: sozlamalar + bitta shart birga kerak. */
+export interface ProblemFormValues extends ProblemSettingsValues {
 	statement: StatementValues;
 }
 
@@ -99,24 +111,34 @@ const SLUG_MAX = 160;
 
 export type FieldErrors = Partial<Record<"slug" | "subjectId" | "title" | "legend" | "limits", string>>;
 
-export function validate(values: ProblemFormValues): FieldErrors {
+export function validateSettings(values: ProblemSettingsValues): FieldErrors {
 	const errors: FieldErrors = {};
 
 	if (values.slug.length < SLUG_MIN || values.slug.length > SLUG_MAX) {
 		errors.slug = `Slug ${SLUG_MIN}–${SLUG_MAX} belgi bo'lishi kerak`;
 	} else if (!SLUG_PATTERN.test(values.slug)) {
-		errors.slug = "Faqat kichik lotin harflari, raqamlar va defis: ikki-son-yigindisi";
+		errors.slug = "Faqat kichik lotin harflari, raqamlar va defis: ikki-son-ayirmasi";
 	}
 
 	if (values.subjectId <= 0) errors.subjectId = "Fan tanlanmagan";
-	if (values.statement.title.trim() === "") errors.title = "Sarlavha bo'sh bo'lmasligi kerak";
-	if (values.statement.legend.trim() === "") errors.legend = "Shart bo'sh bo'lmasligi kerak";
 
 	if (values.timeLimitMs <= 0 || values.memoryLimitKb <= 0) {
 		errors.limits = "Vaqt va xotira limiti musbat bo'lishi kerak";
 	}
 
 	return errors;
+}
+
+export function validateStatementValues(statement: StatementValues): FieldErrors {
+	const errors: FieldErrors = {};
+	if (statement.title.trim() === "") errors.title = "Sarlavha bo'sh bo'lmasligi kerak";
+	if (statement.legend.trim() === "") errors.legend = "Shart bo'sh bo'lmasligi kerak";
+	return errors;
+}
+
+/** Yaratish formasi uchun — ikkalasi birga tekshiriladi. */
+export function validate(values: ProblemFormValues): FieldErrors {
+	return { ...validateSettings(values), ...validateStatementValues(values.statement) };
 }
 
 /**

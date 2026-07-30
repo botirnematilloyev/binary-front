@@ -1,5 +1,5 @@
 export { ProblemList } from "./ui/problem-list";
-export { ProblemForm } from "./ui/problem-form";
+export { ProblemSettings } from "./ui/problem-settings";
 export { StatementEditor } from "./ui/statement-editor";
 export { TestCasesEditor } from "./ui/test-cases-editor";
 export {
@@ -12,5 +12,12 @@ export {
 	statementIsEmpty,
 	suggestSlug,
 	validate,
+	validateSettings,
+	validateStatementValues,
 } from "./model";
-export type { FieldErrors, ProblemFormValues, StatementValues } from "./model";
+export type {
+	FieldErrors,
+	ProblemFormValues,
+	ProblemSettingsValues,
+	StatementValues,
+} from "./model";
