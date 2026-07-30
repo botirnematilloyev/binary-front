@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { submissionsApi, type SubmissionDto } from "@binary/api";
 import { Badge, Button, Panel } from "@binary/ui";
 import { formatMemory, formatMs } from "@/shared/format";
@@ -41,6 +41,20 @@ export function SubmissionHistory({
 	const tStatus = useTranslations("submissionStatus");
 	const format = useFormatter();
 	const { status: sessionStatus } = useSession();
+
+	/*
+	 * Nisbiy vaqt uchun tayanch nuqta.
+	 *
+	 * `format.relativeTime(date)` ni `now` siz chaqirish mumkin, lekin
+	 * next-intl bundan ogohlantiradi va haqli: o'shanda har render'da
+	 * `Date.now()` olinadi, ya'ni server render qilgan qiymat bilan
+	 * brauzerdagi qiymat farq qilishi mumkin (hydration nomuvofiqligi).
+	 *
+	 * `updateInterval` yon foyda beradi: "2 daqiqa oldin" o'zi "3 daqiqa
+	 * oldin" ga aylanadi. Bir daqiqa — ro'yxat uchun yetarli aniqlik va
+	 * arzon (10 ta element qayta render bo'ladi, xolos).
+	 */
+	const now = useNow({ updateInterval: 60_000 });
 
 	const [state, setState] = useState<State>({ phase: "loading" });
 
@@ -127,7 +141,7 @@ export function SubmissionHistory({
 										dateTime={new Date(item.created_at * 1000).toISOString()}
 										className="whitespace-nowrap"
 									>
-										{format.relativeTime(new Date(item.created_at * 1000))}
+										{format.relativeTime(new Date(item.created_at * 1000), now)}
 									</time>
 								</span>
 							</li>
