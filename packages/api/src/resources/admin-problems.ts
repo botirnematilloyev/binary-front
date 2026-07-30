@@ -168,6 +168,32 @@ export function update(
 	});
 }
 
+const statementSchema = z.object({
+	lang: z.string(),
+	title: z.string(),
+	legend: z.string(),
+	input_format: z.string().nullable(),
+	output_format: z.string().nullable(),
+	notes: z.string().nullable(),
+});
+
+export type AdminStatementDto = z.infer<typeof statementSchema>;
+
+/**
+ * Masalaning BARCHA tillardagi shartlari.
+ *
+ * Ochiq `getProblem` dan farqi ikkita: u bitta tilni tanlab beradi (til
+ * tanlash qoidasi bilan), va nashr qilinmagan masala uchun 404 qaytaradi.
+ * Setter esa aynan qoralamani tahrirlaydi.
+ */
+export function listStatements(id: number, options: RequestOptions & { token: string }) {
+	return request(
+		`/admin/problems/${id}/statements`,
+		z.object({ statements: z.array(statementSchema) }),
+		options,
+	);
+}
+
 export function upsertStatement(
 	id: number,
 	input: StatementInput,

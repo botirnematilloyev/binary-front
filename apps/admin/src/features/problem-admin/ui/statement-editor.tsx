@@ -19,11 +19,20 @@ import { STATEMENT_LANGS, type StatementValues } from "../model";
 export function StatementEditor({
 	value,
 	onChange,
+	langEditable = true,
 	titleError,
 	legendError,
 }: {
 	value: StatementValues;
 	onChange: (next: StatementValues) => void;
+	/**
+	 * Tahrirlash sahifasida til shu yerdan EMAS, sahifa yuqorisidan
+	 * tanlanadi — chunki til almashganda o'sha tildagi SAQLANGAN matn
+	 * yuklanishi kerak. Bu yerda oddiy `lang` o'zgartirish o'zbekcha
+	 * matnni ruscha sifatida saqlab, mavjud ruscha shartni bosib
+	 * ketardi.
+	 */
+	langEditable?: boolean;
 	titleError?: string | undefined;
 	legendError?: string | undefined;
 }) {
@@ -38,18 +47,24 @@ export function StatementEditor({
 			<div className="flex flex-wrap items-center gap-3">
 				<h2 className="text-lg font-bold">Shart</h2>
 
-				<select
-					value={value.lang}
-					onChange={(e) => set("lang", e.target.value)}
-					aria-label="Shart tili"
-					className="rounded-control border border-border-strong bg-surface px-2.5 py-1.5 text-sm font-semibold"
-				>
-					{STATEMENT_LANGS.map((lang) => (
-						<option key={lang.code} value={lang.code}>
-							{lang.label}
-						</option>
-					))}
-				</select>
+				{langEditable ? (
+					<select
+						value={value.lang}
+						onChange={(e) => set("lang", e.target.value)}
+						aria-label="Shart tili"
+						className="rounded-control border border-border-strong bg-surface px-2.5 py-1.5 text-sm font-semibold"
+					>
+						{STATEMENT_LANGS.map((lang) => (
+							<option key={lang.code} value={lang.code}>
+								{lang.label}
+							</option>
+						))}
+					</select>
+				) : (
+					<span className="rounded-pill bg-surface-muted px-2.5 py-1 text-[13px] font-semibold text-fg-secondary">
+						{STATEMENT_LANGS.find((l) => l.code === value.lang)?.label ?? value.lang}
+					</span>
+				)}
 
 				<label className="ml-auto flex cursor-pointer items-center gap-2 text-sm font-semibold">
 					<input

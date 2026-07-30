@@ -133,6 +133,7 @@ export function ProblemList() {
 								<Th className="w-40">SLUG</Th>
 								<Th className="w-24">QIYINLIK</Th>
 								<Th className="w-28">HOLAT</Th>
+								<Th className="w-24"> </Th>
 							</tr>
 						</thead>
 						<tbody>
@@ -153,6 +154,19 @@ export function ProblemList() {
 										<Badge tone={STATUS[problem.status].tone} size="sm">
 											{STATUS[problem.status].label}
 										</Badge>
+									</td>
+									<td className="px-4 py-2.5 text-right">
+										{/*
+										 * Obyekt shakli, satr emas: `typedRoutes` bilan
+										 * `pathname` mavjud marshrutlar ro'yxatiga
+										 * tekshiriladi, query esa erkin qoladi.
+										 */}
+										<Link
+											href={{ pathname: "/masalalar/tahrir", query: { id: problem.id } }}
+											className="text-sm font-semibold text-accent hover:text-accent-hover"
+										>
+											Tahrirlash
+										</Link>
 									</td>
 								</tr>
 							))}

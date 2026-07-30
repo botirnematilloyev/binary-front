@@ -3,89 +3,67 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { taxonomyApi, type SubjectDto } from "@binary/api";
 import { Button, Panel } from "@binary/ui";
-import {
-	DIFFICULTIES,
-	emptyForm,
-	suggestSlug,
-	validate,
-	type FieldErrors,
-	type ProblemFormValues,
-} from "../model";
+import { DIFFICULTIES, suggestSlug, type FieldErrors, type ProblemFormValues } from "../model";
 import { StatementEditor } from "./statement-editor";
 
 /**
- * Masala formasi.
+ * Masala formasi — TO'LIQ boshqariladigan (controlled).
  *
- * `initialValues` va `onSave` tashqaridan keladi, ya'ni bir xil forma
- * yaratish uchun ham, tahrirlash uchun ham xizmat qiladi. Tahrirlash
- * hozircha ULANMAGAN — backendda qoralamaning shartini O'QIB olish
- * endpointi yo'q (`GET /admin/problems/{id}/statements` mavjud emas, va
- * ochiq endpoint qoralama uchun 404 qaytaradi). Forma tayyor turibdi.
+ * Holat ota-komponentda: yaratish sahifasida oddiy `useState`,
+ * tahrirlash sahifasida esa tillar bo'yicha xarita. Forma o'z ichida
+ * holat saqlaganda tahrirlash sahifasi til almashuvini boshqara olmasdi
+ * va "o'zbekcha matnni ruscha sifatida saqlash" xatosi paydo bo'lardi.
+ *
+ * Aralash egalik (bir qismi ichkarida, bir qismi tashqarida) eng yomon
+ * variant edi — aynan shunday holatlarda qaysi qiymat haqiqiy ekani
+ * noaniq bo'lib qoladi.
  */
 export function ProblemForm({
-	initialValues,
+	values,
+	onChange,
+	errors,
+	saving,
+	saveError,
 	submitLabel,
-	onSave,
+	onSubmit,
+	slugEditable = true,
+	langEditable = true,
+	extraActions,
 }: {
-	initialValues?: ProblemFormValues;
+	values: ProblemFormValues;
+	onChange: (next: ProblemFormValues) => void;
+	errors: FieldErrors;
+	saving: boolean;
+	saveError: string | null;
 	submitLabel: string;
-	onSave: (values: ProblemFormValues) => Promise<void>;
+	onSubmit: () => void;
+	slugEditable?: boolean;
+	langEditable?: boolean;
+	extraActions?: React.ReactNode;
 }) {
-	const [values, setValues] = useState<ProblemFormValues>(initialValues ?? emptyForm());
-	const [errors, setErrors] = useState<FieldErrors>({});
-	const [saveError, setSaveError] = useState<string | null>(null);
-	const [saving, setSaving] = useState(false);
-
 	const [subjects, setSubjects] = useState<SubjectDto[]>([]);
 
 	useEffect(() => {
-		// Fanlar ro'yxati OCHIQ endpoint — token kerak emas.
+		// Fanlar OCHIQ endpoint — token kerak emas.
 		taxonomyApi
 			.listSubjects()
-			.then((result) => {
-				setSubjects(result.subjects);
-				// Birinchi fanni sukut bo'yicha tanlaymiz, lekin faqat
-				// foydalanuvchi hali tanlamagan bo'lsa: aks holda tahrirlash
-				// rejimida saqlangan qiymat bosib ketilardi.
-				setValues((current) =>
-					current.subjectId === 0 && result.subjects[0]
-						? { ...current, subjectId: result.subjects[0].id }
-						: current,
-				);
-			})
+			.then((result) => setSubjects(result.subjects))
 			.catch(() => {
-				/* fan tanlanmasa validatsiya ushlaydi */
+				/* tanlanmasa validatsiya ushlaydi */
 			});
 	}, []);
 
 	function set<K extends keyof ProblemFormValues>(key: K, next: ProblemFormValues[K]) {
-		setValues((current) => ({ ...current, [key]: next }));
+		onChange({ ...values, [key]: next });
 	}
 
-	async function onSubmit(event: FormEvent) {
+	function handleSubmit(event: FormEvent) {
 		event.preventDefault();
-
-		const found = validate(values);
-		setErrors(found);
-		if (Object.keys(found).length > 0) {
-			setSaveError(null);
-			return;
-		}
-
-		setSaving(true);
-		setSaveError(null);
-		try {
-			await onSave(values);
-		} catch (cause) {
-			// Xato matnini `onSave` emas, chaqiruvchi beradi — u qaysi
-			// amal bajarilganini biladi (yaratish yoki tahrirlash).
-			setSaveError(cause instanceof Error ? cause.message : "Xatolik");
-			setSaving(false);
-		}
+		onSubmit();
 	}
 
 	return (
-		<form onSubmit={onSubmit}>
+		<form onSubmit={handleSubmit}>
 			<Panel className="p-5">
 				<div className="grid gap-4 sm:grid-cols-2">
 					<div>
@@ -96,16 +74,17 @@ export function ProblemForm({
 							id="slug"
 							value={values.slug}
 							onChange={(e) => set("slug", e.target.value)}
+							disabled={!slugEditable}
 							placeholder="ikki-son-yigindisi"
-							className={inputClass}
+							className={`${inputClass} disabled:bg-surface-muted disabled:text-fg-muted`}
 						/>
 						{/*
-						 * Slug sarlavhadan AVTOMATIK yasalmaydi, faqat taklif
-						 * qilinadi. Sabab: slug — doimiy manzil, sarlavha esa
-						 * tahrirlanadi. Avtomatik bog'lansa, sarlavha
-						 * tuzatilganda eski havolalar buzilardi.
+						 * Slug sarlavhadan AVTOMATIK yasalmaydi, faqat taklif.
+						 * Slug — doimiy manzil, sarlavha esa tahrirlanadi;
+						 * bog'lansa sarlavha tuzatilganda eski havolalar
+						 * buzilardi.
 						 */}
-						{values.statement.title.trim() !== "" && values.slug === "" && (
+						{slugEditable && values.statement.title.trim() !== "" && values.slug === "" && (
 							<button
 								type="button"
 								onClick={() => set("slug", suggestSlug(values.statement.title))}
@@ -113,6 +92,11 @@ export function ProblemForm({
 							>
 								Sarlavhadan yasash: {suggestSlug(values.statement.title)}
 							</button>
+						)}
+						{!slugEditable && (
+							<p className="mt-1.5 text-sm text-fg-muted">
+								Slug o'zgartirilmaydi — u masalaning doimiy manzili.
+							</p>
 						)}
 						{errors.slug && (
 							<p role="alert" className="mt-1.5 text-sm text-danger">
@@ -154,7 +138,9 @@ export function ProblemForm({
 						<select
 							id="difficulty"
 							value={values.difficulty}
-							onChange={(e) => set("difficulty", e.target.value as ProblemFormValues["difficulty"])}
+							onChange={(e) =>
+								set("difficulty", e.target.value as ProblemFormValues["difficulty"])
+							}
 							className={inputClass}
 						>
 							{DIFFICULTIES.map((item) => (
@@ -230,6 +216,7 @@ export function ProblemForm({
 			<StatementEditor
 				value={values.statement}
 				onChange={(next) => set("statement", next)}
+				langEditable={langEditable}
 				titleError={errors.title}
 				legendError={errors.legend}
 			/>
@@ -240,13 +227,11 @@ export function ProblemForm({
 				</p>
 			)}
 
-			<div className="mt-5 flex items-center gap-3">
+			<div className="mt-5 flex flex-wrap items-center gap-3">
 				<Button type="submit" disabled={saving}>
 					{saving ? "Saqlanyapti…" : submitLabel}
 				</Button>
-				<p className="text-sm text-fg-muted">
-					Masala <strong>qoralama</strong> holatida yaratiladi — nashr qilish alohida amal.
-				</p>
+				{extraActions}
 			</div>
 		</form>
 	);

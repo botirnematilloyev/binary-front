@@ -35,6 +35,7 @@ export type { SubjectDto, TopicDto } from "./resources/taxonomy";
 export type {
 	AdminProblemDto,
 	AdminProblemSummaryDto,
+	AdminStatementDto,
 	CreateProblemInput,
 	StatementInput,
 	TestCaseDto,

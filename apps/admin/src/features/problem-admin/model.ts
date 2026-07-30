@@ -35,6 +35,34 @@ export interface ProblemFormValues {
 	statement: StatementValues;
 }
 
+export function blankStatement(lang: string): StatementValues {
+	return { lang, title: "", legend: "", inputFormat: "", outputFormat: "", notes: "" };
+}
+
+/**
+ * Shart o'zgarganini aniqlaydi.
+ *
+ * Saqlashda FAQAT o'zgargan tillar yuboriladi. Hammasini yuborish
+ * osonroq edi, lekin har `PUT` `updated_at` ni yangilaydi va tegilmagan
+ * tarjimani "tahrirlangan" qilib ko'rsatardi — keyinchalik "kim, qachon
+ * o'zgartirdi" degan savolga javob berib bo'lmasdi.
+ */
+export function statementChanged(current: StatementValues, original?: StatementValues): boolean {
+	if (!original) return true;
+	return (
+		current.title !== original.title ||
+		current.legend !== original.legend ||
+		current.inputFormat !== original.inputFormat ||
+		current.outputFormat !== original.outputFormat ||
+		current.notes !== original.notes
+	);
+}
+
+/** Bo'sh shart yuborilmaydi — backend uni `ErrEmptyStatement` bilan rad etadi. */
+export function statementIsEmpty(statement: StatementValues): boolean {
+	return statement.title.trim() === "" && statement.legend.trim() === "";
+}
+
 export function emptyForm(): ProblemFormValues {
 	return {
 		slug: "",

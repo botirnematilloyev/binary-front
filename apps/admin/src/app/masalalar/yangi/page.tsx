@@ -1,16 +1,38 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminProblemsApi } from "@binary/api";
 import { withFreshToken } from "@binary/session";
 import { Container } from "@binary/ui";
-import { ProblemForm, saveErrorMessage, type ProblemFormValues } from "@/features/problem-admin";
+import {
+	emptyForm,
+	ProblemForm,
+	saveErrorMessage,
+	validate,
+	type FieldErrors,
+	type ProblemFormValues,
+} from "@/features/problem-admin";
 import { AdminHeader } from "@/widgets/admin-header";
 
 export default function NewProblemPage() {
 	const router = useRouter();
 
-	async function save(values: ProblemFormValues) {
+	const [values, setValues] = useState<ProblemFormValues>(emptyForm());
+	const [errors, setErrors] = useState<FieldErrors>({});
+	const [saveError, setSaveError] = useState<string | null>(null);
+	const [saving, setSaving] = useState(false);
+
+	async function save() {
+		const found = validate(values);
+		setErrors(found);
+		if (Object.keys(found).length > 0) {
+			setSaveError(null);
+			return;
+		}
+
+		setSaving(true);
+		setSaveError(null);
 		try {
 			await withFreshToken((token) =>
 				adminProblemsApi.create(
@@ -24,7 +46,7 @@ export default function NewProblemPage() {
 						// Bo'sh satr `null` ga aylantiriladi: backendda bu maydon
 						// nullable va bo'sh satr "manba bor, lekin nomi yo'q"
 						// degan ma'nosiz holatni yasardi.
-						source: values.source.trim() === "" ? null : values.source.trim(),
+						source: emptyToNull(values.source),
 						statement: {
 							lang: values.statement.lang,
 							title: values.statement.title.trim(),
@@ -39,9 +61,8 @@ export default function NewProblemPage() {
 			);
 			router.push("/");
 		} catch (cause) {
-			// Xatoni forma ko'rsatadi — u qaysi maydonda ekanini bilmaydi,
-			// lekin xabar foydalanuvchi tilida bo'lishi kerak.
-			throw new Error(saveErrorMessage(cause));
+			setSaveError(saveErrorMessage(cause));
+			setSaving(false);
 		}
 	}
 
@@ -51,7 +72,21 @@ export default function NewProblemPage() {
 			<Container className="py-8">
 				<h1 className="text-[22px] font-bold">Yangi masala</h1>
 				<div className="mt-5">
-					<ProblemForm submitLabel="Yaratish" onSave={save} />
+					<ProblemForm
+						values={values}
+						onChange={setValues}
+						errors={errors}
+						saving={saving}
+						saveError={saveError}
+						submitLabel="Yaratish"
+						onSubmit={() => void save()}
+						extraActions={
+							<p className="text-sm text-fg-muted">
+								Masala <strong>qoralama</strong> holatida yaratiladi — nashr qilish
+								alohida amal.
+							</p>
+						}
+					/>
 				</div>
 			</Container>
 		</>
