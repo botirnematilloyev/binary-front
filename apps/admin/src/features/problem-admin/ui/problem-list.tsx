@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import {
 	adminProblemsApi,
 	type AdminProblemSummaryDto,
@@ -73,6 +74,14 @@ export function ProblemList() {
 		<section>
 			<div className="flex flex-wrap items-center gap-2">
 				<h1 className="text-[22px] font-bold">Masalalar</h1>
+
+				<Link
+					href="/masalalar/yangi"
+					className="ml-3 rounded-control bg-fg px-3.5 py-1.5 text-[13px] font-semibold text-fg-inverted transition-colors hover:bg-accent"
+				>
+					Yangi masala
+				</Link>
+
 				<div className="ml-auto flex gap-1.5">
 					{FILTERS.map((item) => (
 						<button
