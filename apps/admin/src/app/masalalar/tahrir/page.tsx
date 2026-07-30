@@ -282,6 +282,12 @@ function EditProblem() {
 					extraActions={
 						<>
 							<Link
+								href={{ pathname: "/masalalar/testlar", query: { id } }}
+								className="inline-flex items-center rounded-control border border-border-strong px-3.5 py-2 text-sm font-semibold transition-colors hover:border-border-hover"
+							>
+								Testlar va nashr
+							</Link>
+							<Link
 								href="/"
 								className="inline-flex items-center rounded-control border border-border-strong px-3.5 py-2 text-sm font-semibold transition-colors hover:border-border-hover"
 							>

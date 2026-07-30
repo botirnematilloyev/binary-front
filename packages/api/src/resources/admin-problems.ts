@@ -221,12 +221,18 @@ export function listTestCases(id: number, options: RequestOptions & { token: str
 	);
 }
 
+/**
+ * Testlar to'plamini butunlay ALMASHTIRADI (backend `DeleteNotIn` +
+ * upsert qiladi), ya'ni yuborilmagan tartib raqami o'chadi.
+ *
+ * Javob — `204 No Content`, shuning uchun sxema `z.void()`.
+ */
 export function setTestCases(
 	id: number,
 	cases: TestCaseDto[],
 	options: RequestOptions & { token: string },
 ) {
-	return request(`/admin/problems/${id}/tests`, z.object({ status: z.string() }).or(z.any()), {
+	return request(`/admin/problems/${id}/tests`, z.void(), {
 		...options,
 		method: "PUT",
 		body: { test_cases: cases },

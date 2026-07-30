@@ -155,7 +155,7 @@ export function ProblemList() {
 											{STATUS[problem.status].label}
 										</Badge>
 									</td>
-									<td className="px-4 py-2.5 text-right">
+									<td className="px-4 py-2.5 text-right whitespace-nowrap">
 										{/*
 										 * Obyekt shakli, satr emas: `typedRoutes` bilan
 										 * `pathname` mavjud marshrutlar ro'yxatiga
@@ -165,7 +165,13 @@ export function ProblemList() {
 											href={{ pathname: "/masalalar/tahrir", query: { id: problem.id } }}
 											className="text-sm font-semibold text-accent hover:text-accent-hover"
 										>
-											Tahrirlash
+											Shart
+										</Link>
+										<Link
+											href={{ pathname: "/masalalar/testlar", query: { id: problem.id } }}
+											className="ml-3 text-sm font-semibold text-accent hover:text-accent-hover"
+										>
+											Testlar
 										</Link>
 									</td>
 								</tr>
