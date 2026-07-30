@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ApiError, problemsApi, type ProblemDetailDto } from "@binary/api";
-import { Badge, Container, Panel } from "@binary/ui";
 import {
-	difficultyTone,
-	formatMemory,
-	formatSeconds,
-	pickName,
-} from "@/features/problem-catalog";
+	ApiError,
+	problemsApi,
+	submissionsApi,
+	type ProblemDetailDto,
+} from "@binary/api";
+import { Badge, Container, Panel } from "@binary/ui";
+import { difficultyTone, pickName } from "@/features/problem-catalog";
+import { SubmitPanel } from "@/features/submission";
+import { formatMemory, formatSeconds } from "@/shared/format";
 import { buildAlternates } from "@/shared/i18n/alternates";
 import { apiLangOf, segmentsFromApiLangs, type Locale } from "@/shared/i18n/locales";
 
@@ -67,7 +69,14 @@ export default async function ProblemPage({ params }: PageProps) {
 	const { locale, slug } = await params;
 	setRequestLocale(locale);
 
-	const problem = await loadProblem(slug, locale);
+	// Masala va tillar ro'yxati bir-biriga bog'liq emas — parallel olinadi.
+	// Tillar SERVERDA olinadi va `SubmitPanel` ga prop bo'lib beriladi:
+	// shunda brauzer qo'shimcha so'rov yubormaydi. `revalidate` uzoq,
+	// chunki til ro'yxati deyarli o'zgarmaydi (migratsiya bilan keladi).
+	const [problem, languages] = await Promise.all([
+		loadProblem(slug, locale),
+		submissionsApi.listLanguages({ revalidate: 3600 }),
+	]);
 	const { statement } = problem;
 
 	const t = await getTranslations("problem");
@@ -134,6 +143,8 @@ export default async function ProblemPage({ params }: PageProps) {
 				)}
 
 				{statement.notes && <Section title={t("notes")}>{statement.notes}</Section>}
+
+				<SubmitPanel slug={slug} languages={languages.languages} />
 			</article>
 		</Container>
 	);

@@ -65,6 +65,42 @@
     "medium": "O'rta",
     "hard": "Qiyin"
   },
+  "submission": {
+    "title": "Yechim yuborish",
+    "language": "Til",
+    "code": "Kod",
+    "codePlaceholder": "Yechimingizni shu yerga joylashtiring",
+    "submit": "Yuborish",
+    "submitting": "Yuborilyapti…",
+    "loginRequired": "Yechim yuborish uchun tizimga kiring.",
+    "loginCta": "Kirish",
+    "emptyCode": "Kod bo'sh bo'lmasligi kerak",
+    "tooLarge": "Kod juda katta",
+    "tooManyPending": "Tekshirilishini kutayotgan yechimlaringiz juda ko'p. Biroz kutib turing.",
+    "genericError": "Yechim yuborilmadi. Qayta urinib ko'ring.",
+    "offline": "Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.",
+    "stillJudging": "Tekshirish odatdagidan uzoq davom etyapti. Natijani keyinroq ham ko'rishingiz mumkin.",
+    "result": "Natija",
+    "failedTest": "{n}-testda xato",
+    "time": "Vaqt",
+    "memory": "Xotira",
+    "compileOutput": "Kompilyator chiqishi"
+  },
+  "verdict": {
+    "accepted": "Qabul qilindi",
+    "wrong_answer": "Noto'g'ri javob",
+    "time_limit_exceeded": "Vaqt limiti oshdi",
+    "memory_limit_exceeded": "Xotira limiti oshdi",
+    "runtime_error": "Ishga tushirishda xato",
+    "compile_error": "Kompilyatsiya xatosi",
+    "output_limit_exceeded": "Chiqish hajmi oshdi"
+  },
+  "submissionStatus": {
+    "queued": "Navbatda",
+    "running": "Tekshirilyapti",
+    "done": "Tugadi",
+    "internal_error": "Ichki xatolik"
+  },
   "error": {
     "title": "Nimadir ishlamadi",
     "hint": "Sahifani yuklashda xatolik yuz berdi. Qayta urinib ko'ring — muammo davom etsa, birozdan keyin qayting.",

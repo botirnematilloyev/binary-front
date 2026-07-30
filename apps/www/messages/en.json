@@ -65,6 +65,42 @@
     "medium": "Medium",
     "hard": "Hard"
   },
+  "submission": {
+    "title": "Submit solution",
+    "language": "Language",
+    "code": "Code",
+    "codePlaceholder": "Paste your solution here",
+    "submit": "Submit",
+    "submitting": "Submitting…",
+    "loginRequired": "Sign in to submit a solution.",
+    "loginCta": "Sign in",
+    "emptyCode": "The code cannot be empty",
+    "tooLarge": "The code is too large",
+    "tooManyPending": "Too many of your solutions are waiting to be judged. Please wait a moment.",
+    "genericError": "Could not submit the solution. Please try again.",
+    "offline": "Could not reach the server. Check your connection and try again.",
+    "stillJudging": "Judging is taking longer than usual. You can check the result later.",
+    "result": "Result",
+    "failedTest": "Failed on test {n}",
+    "time": "Time",
+    "memory": "Memory",
+    "compileOutput": "Compiler output"
+  },
+  "verdict": {
+    "accepted": "Accepted",
+    "wrong_answer": "Wrong answer",
+    "time_limit_exceeded": "Time limit exceeded",
+    "memory_limit_exceeded": "Memory limit exceeded",
+    "runtime_error": "Runtime error",
+    "compile_error": "Compilation error",
+    "output_limit_exceeded": "Output limit exceeded"
+  },
+  "submissionStatus": {
+    "queued": "Queued",
+    "running": "Running",
+    "done": "Done",
+    "internal_error": "Internal error"
+  },
   "error": {
     "title": "Something went wrong",
     "hint": "The page could not be loaded. Try again — if the problem persists, come back a little later.",

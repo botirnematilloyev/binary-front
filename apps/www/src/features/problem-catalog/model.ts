@@ -1,5 +1,6 @@
 import type { BadgeProps } from "@binary/ui";
 import type { Difficulty, ProblemSummaryDto } from "@binary/api";
+import { formatMemory, formatSeconds } from "@/shared/format";
 
 /*
  * `Record<Difficulty, T>` ATAYLAB — `Record<string, T>` yoki `switch`
@@ -58,16 +59,6 @@ export function difficultyTone(
 	difficulty: Difficulty,
 ): NonNullable<BadgeProps["tone"]> {
 	return DIFFICULTY_TONE[difficulty];
-}
-
-export function formatSeconds(ms: number): string {
-	// 1000 → "1 s", 1500 → "1.5 s". Butun bo'lsa kasr ko'rsatilmaydi.
-	const seconds = ms / 1000;
-	return `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)} s`;
-}
-
-export function formatMemory(kb: number): string {
-	return kb >= 1024 ? `${Math.round(kb / 1024)} MB` : `${kb} KB`;
 }
 
 /**
