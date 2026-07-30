@@ -12,12 +12,12 @@ import {
 import { authApi, type AuthDto, type MeDto } from "@binary/api";
 import {
 	clearSession,
-	getAccessToken,
 	getRefreshToken,
 	refreshSession,
 	setSession,
 	subscribe,
 	watchOtherTabs,
+	withFreshToken,
 } from "./token-store";
 
 export type SessionStatus = "loading" | "authenticated" | "anonymous";
@@ -52,20 +52,18 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 	const generation = useRef(0);
 
 	const loadUser = useCallback(async () => {
-		const token = getAccessToken();
-		if (!token) {
-			setUser(null);
-			setStatus("anonymous");
-			return;
-		}
-
 		const current = ++generation.current;
 		try {
+			// `withFreshToken` — xotiradagi tokenni to'g'ridan-to'g'ri
+			// o'qimaymiz. U boshqa tab rotatsiya qilganda bekor qilinadi,
+			// va bunda sinxron o'qish `null` qaytarib foydalanuvchini
+			// bekordan-bekor "tizimdan chiqqan" qilib ko'rsatardi.
+			//
 			// Rol ATAYLAB `/me` dan olinadi, tokendan emas: backend rolni har
 			// so'rovda DB'dan o'qiydi, ya'ni ruxsati olib tashlangan
 			// foydalanuvchi darhol o'zgarishni ko'rishi kerak. Tokendagi
 			// da'vo esa amal qilish muddati oxirigacha yolg'on gapirardi.
-			const me = await authApi.getMe({ token });
+			const me = await withFreshToken((token) => authApi.getMe({ token }));
 			if (current !== generation.current) return;
 			setUser(me);
 			setStatus("authenticated");
@@ -115,17 +113,23 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 	}, []);
 
 	const signOut = useCallback(async () => {
-		const token = getAccessToken();
 		// Serverga xabar berish MUHIM: usiz refresh token DB'da tirik
 		// qoladi va access token Redis denylist'iga tushmaydi, ya'ni
-		// o'g'irlangan nusxa ishlashda davom etardi. Lekin tarmoq xatosi
-		// foydalanuvchini brauzerda tizimda ushlab turmasligi kerak.
-		if (token) {
-			try {
-				await authApi.logout({ token });
-			} catch {
-				/* mahalliy tozalash baribir bajariladi */
-			}
+		// o'g'irlangan nusxa ishlashda davom etardi.
+		//
+		// `withFreshToken` bu yerda ham kerak: xotiradagi token boshqa tab
+		// rotatsiyasidan keyin bekor qilingan bo'lishi mumkin, va sinxron
+		// o'qish `null` qaytarib serverga XABAR BERMASDAN o'tib ketardi —
+		// ya'ni "chiqdim" bosgan foydalanuvchining sessiyasi serverda
+		// tirik qolardi.
+		//
+		// Tarmoq xatosi esa foydalanuvchini brauzerda tizimda ushlab
+		// turmasligi kerak, shuning uchun mahalliy tozalash baribir
+		// bajariladi.
+		try {
+			await withFreshToken((token) => authApi.logout({ token }));
+		} catch {
+			/* sessiya allaqachon tugagan yoki tarmoq yo'q — muhim emas */
 		}
 		clearSession();
 	}, []);

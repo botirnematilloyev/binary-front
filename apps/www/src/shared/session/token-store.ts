@@ -25,6 +25,9 @@ import { ApiError, authApi, type AuthDto } from "@binary/api";
 
 const REFRESH_KEY = "binary:refresh";
 
+/** Tablararo qulf nomi — `navigator.locks` uchun. */
+const REFRESH_LOCK = "binary:refresh-lock";
+
 /** Access token muddati tugashidan qancha oldin yangilanadi. */
 const REFRESH_MARGIN_MS = 60_000;
 
@@ -187,35 +190,60 @@ function scheduleRefresh(expiresAt: number): void {
 export function refreshSession(): Promise<AuthDto | null> {
 	assertBrowser();
 
+	// Tab ICHIDAGI dedup.
 	if (inFlight) return inFlight;
 
-	const refreshToken = getRefreshToken();
-	if (!refreshToken) return Promise.resolve(null);
-
-	inFlight = authApi
-		.refresh(refreshToken)
-		.then((auth) => {
-			setSession(auth);
-			return auth;
-		})
-		.catch(() => {
-			// Muddati o'tgan, bekor qilingan, yoki qayta ishlatish
-			// aniqlangan — uchtasida ham javob bir xil: sessiya tugadi.
-			clearSession();
-			return null;
-		})
-		.finally(() => {
-			inFlight = null;
-		});
+	inFlight = withCrossTabLock(runRefresh).finally(() => {
+		inFlight = null;
+	});
 
 	return inFlight;
 }
 
+async function runRefresh(): Promise<AuthDto | null> {
+	// Token qulf OLINGANDAN KEYIN o'qiladi, oldin emas. Farqi hal
+	// qiluvchi: navbatda turgan vaqtimizda boshqa tab rotatsiya qilgan
+	// bo'lishi mumkin, va biz allaqachon ishlatilgan tokenni yuborsak
+	// backend buni O'G'IRLIK deb hisoblab butun sessiyani bekor qiladi.
+	const refreshToken = getRefreshToken();
+	if (!refreshToken) return null;
+
+	try {
+		const auth = await authApi.refresh(refreshToken);
+		setSession(auth);
+		return auth;
+	} catch {
+		// Muddati o'tgan, bekor qilingan, yoki qayta ishlatish
+		// aniqlangan — uchtasida ham javob bir xil: sessiya tugadi.
+		clearSession();
+		return null;
+	}
+}
+
+/**
+ * Refresh'ni TABLAR ORASIDA ketma-ketlashtiradi.
+ *
+ * Bu kosmetik emas. Backend refresh tokenni rotatsiya qiladi va bir
+ * tokenning ikki marta ishlatilishini o'g'irlik deb biladi — bunda
+ * SESSIYA BUTUNLAY bekor qilinadi (OAuth 2.0 Security BCP: egasini
+ * o'g'ridan ajratib bo'lmaydi).
+ *
+ * Ikkita tab bir vaqtda ochilsa, ikkalasi ham mount paytida bir XIL
+ * refresh token bilan yangilashga uradi. Tab ichidagi `inFlight` dedup
+ * bunga yordam bermaydi — u faqat o'z tabini biladi. Natija:
+ * foydalanuvchi login qiladi va darhol tizimdan chiqib qoladi.
+ *
+ * `navigator.locks` — brauzerdagi haqiqiy tablararo mutex. Uni
+ * qo'llamaydigan brauzerda qulfsiz davom etamiz: eski xatti-harakat
+ * yomon, lekin ishlamaydigan sahifadan yaxshiroq.
+ */
+function withCrossTabLock<T>(run: () => Promise<T>): Promise<T> {
+	if (!("locks" in navigator)) return run();
+	return navigator.locks.request(REFRESH_LOCK, run) as Promise<T>;
+}
+
 /**
  * Boshqa tab sessiyani o'zgartirganini kuzatadi.
- *
- * `storage` hodisasi FAQAT boshqa tablarda ishlaydi — o'zi yozgan tabda
- * ishlamaydi, ya'ni cheksiz sikl bo'lmaydi.
  */
 export function watchOtherTabs(): () => void {
 	assertBrowser();
@@ -232,10 +260,26 @@ export function watchOtherTabs(): () => void {
 			return;
 		}
 
-		// Boshqa tab rotatsiya qildi. Bizdagi access token hali amal
-		// qilishi mumkin, lekin taymerni qayta hisoblash uchun eng ishonchli
-		// yo'l — yangi refresh token bilan bir marta yangilash.
-		void refreshSession();
+		/*
+		 * Boshqa tab rotatsiya qildi.
+		 *
+		 * Bu yerda `refreshSession()` chaqirish MUMKIN EMAS, garchi u
+		 * to'g'ridek ko'rinsa ham. `storage` hodisasi yozgan tabda
+		 * ishlamaydi, ya'ni: A rotatsiya qiladi → B eshitadi va rotatsiya
+		 * qiladi → A eshitadi va rotatsiya qiladi → ... CHEKSIZ SIKL.
+		 * Ikkita tab ochiq bo'lsa API abadiy uriladi.
+		 *
+		 * O'rniga xotiradagi access tokenni bekor qilamiz, xolos.
+		 * Keyingi so'rov oldidan `getValidAccessToken` uni o'zi
+		 * yangilaydi. Bu yerda `localStorage` ga YOZILMAYDI, ya'ni
+		 * boshqa tabda hodisa uyg'onmaydi va sikl uzilib qoladi.
+		 *
+		 * Sessiya hali amal qiladi, shuning uchun `emit` ham qilinmaydi —
+		 * aks holda interfeys bir lahzaga "chiqib ketgan" ko'rinardi.
+		 */
+		tokens = null;
+		if (refreshTimer) clearTimeout(refreshTimer);
+		refreshTimer = null;
 	};
 
 	window.addEventListener("storage", onStorage);
