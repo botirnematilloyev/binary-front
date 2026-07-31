@@ -41,6 +41,7 @@
     "title": "Problems",
     "metaDescription": "A collection of algorithm and math problems. Each one has time and memory limits, sample tests and instant judging.",
     "subjects": "SUBJECTS",
+    "topics": "TOPICS",
     "all": "All",
     "columnId": "ID",
     "columnProblem": "PROBLEM",

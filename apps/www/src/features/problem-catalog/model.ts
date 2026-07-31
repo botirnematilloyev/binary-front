@@ -61,6 +61,76 @@ export function difficultyTone(
 	return DIFFICULTY_TONE[difficulty];
 }
 
+/** URL'dan o'qilgan joriy filtr holati. */
+export interface CatalogFilters {
+	subjectId?: number | undefined;
+	topicId?: number | undefined;
+}
+
+/*
+ * Havola manzilidagi so'rov qismi.
+ *
+ * `interface` EMAS, `type` — bu TypeScript'ning nozik qoidasi: faqat type
+ * alias'lar yashirin index signature oladi, interface'lar olmaydi. `Link`
+ * ning `query` maydoni index signature'li tipni kutadi, shuning uchun
+ * `interface CatalogQuery` yozilsa "assignable emas" degan xato chiqadi.
+ *
+ * Kalitlar backend nomlarida (`subject_id`), chunki ular URL'ga shundayligicha
+ * tushadi va sahifa ularni aynan shu nom bilan o'qiydi.
+ */
+export type CatalogQuery = {
+	subject_id?: number;
+	topic_id?: number;
+};
+
+/** `null` — "bu filtrni olib tashla", `undefined` — "tegma". */
+export interface CatalogFilterPatch {
+	subjectId?: number | null | undefined;
+	topicId?: number | null | undefined;
+}
+
+/**
+ * Joriy filtrga o'zgarish qo'shib, havola uchun so'rov yasaydi.
+ *
+ * Ikkita ish qiladi, va ikkalasi ham qo'lda yozilganda esdan chiqadi:
+ *
+ * 1. Tegilmagan filtrlarni SAQLAYDI. Mavzu bosilganda tanlangan fan
+ *    yo'qolmasligi kerak; qiyinlik filtri qo'shilganda esa uni har bir
+ *    havolaga qo'lda ko'chirib yurmaslik kerak.
+ *
+ * 2. `page` ni HECH QACHON qaytarmaydi. Eng ko'p uchraydigan filtr xatosi
+ *    shu: 5-sahifada turib fan almashtiriladi, `?page=5` qoladi va yangi
+ *    filtrda 5-sahifa yo'q — foydalanuvchi bo'sh ro'yxat ko'radi. Bu yerda
+ *    `page` umuman ifodalanmagani uchun uni "unutish" mumkin emas.
+ *
+ * Har maydon alohida yozilgan, umumiy sikl bilan emas: `difficulty` satr
+ * bo'ladi, ya'ni `number` ustidan yurgan sikl baribir buzilardi, va aniq
+ * yozilgani uchun kompilyator har bir maydonni tekshira oladi.
+ */
+export function filterQuery(
+	current: CatalogFilters,
+	patch: CatalogFilterPatch = {},
+): CatalogQuery {
+	const subjectId = applyPatch(current.subjectId, patch.subjectId);
+	const topicId = applyPatch(current.topicId, patch.topicId);
+
+	// Maydonlar shartli qo'shiladi, `subject_id: undefined` deb emas:
+	// `exactOptionalPropertyTypes` yoqilgan, va aniq `undefined` qiymat
+	// URL'da `?subject_id=undefined` bo'lib chiqib qolishi mumkin.
+	const query: CatalogQuery = {};
+	if (subjectId !== undefined) query.subject_id = subjectId;
+	if (topicId !== undefined) query.topic_id = topicId;
+	return query;
+}
+
+function applyPatch(
+	current: number | undefined,
+	patch: number | null | undefined,
+): number | undefined {
+	if (patch === undefined) return current;
+	return patch === null ? undefined : patch;
+}
+
 /**
  * Ko'p tilli nomdan mavjud bo'lganini tanlaydi: so'ralgan → uz → birinchi.
  *

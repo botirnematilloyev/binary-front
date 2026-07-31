@@ -41,6 +41,7 @@
     "title": "Masalalar",
     "metaDescription": "Algoritmlar va matematikadan masalalar to'plami. Har biri uchun vaqt va xotira limiti, namunali testlar va darhol tekshirish.",
     "subjects": "FANLAR",
+    "topics": "MAVZULAR",
     "all": "Barchasi",
     "columnId": "ID",
     "columnProblem": "MASALA",

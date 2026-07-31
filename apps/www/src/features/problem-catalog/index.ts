@@ -6,6 +6,6 @@
  * ichki tuzilishi uning shartnomasi emas.
  */
 export { ProblemTable } from "./ui/problem-table";
-export { SubjectFilter } from "./ui/subject-filter";
-export { difficultyTone, pickName, toProblemRow } from "./model";
-export type { ProblemRow } from "./model";
+export { CatalogSidebar } from "./ui/catalog-sidebar";
+export { difficultyTone, filterQuery, pickName, toProblemRow } from "./model";
+export type { CatalogFilters, CatalogQuery, ProblemRow } from "./model";
