@@ -44,6 +44,8 @@
   	"save": "Saqlash",
   	"saving": "Saqlanyapti…",
   	"cancel": "Bekor qilish",
+  	"username": "Handle",
+  	"usernameHint": "— @ dan keyingi nom",
   	"fullName": "To'liq ism",
   	"region": "Viloyat",
   	"district": "Tuman",

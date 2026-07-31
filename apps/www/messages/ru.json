@@ -44,6 +44,8 @@
   	"save": "Сохранить",
   	"saving": "Сохраняется…",
   	"cancel": "Отмена",
+  	"username": "Никнейм",
+  	"usernameHint": "— имя после @",
   	"fullName": "Полное имя",
   	"region": "Область",
   	"district": "Район",

@@ -44,6 +44,8 @@
   	"save": "Сақлаш",
   	"saving": "Сақланяпти…",
   	"cancel": "Бекор қилиш",
+  	"username": "Handle",
+  	"usernameHint": "— @ дан кейинги ном",
   	"fullName": "Тўлиқ исм",
   	"region": "Вилоят",
   	"district": "Туман",

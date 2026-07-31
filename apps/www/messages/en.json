@@ -44,6 +44,8 @@
   	"save": "Save",
   	"saving": "Saving…",
   	"cancel": "Cancel",
+  	"username": "Handle",
+  	"usernameHint": "— the name after @",
   	"fullName": "Full name",
   	"region": "Region",
   	"district": "District",

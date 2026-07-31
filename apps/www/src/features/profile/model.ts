@@ -86,6 +86,12 @@ export function pickName(name: Record<string, string>, apiLang: string): string 
 }
 
 export function describeError(error: unknown): string {
+	// 409 — handle band yoki band nomlar ro'yxatida. Backend ikkovini
+	// alohida xabar bilan qaytaradi, shuning uchun uni shundayligicha
+	// ko'rsatamiz: "conflict" so'zining o'zi hech narsa bermaydi.
+	if (error instanceof ApiError && error.status === 409) {
+		return error.message;
+	}
 	if (error instanceof ApiError && error.status === 400) {
 		return `Ma'lumot qabul qilinmadi: ${error.message}`;
 	}

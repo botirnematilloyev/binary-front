@@ -61,9 +61,13 @@ const meSchema = z.object({
  * qo'shsak, u tushib qoladi va "tegma" bo'ladi; `null` esa qoladi va
  * "tozala" bo'ladi. Ikkovi bir xil ko'rinmasligi kerak.
  *
- * `username` bu yerda YO'Q: backend uni tahrirlashga ruxsat bermaydi.
+ * `username` — handle. Backend uni kichik harfga keltiradi va
+ * formatini tekshiradi, shuning uchun bu yerda xom holda yuboriladi:
+ * qoidani ikki tomonda takrorlash ularning ajralib ketishiga olib
+ * keladi. `null` YUBORILMAYDI — handle bo'sh bo'la olmaydi.
  */
 export interface UpdateMeInput {
+	username?: string;
 	fullName?: string | null;
 	regionId?: number | null;
 	districtId?: number | null;
@@ -71,6 +75,7 @@ export interface UpdateMeInput {
 
 export function updateMe(input: UpdateMeInput, options: RequestOptions & { token: string }) {
 	const body: Record<string, unknown> = {};
+	if (input.username !== undefined) body["username"] = input.username;
 	if (input.fullName !== undefined) body["full_name"] = input.fullName;
 	if (input.regionId !== undefined) body["region_id"] = input.regionId;
 	if (input.districtId !== undefined) body["district_id"] = input.districtId;

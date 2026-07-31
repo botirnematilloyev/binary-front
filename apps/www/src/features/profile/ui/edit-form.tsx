@@ -8,11 +8,14 @@ import { Button } from "@binary/ui";
 import { describeError, pickName } from "../model";
 
 /**
- * Ism va joylashuvni tahrirlash.
+ * Handle, ism va joylashuvni tahrirlash.
  *
- * `username` maydoni YO'Q: backend uni `Update` ustunlar ro'yxatiga
- * ataylab kiritmagan. Uni ko'rsatib, keyin "o'zgartirib bo'lmaydi"
- * deyish — foydalanuvchini bekorga urintirish.
+ * `username` ilgari tahrirlanmasdi va foydalanuvchi avtomatik
+ * yaratilgan `user_b64b78…` bilan qolib ketardi. Tekshiruv (format,
+ * kichik harf, band nomlar) FAQAT backendda: uni bu yerda takrorlash
+ * ikki qoidani yaratardi va ular albatta ajralib ketardi. Bu yerdagi
+ * yagona "tekshiruv" — `pattern` atributi orqali brauzerning o'z
+ * ogohlantirishi, ya'ni tarmoqqa chiqmasdan darrov ko'rinadigan izoh.
  */
 export function EditForm({
 	me,
@@ -27,6 +30,7 @@ export function EditForm({
 }) {
 	const t = useTranslations("profile");
 
+	const [username, setUsername] = useState(me.username);
 	const [fullName, setFullName] = useState(me.full_name ?? "");
 	const [regionId, setRegionId] = useState<number | null>(me.region_id);
 	const [districtId, setDistrictId] = useState<number | null>(me.district_id);
@@ -78,6 +82,11 @@ export function EditForm({
 			const updated = await withFreshToken((token) =>
 				profileApi.updateMe(
 					{
+						// O'zgarmagan handle YUBORILMAYDI: har saqlashda uni
+						// qayta yozish keraksiz, va bir kun tanaffus qoidasi
+						// qo'shilsa, tegilmagan nom ham "o'zgartirildi" deb
+						// hisoblanib qolardi.
+						...(username.trim() === me.username ? {} : { username: username.trim() }),
 						// Bo'sh satr `null` ga: backendda maydon nullable va
 						// bo'sh satr "ism bor, lekin u yo'q" degan ma'nosiz holat.
 						fullName: fullName.trim() === "" ? null : fullName.trim(),
@@ -99,7 +108,24 @@ export function EditForm({
 	}
 
 	return (
-		<div className="mt-4 grid gap-4 sm:grid-cols-3">
+		<div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+			<label className="block">
+				<span className="text-sm font-semibold">
+					{t("username")}{" "}
+					<span className="font-normal text-fg-muted">{t("usernameHint")}</span>
+				</span>
+				<input
+					value={username}
+					onChange={(event) => setUsername(event.target.value)}
+					className={`${inputClass} font-mono`}
+					autoComplete="username"
+					spellCheck={false}
+					minLength={3}
+					maxLength={32}
+					pattern="[a-zA-Z0-9](?:[a-zA-Z0-9_\-]*[a-zA-Z0-9])?"
+				/>
+			</label>
+
 			<label className="block">
 				<span className="text-sm font-semibold">{t("fullName")}</span>
 				<input
@@ -150,12 +176,12 @@ export function EditForm({
 			</label>
 
 			{error !== null && (
-				<p role="alert" className="text-sm text-danger sm:col-span-3">
+				<p role="alert" className="text-sm text-danger sm:col-span-2 lg:col-span-4">
 					{error}
 				</p>
 			)}
 
-			<div className="flex gap-2 sm:col-span-3">
+			<div className="flex gap-2 sm:col-span-2 lg:col-span-4">
 				<Button size="sm" onClick={() => void save()} disabled={busy}>
 					{busy ? t("saving") : t("save")}
 				</Button>
