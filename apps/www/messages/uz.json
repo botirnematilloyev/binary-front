@@ -1,4 +1,7 @@
 {
+  "common": {
+  	"loading": "Yuklanmoqda…"
+  },
   "meta": {
     "siteTitle": "binary.uz — algoritmik masalalar platformasi",
     "siteDescription": "Algoritmlar va matematikadan masalalar yechib, kodingizni darhol tekshirtiring. Python, C++ va Go qo'llab-quvvatlanadi."

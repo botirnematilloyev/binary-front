@@ -1,4 +1,7 @@
 {
+  "common": {
+  	"loading": "Loading…"
+  },
   "meta": {
     "siteTitle": "binary.uz — competitive programming problems",
     "siteDescription": "Solve algorithm and math problems with instant automated judging. Python, C++ and Go are supported."

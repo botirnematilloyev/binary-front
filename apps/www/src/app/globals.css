@@ -33,3 +33,91 @@
 		color: var(--color-fg-subtle);
 	}
 }
+
+/*
+ * Sahifalar orasidagi loader — aylanuvchi halqa va ikkilik hisoblagich.
+ *
+ * Butunlay CSS: hech qanday holat va hech qanday JS yo'q. Bu shart edi,
+ * chunki loader Suspense'ning fallback'i sifatida ishlatiladi — u
+ * SERVER komponentida render bo'ladi va u yerda `useState` yo'q.
+ * Client komponent qilib qo'yish ham mumkin edi, lekin unda navigatsiya
+ * paytida ko'rsatiladigan narsaning o'zi qo'shimcha JS yuklashni
+ * kutardi.
+ */
+/*
+ * Sinflar `@layer` dan TASHQARIDA: Tailwind'ning utility qatlami
+ * ulardan ustun turadi va `animation` ni bosib ketishi mumkin edi.
+ */
+.bnry-sweep {
+	animation: bnry-sweep 1.8s linear infinite;
+	/* Aylanish markazi — SVG'ning o'zi, aks holda u chetdan aylanardi. */
+	transform-origin: center;
+}
+
+/*
+ * Egri chiziq (`cubic-bezier`) manbadagi bilan bir xil: raqam tez
+ * qo'zg'alib, sekin joyiga tushadi — mexanik hisoblagich hissi shundan.
+ */
+.bnry-roll {
+	animation: bnry-roll 4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes bnry-sweep {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/*
+ * Raqamlar ustuni: 0 → 1 → 10 → 11 → 100 → (yana 0).
+ *
+ * Oxirgi qadam boshidagi `0` ning NUSXASI. Usiz aylanish oxirida
+ * ro'yxat bir zumda tepaga sakrab, ko'zga tashlanardi; nusxa bilan esa
+ * sakrash aynan bir xil ko'rinadigan ikki kadr orasida bo'ladi va
+ * sezilmaydi.
+ *
+ * Har qadam ikki nuqtadan iborat: birinchisi — surilib kelgan payt,
+ * ikkinchisi — turib qolgan payt. Ular orasidagi masofa (10%) siljish
+ * vaqti, qolgani esa "o'qish" pauzasi.
+ */
+@keyframes bnry-roll {
+	0%,
+	10% {
+		transform: translateY(0);
+	}
+	20%,
+	30% {
+		transform: translateY(-52px);
+	}
+	40%,
+	50% {
+		transform: translateY(-104px);
+	}
+	60%,
+	70% {
+		transform: translateY(-156px);
+	}
+	80%,
+	90% {
+		transform: translateY(-208px);
+	}
+	100% {
+		transform: translateY(-260px);
+	}
+}
+
+/*
+ * Harakatni kamaytirish so'ralgan bo'lsa (`prefers-reduced-motion`),
+ * animatsiya to'xtaydi va faqat birinchi raqam ko'rinadi. Loader
+ * baribir "yuklanyapti" deb turadi — bu ma'lumot `aria-label` da,
+ * harakatda emas.
+ */
+@media (prefers-reduced-motion: reduce) {
+	.bnry-sweep,
+	.bnry-roll {
+		animation: none;
+	}
+}
