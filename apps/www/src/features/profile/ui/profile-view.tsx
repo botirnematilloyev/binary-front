@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import {
 	authApi,
 	problemsApi,
@@ -16,6 +16,7 @@ import {
 import { withFreshToken } from "@binary/session";
 import { Badge, Panel } from "@binary/ui";
 import { Link } from "@/i18n/navigation";
+import { monthName, type Locale } from "@/shared/i18n/locales";
 import { ACTIVITY_DAYS, acceptanceRate, describeError, initials } from "../model";
 import { Devices } from "./devices";
 import { EditForm } from "./edit-form";
@@ -47,6 +48,7 @@ export function ProfileView({ apiLang }: { apiLang: string }) {
 	const t = useTranslations("profile");
 	const tVerdict = useTranslations("verdict");
 	const format = useFormatter();
+	const locale = useLocale() as Locale;
 
 	const [state, setState] = useState<State>({ phase: "loading" });
 	const [editing, setEditing] = useState(false);
@@ -126,11 +128,15 @@ export function ProfileView({ apiLang }: { apiLang: string }) {
 					<h1 className="text-[24px] font-bold">{me.full_name ?? me.username}</h1>
 					<p className="mt-1 font-mono text-[13px] text-fg-muted">
 						@{me.username} ·{" "}
+						{/*
+						 * Sana `format.dateTime` bilan emas: `uz` da u
+						 * "2026 M07" berardi. `monthName` faqat o'zbekcha
+						 * uchun o'z jadvalidan oladi, qolganida `Intl`.
+						 */}
 						{t("memberSince", {
-							date: format.dateTime(new Date(me.created_at * 1000), {
-								year: "numeric",
-								month: "long",
-							}),
+							date: `${monthName(locale, new Date(me.created_at * 1000), "long")} ${new Date(
+								me.created_at * 1000,
+							).getUTCFullYear()}`,
 						})}
 					</p>
 				</div>
