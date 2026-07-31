@@ -59,6 +59,8 @@ export interface ListAdminProblemsParams {
 	subjectId?: number | undefined;
 	/** Ochiq katalogdan farqli: bu yerda holat bo'yicha filtr MUMKIN. */
 	status?: "draft" | "published" | "archived" | undefined;
+	/** Slug va barcha tillardagi sarlavhalar bo'yicha qidiruv. */
+	query?: string | undefined;
 	lang?: string | undefined;
 }
 
@@ -68,12 +70,14 @@ export function list(params: ListAdminProblemsParams, options: RequestOptions & 
 		per_page: params.perPage,
 		subject_id: params.subjectId,
 		status: params.status,
+		q: params.query,
 		lang: params.lang,
 	});
 	return request(
 		`/admin/problems${search}`,
 		z.object({
 			problems: z.array(adminSummarySchema),
+			total: z.number().int(),
 			page: z.number().int(),
 			per_page: z.number().int(),
 		}),

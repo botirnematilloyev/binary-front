@@ -34,10 +34,14 @@ const problemSummarySchema = z.object({
 	time_limit_ms: z.number().int(),
 	memory_limit_kb: z.number().int(),
 	published_at: z.number().int().nullable(),
+	/** Jadvaldagi MAVZU ustuni uchun; tafsilotdagi bilan bir xil DTO. */
+	topics: z.array(topicSchema),
 });
 
 const problemListSchema = z.object({
 	problems: z.array(problemSummarySchema),
+	/** Filtrga mos JAMI son — shu sahifadagi emas. Sahifalash shundan quriladi. */
+	total: z.number().int(),
 	page: z.number().int(),
 	per_page: z.number().int(),
 });
@@ -95,6 +99,8 @@ export interface ListProblemsParams {
 	subjectId?: number | undefined;
 	topicId?: number | undefined;
 	difficulty?: Difficulty | undefined;
+	/** Slug va barcha tillardagi sarlavhalar bo'yicha qidiruv. */
+	query?: string | undefined;
 	lang?: string | undefined;
 }
 
@@ -111,6 +117,7 @@ export function listProblems(params: ListProblemsParams = {}, options?: RequestO
 		subject_id: params.subjectId,
 		topic_id: params.topicId,
 		difficulty: params.difficulty,
+		q: params.query,
 		lang: params.lang,
 	});
 	return request(`/problems${search}`, problemListSchema, options);
