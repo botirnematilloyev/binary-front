@@ -22,12 +22,28 @@ export async function SiteHeader() {
 	return (
 		<header className="border-b border-border-default bg-canvas">
 			<Container className="flex h-[62px] items-center gap-6">
-				<Link href="/" className="-mx-2 shrink-0" aria-label={t("home")}>
+				<Link href="/" className="shrink-0" aria-label={t("home")}>
+					{/*
+					 * `width`/`height` — rasmning HAQIQIY nisbati (1329×445).
+					 * Next ulardan joyni oldindan band qiladi, ya'ni rasm
+					 * yuklanguncha sarlavha "sakramaydi". Noto'g'ri nisbat
+					 * bersak, o'sha sakrash qaytib kelardi.
+					 *
+					 * Ilgari fayl 6256×1312 edi va belgining o'zi uning
+					 * atigi 27% ini egallardi — qolgani bo'sh joy. Shu
+					 * sababli 38px balandlikda belgi ~10px bo'lib
+					 * ko'rinardi. Fayl kesildi (belgi endi 80%), shuning
+					 * uchun bir xil balandlikda u uch barobar kattaroq.
+					 *
+					 * `mix-blend-multiply` — rasmning oq foni uchun. U
+					 * FAQAT yorug' mavzuda ishlaydi; qorong'i mavzu
+					 * qo'shilganda shaffof fonli nusxa kerak bo'ladi.
+					 */}
 					<Image
 						src="/logo.png"
 						alt="binary.uz"
-						width={120}
-						height={38}
+						width={1329}
+						height={445}
 						priority
 						className="h-[38px] w-auto mix-blend-multiply"
 					/>
