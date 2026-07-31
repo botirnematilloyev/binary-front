@@ -56,6 +56,8 @@
   	"acceptance": "принято",
   	"activityTitle": "АКТИВНОСТЬ ЗА 6 МЕСЯЦЕВ",
   	"activityCount": "{count} отправок",
+  	"activityLess": "Меньше",
+  	"activityMore": "Больше",
   	"languagesTitle": "ЯЗЫКИ",
   	"attemptsShort": "попыток",
   	"recentTitle": "ПОСЛЕДНИЕ ПОПЫТКИ",

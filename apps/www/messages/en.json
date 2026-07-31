@@ -56,6 +56,8 @@
   	"acceptance": "acceptance",
   	"activityTitle": "ACTIVITY IN THE LAST 6 MONTHS",
   	"activityCount": "{count} submissions",
+  	"activityLess": "Less",
+  	"activityMore": "More",
   	"languagesTitle": "LANGUAGES",
   	"attemptsShort": "attempts",
   	"recentTitle": "RECENT ATTEMPTS",
