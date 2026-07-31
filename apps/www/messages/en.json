@@ -97,7 +97,12 @@
     "noOutput": "The program printed nothing.",
     "noSampleTests": "This problem has no sample tests — try it with your own input.",
     "runHint": "Runs on the sample tests. The result is not saved to your history.",
-    "inputTooLarge": "The input is too large (16 KB max)."
+    "inputTooLarge": "The input is too large (16 KB max).",
+    "case": "Case {n}",
+    "addCase": "Add case",
+    "removeCase": "Remove case",
+    "caseFailed": "Stopped on this case",
+    "maxCases": "At most {n} cases"
   },
   "verdict": {
     "accepted": "Accepted",

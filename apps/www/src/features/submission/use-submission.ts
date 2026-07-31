@@ -182,9 +182,9 @@ export function useSubmission(slug: string) {
 	);
 
 	const run = useCallback(
-		(language: string, sourceCode: string, customInput?: string) =>
-			start(customInput === undefined ? "runSamples" : "runCustom", (token) =>
-				submissionsApi.run(slug, { language, sourceCode, customInput }, { token }),
+		(language: string, sourceCode: string, customInputs?: string[]) =>
+			start(customInputs === undefined ? "runSamples" : "runCustom", (token) =>
+				submissionsApi.run(slug, { language, sourceCode, customInputs }, { token }),
 			),
 		[slug, start],
 	);

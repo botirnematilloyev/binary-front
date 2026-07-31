@@ -51,10 +51,10 @@ const submissionSchema = z.object({
 	memory_kb: z.number().int().nullable(),
 	compile_output: z.string().optional(),
 	/**
-	 * Dasturning chiqishi — faqat o'z kirishi bilan ishlangan run'da
-	 * keladi. Yechimlarda hech qachon bo'lmaydi.
+	 * Dasturning HAR kirish uchun chiqishi — kirishlar bilan bir xil
+	 * tartibda. Faqat o'z kirishi bilan ishlangan run'da keladi.
 	 */
-	run_output: z.string().optional(),
+	run_outputs: z.array(z.string()).optional(),
 	/** Faqat egasiga qaytadi. */
 	source_code: z.string().optional(),
 	created_at: z.number().int(),
@@ -84,16 +84,21 @@ export function submit(
  * Yechim yubormasdan kodni sinab ko'rish.
  *
  * Javob `submit` bilan BIR XIL shaklda — ya'ni polling kodi ham bir xil.
- * Farq natijada: `customInput` berilmasa namuna testlari bo'yicha verdikt
- * chiqadi, berilsa `run_output` — dasturning chiqishi.
+ * Farq natijada: kirish berilmasa namuna testlari bo'yicha verdikt
+ * chiqadi, berilsa `run_outputs` — har kirish uchun chiqish.
  *
- * `customInput` bo'sh SATR bo'lishi mumkin va bu "berilmagan" dan
- * boshqa narsa: kirish talab qilmaydigan dasturni ham sinab ko'rish
- * kerak. Shuning uchun ixtiyoriy maydon, `""` emas.
+ * `customInputs` BERILMASA namunalar bo'yicha ketadi. Berilsa — har
+ * kirish uchun alohida ishga tushirish, lekin BITTA sandbox ichida.
+ * Ro'yxat ichidagi bo'sh satr haqiqiy kirish (kirish talab qilmaydigan
+ * dastur), shuning uchun u tashlab yuborilmaydi.
  */
 export function run(
 	slug: string,
-	input: { language: string; sourceCode: string; customInput?: string | undefined },
+	input: {
+		language: string;
+		sourceCode: string;
+		customInputs?: string[] | undefined;
+	},
 	options: RequestOptions & { token: string },
 ) {
 	return request(`/problems/${encodeURIComponent(slug)}/run`, submissionSchema, {
@@ -102,7 +107,7 @@ export function run(
 		body: {
 			language: input.language,
 			source_code: input.sourceCode,
-			custom_input: input.customInput ?? null,
+			custom_inputs: input.customInputs ?? null,
 		},
 	});
 }

@@ -97,7 +97,12 @@
     "noOutput": "Dastur hech narsa chop etmadi.",
     "noSampleTests": "Bu masalada namuna testi yo'q — o'z kirishingiz bilan sinab ko'ring.",
     "runHint": "Namuna testlarida sinaydi. Natija tarixga yozilmaydi.",
-    "inputTooLarge": "Kirish juda katta (16 KB dan oshmasin)."
+    "inputTooLarge": "Kirish juda katta (16 KB dan oshmasin).",
+    "case": "Holat {n}",
+    "addCase": "Holat qo'shish",
+    "removeCase": "Holatni o'chirish",
+    "caseFailed": "Shu holatda to'xtadi",
+    "maxCases": "Ko'pi bilan {n} ta holat"
   },
   "verdict": {
     "accepted": "Qabul qilindi",

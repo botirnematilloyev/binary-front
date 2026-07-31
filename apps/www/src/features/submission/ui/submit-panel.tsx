@@ -7,11 +7,11 @@ import { Button, Panel } from "@binary/ui";
 import { useSession } from "@binary/session";
 import { useSubmission } from "../use-submission";
 import { CodeEditor } from "./code-editor";
-import { RunOutputCard } from "./run-output-card";
+import { CustomCases } from "./custom-cases";
 import { SubmissionHistory } from "./submission-history";
 import { VerdictCard } from "./verdict-card";
 
-/** Backenddagi `MaxCustomInputBytes` bilan bir xil. */
+/** Backenddagi `MaxCustomInputBytes` bilan bir xil — UMUMIY hajm. */
 const MAX_CUSTOM_INPUT = 16 * 1024;
 
 /**
@@ -41,7 +41,10 @@ export function SubmitPanel({
 	const [language, setLanguage] = useState(languages[0]?.code ?? "");
 	const [code, setCode] = useState("");
 	const [useCustom, setUseCustom] = useState(false);
-	const [customInput, setCustomInput] = useState("");
+	// Kamida bitta holat har doim bor — bo'sh ro'yxatni backend rad etadi
+	// va foydalanuvchiga "avval holat qo'shing" deyish ortiqcha qadam.
+	const [cases, setCases] = useState<string[]>([""]);
+	const [activeCase, setActiveCase] = useState(0);
 	const [localError, setLocalError] = useState<string | null>(null);
 
 	// Yakuniy verdikt kelganda tarixni qayta yuklash uchun hisoblagich.
@@ -71,9 +74,13 @@ export function SubmitPanel({
 		// Kirish hajmi mijoz tomonda tekshiriladi: server ham tekshiradi,
 		// lekin u kod va kirish uchun BIR XIL 413 qaytaradi va ularni
 		// ajratib bo'lmaydi. Bu yerda tekshirsak xabar aniq bo'ladi.
-		if (useCustom && customInput.length > MAX_CUSTOM_INPUT) {
-			setLocalError(t("inputTooLarge"));
-			return false;
+		// Chegara UMUMIY hajmga — backenddagi qoida bilan bir xil.
+		if (useCustom) {
+			const total = cases.reduce((sum, item) => sum + item.length, 0);
+			if (total > MAX_CUSTOM_INPUT) {
+				setLocalError(t("inputTooLarge"));
+				return false;
+			}
 		}
 		setLocalError(null);
 		return true;
@@ -128,21 +135,30 @@ export function SubmitPanel({
 			</label>
 
 			{useCustom && (
-				<div>
-					<label htmlFor="custom-input" className="sr-only">
-						{t("customInput")}
-					</label>
-					<textarea
-						id="custom-input"
-						value={customInput}
-						onChange={(event) => setCustomInput(event.target.value)}
-						rows={3}
-						spellCheck={false}
-						autoCorrect="off"
-						placeholder="5 3"
-						className="w-full resize-y rounded-card border border-border-strong bg-surface p-2.5 font-mono text-[13px] leading-relaxed focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
-					/>
-				</div>
+				<CustomCases
+					cases={cases}
+					onChange={setCases}
+					active={activeCase}
+					onActiveChange={setActiveCase}
+					disabled={busy}
+					outputs={
+						state.phase === "final" && state.kind === "runCustom"
+							? state.submission.run_outputs
+							: undefined
+					}
+					failedIndex={
+						state.phase === "final" &&
+						state.kind === "runCustom" &&
+						state.submission.failed_test !== null
+							? state.submission.failed_test - 1
+							: null
+					}
+					verdict={
+						state.phase === "final" && state.kind === "runCustom"
+							? state.submission.verdict
+							: null
+					}
+				/>
 			)}
 
 			{errorMessage && (
@@ -158,7 +174,7 @@ export function SubmitPanel({
 					onClick={() => {
 						// `undefined` va bo'sh SATR farqli: birinchisi
 						// "namunalar bo'yicha", ikkinchisi "kirishsiz ishga tushir".
-						if (validate()) void run(language, code, useCustom ? customInput : undefined);
+						if (validate()) void run(language, code, useCustom ? cases : undefined);
 					}}
 					disabled={busy}
 				>
@@ -181,25 +197,20 @@ export function SubmitPanel({
 			{!useCustom && <p className="text-sm text-fg-muted">{t("runHint")}</p>}
 
 			{/*
-			 * Natijani KO'RSATISH usuli so'rov turiga bog'liq: o'z kirishi
-			 * bilan ishlangan run'da verdikt yo'q va chiqish ko'rsatiladi,
-			 * qolganlarida verdikt. Shart bitta joyda — `state.kind` ni
-			 * ikki marta tekshirish tur torlashtirishni ham buzardi.
+			 * Verdikt kartasi FAQAT yechim va namunalar bo'yicha run uchun.
+			 * O'z kirishi bilan ishlangan run natijasi holat tab'ining
+			 * ichida ko'rsatiladi — kirish va chiqish yonma-yon turishi
+			 * ularni ko'z bilan moslashtirishdan ozod qiladi.
 			 */}
 			{(state.phase === "watching" ||
 				state.phase === "final" ||
 				state.phase === "timeout") &&
-				(state.kind === "runCustom" ? (
-					<RunOutputCard
-						submission={state.submission}
-						stillRunning={state.phase === "timeout"}
-					/>
-				) : (
+				state.kind !== "runCustom" && (
 					<VerdictCard
 						submission={state.submission}
 						stillJudging={state.phase === "timeout"}
 					/>
-				))}
+				)}
 
 			{/*
 			 * Tarix yopiq holatda boshlanadi. O'ng ustun tor va yopishib
