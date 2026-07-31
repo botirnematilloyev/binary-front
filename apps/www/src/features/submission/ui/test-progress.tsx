@@ -79,8 +79,21 @@ export function TestProgress({
 							 * kataklar bir xil harakat qiladi.
 							 */
 							style={running ? { animationDelay: `${index * 90}ms` } : undefined}
-							className="size-2.5 rounded-[3px] bg-surface-muted data-[state=failed]:bg-danger data-[state=passed]:bg-success data-[state=running]:animate-pulse data-[state=running]:bg-accent/40"
-						/>
+							className="flex size-[18px] items-center justify-center rounded-[4px] bg-surface-muted font-mono text-[11px] leading-none font-bold text-transparent data-[state=failed]:bg-danger/15 data-[state=failed]:text-danger data-[state=passed]:bg-success/15 data-[state=passed]:text-success data-[state=running]:animate-pulse data-[state=running]:bg-accent/20"
+						>
+							{/*
+							 * O'tgan test — `1`, yiqilgani — `0`. Loyihaning
+							 * nomi ham shundan.
+							 *
+							 * Ishlamagan testlarda raqam ko'rinmaydi: `0`
+							 * chiziladi, lekin rangi shaffof. Uni butunlay
+							 * olib tashlash ham mumkin edi — o'shanda katak
+							 * bo'sh qolib, o'lchami boshqalarnikidan farq
+							 * qilardi. Ko'rinadigan "0" esa "yiqildi" degan
+							 * ma'no berardi, holbuki test umuman ishlamagan.
+							 */}
+							{state === "passed" ? "1" : "0"}
+						</span>
 					);
 				})}
 			</div>
