@@ -166,111 +166,130 @@ export function ProfileView({ apiLang }: { apiLang: string }) {
 				</Panel>
 			)}
 
-			{/* ── Ko'rsatkichlar ── */}
-			<div className="grid gap-3 sm:grid-cols-4">
-				<Tile value={`${stats.solved} / ${problemCount}`} label={t("solved")} accent />
-				<Tile value={stats.attempted} label={t("attempted")} />
-				<Tile value={stats.total} label={t("submissions")} />
-				{/*
-				 * Yechim bo'lmasa foiz o'rniga chiziqcha: "0%" hech narsa
-				 * yubormagan odamni yomon ko'rsatardi.
-				 */}
-				<Tile value={rate === null ? "—" : `${rate}%`} label={t("acceptance")} />
+			{/*
+			 * Ikki ustun: chapda vaqt bo'yicha o'sadigan narsalar
+			 * (kalendar, urinishlar tarixi), o'ngda esa qisqa
+			 * ma'lumotlar.
+			 *
+			 * Bir ustunli variant butun kenglikka cho'zilgan panellar
+			 * yasardi va ular ichida faqat chap chekka to'lardi —
+			 * o'rtada kanyon qolardi. Ustunlarni bo'lish o'sha bo'sh
+			 * joyni yo'q qiladi, panellarni toraytirmasdan.
+			 *
+			 * `lg:` dan pastda bitta ustun: 320px yon ustun telefonda
+			 * baribir sig'maydi.
+			 */}
+			<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+				<div className="flex min-w-0 flex-col gap-6">
+					<Panel className="p-5">
+						<Heatmap activity={activity} />
+					</Panel>
+
+					<Panel className="p-5">
+						<p className="text-[11px] font-bold tracking-wide text-fg-subtle">
+							{t("recentTitle")}
+						</p>
+
+						{submissions.length === 0 ? (
+							<p className="mt-3 text-sm text-fg-muted">{t("recentEmpty")}</p>
+						) : (
+							<ul className="mt-3 flex flex-col">
+								{submissions.map((submission) => (
+									<li
+										key={submission.id}
+										/*
+										 * Aniq ustunlar, `ml-auto` emas: oxirgi
+										 * elementni chekkaga surib yuborish
+										 * qatorni ikkiga bo'lib, o'rtasida bo'sh
+										 * joy qoldirardi. Sarlavha `1fr` —
+										 * qolganlari o'z kengligini oladi.
+										 */
+										className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-1 border-b border-border-default py-2 text-sm last:border-0"
+									>
+										{submission.problem ? (
+											<Link
+												href={{
+													pathname: "/masalalar/[slug]",
+													params: { slug: submission.problem.slug },
+												}}
+												className="truncate font-semibold hover:text-accent"
+											>
+												{submission.problem.title}
+											</Link>
+										) : (
+											/*
+											 * Masala o'chirilgan bo'lsa nom kelmaydi —
+											 * yechim tarixi esa qoladi. Havola ham
+											 * bo'lmaydi, chunki borish uchun joy yo'q.
+											 */
+											<span className="truncate font-semibold text-fg-muted">
+												{t("deletedProblem")}
+											</span>
+										)}
+
+										{submission.verdict !== null && (
+											<Badge
+												tone={submission.verdict === "accepted" ? "success" : "danger"}
+												size="sm"
+											>
+												{tVerdict(submission.verdict)}
+											</Badge>
+										)}
+
+										<span className="font-mono text-[12px] whitespace-nowrap text-fg-subtle">
+											{submission.language.code} ·{" "}
+											{format.dateTime(new Date(submission.created_at * 1000), {
+												day: "2-digit",
+												month: "2-digit",
+												hour: "2-digit",
+												minute: "2-digit",
+											})}
+										</span>
+									</li>
+								))}
+							</ul>
+						)}
+					</Panel>
+				</div>
+
+				<aside className="flex min-w-0 flex-col gap-6">
+					{/* Ko'rsatkichlar 2×2: tor ustunda to'rttasi bir
+					    qatorga sig'maydi va raqamlar qisilib ketardi. */}
+					<div className="grid grid-cols-2 gap-3">
+						<Tile value={`${stats.solved} / ${problemCount}`} label={t("solved")} accent />
+						<Tile value={stats.attempted} label={t("attempted")} />
+						<Tile value={stats.total} label={t("submissions")} />
+						{/*
+						 * Yechim bo'lmasa foiz o'rniga chiziqcha: "0%" hech
+						 * narsa yubormagan odamni yomon ko'rsatardi.
+						 */}
+						<Tile value={rate === null ? "—" : `${rate}%`} label={t("acceptance")} />
+					</div>
+
+					{stats.by_language.length > 0 && (
+						<Panel className="p-5">
+							<p className="text-[11px] font-bold tracking-wide text-fg-subtle">
+								{t("languagesTitle")}
+							</p>
+							<ul className="mt-3 flex flex-col gap-2">
+								{stats.by_language.map((item) => (
+									<li key={item.code} className="flex items-baseline justify-between gap-3 text-sm">
+										<span className="truncate font-semibold">{item.name}</span>
+										<span className="font-mono text-[12.5px] whitespace-nowrap">
+											<span className="text-success">✓ {item.accepted}</span>
+											<span className="text-fg-subtle"> / {item.total}</span>
+										</span>
+									</li>
+								))}
+							</ul>
+						</Panel>
+					)}
+
+					<Panel className="p-5">
+						<Devices sessions={sessions} onChanged={() => void load()} />
+					</Panel>
+				</aside>
 			</div>
-
-			<Panel className="p-5">
-				<Heatmap activity={activity} />
-			</Panel>
-
-			{/* ── Tillar ── */}
-			{stats.by_language.length > 0 && (
-				<Panel className="p-5">
-					<p className="text-[11px] font-bold tracking-wide text-fg-subtle">
-						{t("languagesTitle")}
-					</p>
-					<ul className="mt-3 flex flex-col gap-2">
-						{stats.by_language.map((item) => (
-							<li key={item.code} className="flex items-center gap-3 text-sm">
-								<span className="w-24 font-semibold">{item.name}</span>
-								<span className="font-mono text-[12.5px] text-success">
-									✓ {item.accepted}
-								</span>
-								<span className="font-mono text-[12.5px] text-fg-muted">
-									{item.total} {t("attemptsShort")}
-								</span>
-							</li>
-						))}
-					</ul>
-				</Panel>
-			)}
-
-			{/* ── So'nggi urinishlar ── */}
-			<Panel className="p-5">
-				<p className="text-[11px] font-bold tracking-wide text-fg-subtle">
-					{t("recentTitle")}
-				</p>
-
-				{submissions.length === 0 ? (
-					<p className="mt-3 text-sm text-fg-muted">{t("recentEmpty")}</p>
-				) : (
-					<ul className="mt-3 flex flex-col gap-2">
-						{submissions.map((submission) => (
-							<li
-								key={submission.id}
-								className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-default pb-2 text-sm last:border-0"
-							>
-								{/*
-								 * Masala o'chirilgan bo'lsa nom kelmaydi —
-								 * yechim tarixi esa qoladi. Bunda havola ham
-								 * bo'lmaydi, chunki borish uchun joy yo'q.
-								 */}
-								{submission.problem ? (
-									<Link
-										href={{
-											pathname: "/masalalar/[slug]",
-											params: { slug: submission.problem.slug },
-										}}
-										className="font-semibold hover:text-accent"
-									>
-										{submission.problem.title}
-									</Link>
-								) : (
-									<span className="font-semibold text-fg-muted">
-										{t("deletedProblem")}
-									</span>
-								)}
-
-								<span className="font-mono text-[12px] text-fg-muted">
-									{submission.language.name}
-								</span>
-
-								{submission.verdict !== null && (
-									<Badge
-										tone={submission.verdict === "accepted" ? "success" : "danger"}
-										size="sm"
-									>
-										{tVerdict(submission.verdict)}
-									</Badge>
-								)}
-
-								<span className="ml-auto font-mono text-[12px] text-fg-subtle">
-									{format.dateTime(new Date(submission.created_at * 1000), {
-										day: "2-digit",
-										month: "2-digit",
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
-								</span>
-							</li>
-						))}
-					</ul>
-				)}
-			</Panel>
-
-			{/* ── Qurilmalar ── */}
-			<Panel className="p-5">
-				<Devices sessions={sessions} onChanged={() => void load()} />
-			</Panel>
 		</div>
 	);
 }

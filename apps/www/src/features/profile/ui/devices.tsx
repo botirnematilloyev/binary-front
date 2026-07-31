@@ -42,36 +42,45 @@ export function Devices({
 		<section>
 			<p className="text-[11px] font-bold tracking-wide text-fg-subtle">{t("devicesTitle")}</p>
 
-			<ul className="mt-3 flex flex-col gap-2">
+			{/*
+			 * Ikki qatorli blok, bitta uzun qator emas: yon ustun tor
+			 * (320px) va nom + belgi + IP + tugma bir qatorga sig'masdi.
+			 * Ilgari tugma `ml-auto` bilan chekkaga surilardi — keng
+			 * ekranda bu qator o'rtasida bo'sh joy qoldirardi.
+			 */}
+			<ul className="mt-3 flex flex-col gap-3">
 				{sessions.map((session) => (
 					<li
 						key={session.id}
-						className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-default pb-2 last:border-0"
+						className="border-b border-border-default pb-3 last:border-0 last:pb-0"
 					>
-						<span className="text-sm font-semibold">
-							{session.device_name ?? t("unknownDevice")}
-						</span>
+						<div className="flex items-center justify-between gap-2">
+							<span className="truncate text-sm font-semibold">
+								{session.device_name ?? t("unknownDevice")}
+							</span>
 
-						{session.is_current && (
-							<Badge tone="success" size="sm">
-								{t("currentDevice")}
-							</Badge>
-						)}
+							<button
+								type="button"
+								onClick={() => void revoke(session)}
+								disabled={busyID === session.id}
+								className="shrink-0 cursor-pointer text-[13px] font-semibold text-fg-muted transition-colors hover:text-danger disabled:opacity-50"
+							>
+								{t("revoke")}
+							</button>
+						</div>
 
-						<span className="font-mono text-[12px] text-fg-muted">
-							{[session.platform, session.os, session.ip_address]
-								.filter(Boolean)
-								.join(" · ")}
-						</span>
-
-						<button
-							type="button"
-							onClick={() => void revoke(session)}
-							disabled={busyID === session.id}
-							className="ml-auto cursor-pointer text-[13px] font-semibold text-fg-muted transition-colors hover:text-danger disabled:opacity-50"
-						>
-							{t("revoke")}
-						</button>
+						<div className="mt-1 flex flex-wrap items-center gap-2">
+							{session.is_current && (
+								<Badge tone="success" size="sm">
+									{t("currentDevice")}
+								</Badge>
+							)}
+							<span className="font-mono text-[12px] text-fg-muted">
+								{[session.platform, session.os, session.ip_address]
+									.filter(Boolean)
+									.join(" · ")}
+							</span>
+						</div>
 					</li>
 				))}
 			</ul>
