@@ -111,6 +111,7 @@
     "hard": "Hard"
   },
   "submission": {
+  	"restoredFrom": "Your last attempt was restored ({date})",
   	"tabTests": "Tests",
   	"tabResult": "Result",
   	"tabHistory": "Submissions",

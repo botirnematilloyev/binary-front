@@ -111,6 +111,7 @@
     "hard": "Қийин"
   },
   "submission": {
+  	"restoredFrom": "Охирги уринишингиз юкланди ({date})",
   	"tabTests": "Тестлар",
   	"tabResult": "Натижа",
   	"tabHistory": "Юборишлар",

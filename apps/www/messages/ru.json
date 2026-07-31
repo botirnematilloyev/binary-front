@@ -111,6 +111,7 @@
     "hard": "Сложно"
   },
   "submission": {
+  	"restoredFrom": "Загружена последняя попытка ({date})",
   	"tabTests": "Тесты",
   	"tabResult": "Результат",
   	"tabHistory": "Отправки",

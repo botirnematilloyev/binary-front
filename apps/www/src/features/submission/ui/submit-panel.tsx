@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import type { LanguageDto } from "@binary/api";
+import { useFormatter, useTranslations } from "next-intl";
+import { submissionsApi, type LanguageDto } from "@binary/api";
 import { Button, Panel } from "@binary/ui";
-import { useSession } from "@binary/session";
+import { useSession, withFreshToken } from "@binary/session";
 import { useSubmission } from "../use-submission";
 import { CodeEditor } from "./code-editor";
 import { CustomCases } from "./custom-cases";
@@ -58,6 +58,7 @@ export function SubmitPanel({
 	samples: { input: string; expected_output: string }[];
 }) {
 	const t = useTranslations("submission");
+	const format = useFormatter();
 	const { status: sessionStatus } = useSession();
 	const { state, submit, run } = useSubmission(slug);
 
@@ -70,6 +71,18 @@ export function SubmitPanel({
 	const [cases, setCases] = useState<string[]>([""]);
 	const [activeCase, setActiveCase] = useState(0);
 	const [localError, setLocalError] = useState<string | null>(null);
+
+	/*
+	 * Foydalanuvchi muharrirga tekkanmi.
+	 *
+	 * Oxirgi yechim tarmoqdan keladi, ya'ni u sahifa ochilgandan bir
+	 * lahza KEYIN yetib boradi. Shu oraliqda odam yozishni boshlagan
+	 * bo'lishi mumkin — o'shanda yozganini eski kod bilan bosib o'tish
+	 * eng yomon xato bo'lardi. `state` emas, `ref`: uni o'qiydigan
+	 * joyning qayta render bo'lishi shart emas.
+	 */
+	const touched = useRef(false);
+	const [restoredAt, setRestoredAt] = useState<number | null>(null);
 
 	// Yakuniy verdikt kelganda tarixni qayta yuklash uchun hisoblagich.
 	const [historyKey, setHistoryKey] = useState(0);
@@ -100,6 +113,56 @@ export function SubmitPanel({
 		}
 		setTab(state.kind === "runCustom" ? "tests" : "result");
 	}, [state]);
+
+	/*
+	 * Oxirgi yechim muharrirga tiklanadi.
+	 *
+	 * Sabab amaliy: odam masalaga qaytganda ko'pincha o'z kodini davom
+	 * ettiradi yoki uni qayta ko'radi — bo'sh muharrir esa uni
+	 * yozganini boshqa joydan qidirishga majbur qiladi.
+	 *
+	 * Ikkita so'rov: ro'yxat oxirgi yechimning id'sini beradi, kodning
+	 * O'ZI esa faqat tafsilotda keladi (`source_code` ro'yxatda ataylab
+	 * yo'q — u kilobaytlab matn va ro'yxatga kerak emas). Buni bitta
+	 * so'rovga aylantirish uchun backendga yangi endpoint kerak
+	 * bo'lardi; ikkita so'rov faqat sahifa ochilganda va faqat
+	 * kirgan foydalanuvchi uchun ketadi.
+	 *
+	 * Til ham tiklanadi: Python kodini C++ muharririda ochish uni
+	 * darrov "ishlamaydigan" qilib ko'rsatardi.
+	 */
+	useEffect(() => {
+		if (sessionStatus !== "authenticated") return;
+
+		let cancelled = false;
+
+		void withFreshToken(async (token) => {
+			const list = await submissionsApi.listSubmissions(
+				{ problemId, perPage: 1 },
+				{ token },
+			);
+			const last = list.submissions[0];
+			if (last === undefined) return null;
+			return submissionsApi.getSubmission(last.id, { token });
+		})
+			.then((detail) => {
+				if (cancelled || detail === null) return;
+				if (touched.current) return;
+				if (!detail.source_code) return;
+
+				setCode(detail.source_code);
+				setLanguage(detail.language.code);
+				setRestoredAt(detail.created_at);
+			})
+			.catch(() => {
+				// Jim yutiladi: tiklash — qulaylik, uning ishlamasligi
+				// yechim yuborishga xalaqit bermaydi.
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [problemId, sessionStatus]);
 
 	const busy = state.phase === "submitting" || state.phase === "watching";
 
@@ -160,8 +223,36 @@ export function SubmitPanel({
 			{/* Balandlik qat'iy: panel yopishib turadi, ya'ni u ekrandan
 			    balandroq bo'lsa `sticky` ishlamay qoladi. */}
 			<div className="h-[420px]">
-				<CodeEditor value={code} onChange={setCode} language={language} disabled={busy} />
+				<CodeEditor
+					value={code}
+					onChange={(next) => {
+						touched.current = true;
+						setCode(next);
+					}}
+					language={language}
+					disabled={busy}
+				/>
 			</div>
+
+			{/*
+			 * Kod qayerdan kelganini aytadigan qator.
+			 *
+			 * Usiz foydalanuvchi bo'sh kutgan joyda kod ko'rib, uni kim
+			 * yozganini o'ylab qolardi. Yozishni boshlagach yo'qoladi —
+			 * o'shanda bu ma'lumot eskiradi.
+			 */}
+			{restoredAt !== null && !touched.current && (
+				<p className="text-[12.5px] text-fg-muted">
+					{t("restoredFrom", {
+						date: format.dateTime(new Date(restoredAt * 1000), {
+							day: "2-digit",
+							month: "2-digit",
+							hour: "2-digit",
+							minute: "2-digit",
+						}),
+					})}
+				</p>
+			)}
 
 			{errorMessage && (
 				<p role="alert" className="text-sm text-danger">

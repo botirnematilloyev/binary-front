@@ -111,6 +111,7 @@
     "hard": "Qiyin"
   },
   "submission": {
+  	"restoredFrom": "Oxirgi urinishingiz yuklandi ({date})",
   	"tabTests": "Testlar",
   	"tabResult": "Natija",
   	"tabHistory": "Yuborishlar",
