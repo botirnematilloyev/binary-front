@@ -40,6 +40,15 @@ export interface ProblemSettingsValues {
 	memoryLimitKb: number;
 	sort: number;
 	source: string;
+	/**
+	 * Biriktirilgan mavzular.
+	 *
+	 * Boshqa maydonlardan farqli, bu ALOHIDA endpoint bilan saqlanadi
+	 * (`PUT /admin/problems/{id}/topics`), chunki backendda ham u
+	 * alohida jadval (`problem_topics`). Shu sababli saqlashda uni
+	 * qolganidan ajratib solishtirish kerak.
+	 */
+	topicIds: number[];
 }
 
 /** Yaratish formasi uchun: sozlamalar + bitta shart birga kerak. */
@@ -84,6 +93,7 @@ export function emptyForm(): ProblemFormValues {
 		timeLimitMs: 1000,
 		memoryLimitKb: 65536,
 		sort: 0,
+		topicIds: [],
 		source: "",
 		statement: {
 			lang: "uz",

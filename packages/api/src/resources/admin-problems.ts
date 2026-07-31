@@ -250,6 +250,49 @@ export function setTestCases(
  * (shartsiz masalani nashr qilib bo'lmaydi — 422) va nojo'ya ta'siri bor
  * (`published_at` faqat BIRINCHI nashrda qo'yiladi).
  */
+/*
+ * Masalaga biriktirilgan mavzular.
+ *
+ * O'qish uchun ommaviy `getProblem` dan foydalanib bo'lmaydi: u
+ * qoralama masala uchun 404 qaytaradi, setter esa aynan qoralamani
+ * tahrirlaydi.
+ */
+export function listProblemTopics(id: number, options: RequestOptions & { token: string }) {
+	return request(
+		`/admin/problems/${id}/topics`,
+		z.object({
+			topics: z.array(
+				z.object({
+					id: z.number().int(),
+					subject_id: z.number().int(),
+					slug: z.string(),
+					name: z.record(z.string(), z.string()),
+				}),
+			),
+		}),
+		options,
+	);
+}
+
+/**
+ * Mavzularni to'liq ALMASHTIRADI — qo'shish/olib tashlash emas.
+ *
+ * Backend `ReplaceTopics` farqni o'zi hisoblaydi, ya'ni tegilmagan
+ * bog'lanishlar qayta yozilmaydi. Bo'sh massiv — barcha mavzularni
+ * olib tashlash degani va bu to'g'ri ishlaydi (`COALESCE($2, '{}')`).
+ */
+export function setProblemTopics(
+	id: number,
+	topicIds: number[],
+	options: RequestOptions & { token: string },
+) {
+	return request(`/admin/problems/${id}/topics`, z.void(), {
+		...options,
+		method: "PUT",
+		body: { topic_ids: topicIds },
+	});
+}
+
 export function publish(id: number, options: RequestOptions & { token: string }) {
 	return request(`/admin/problems/${id}/publish`, adminProblemSchema, {
 		...options,

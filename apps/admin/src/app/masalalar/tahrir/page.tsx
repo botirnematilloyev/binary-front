@@ -94,11 +94,15 @@ function Workspace() {
 	const fetchAll = useCallback(async (problemId: number) => {
 		setLoad({ phase: "loading" });
 		try {
-			const [problem, statements, testCases] = await withFreshToken(async (token) =>
+			// To'rtala so'rov ham parallel — mavzular alohida endpointda
+			// (`problem_topics` alohida jadval), lekin bu kechikish
+			// qo'shmaydi.
+			const [problem, statements, testCases, topics] = await withFreshToken(async (token) =>
 				Promise.all([
 					adminProblemsApi.get(problemId, { token }),
 					adminProblemsApi.listStatements(problemId, { token }),
 					adminProblemsApi.listTestCases(problemId, { token }),
+					adminProblemsApi.listProblemTopics(problemId, { token }),
 				]),
 			);
 
@@ -122,6 +126,10 @@ function Workspace() {
 				memoryLimitKb: problem.memory_limit_kb,
 				sort: problem.sort,
 				source: problem.source ?? "",
+				// Tartiblangan: `dirty` ni `JSON.stringify` bilan
+				// solishtiramiz, ya'ni faqat TARTIB farq qilsa ham
+				// "o'zgargan" deb hisoblanardi.
+				topicIds: topics.topics.map((topic) => topic.id).sort((a, b) => a - b),
 			};
 
 			setSettings(next);
@@ -201,7 +209,16 @@ function Workspace() {
 		setNotice(null);
 		try {
 			await withFreshToken(async (token) => {
-				if (JSON.stringify(settings) !== JSON.stringify(originalSettings)) {
+				// Mavzular ALOHIDA endpointda saqlanadi (`problem_topics`
+				// backendda ham alohida jadval), shuning uchun ular qolgan
+				// sozlamalardan ajratib solishtiriladi: faqat limit
+				// o'zgarganda mavzularni qayta yozish — va aksincha —
+				// keraksiz so'rov bo'lardi.
+				if (!sameIds(settings.topicIds, originalSettings?.topicIds)) {
+					await adminProblemsApi.setProblemTopics(id, settings.topicIds, { token });
+				}
+
+				if (settingsChangedApartFromTopics(settings, originalSettings)) {
 					// `slug` yuborilmaydi — u doimiy manzil.
 					await adminProblemsApi.update(
 						id,
@@ -505,6 +522,30 @@ function Skeleton() {
 			<div className="h-40 animate-pulse rounded-card bg-surface-muted" />
 		</Container>
 	);
+}
+
+/**
+ * Mavzularsiz solishtirish.
+ *
+ * `topicIds` boshqa endpoint bilan ketadi, ya'ni uni umumiy
+ * solishtiruvga qo'shsak, faqat teg o'zgarganda ham butun masala
+ * `PATCH` qilinardi va `updated_at` bekorga yangilanardi.
+ */
+function settingsChangedApartFromTopics(
+	next: ProblemSettingsValues,
+	previous: ProblemSettingsValues | null,
+): boolean {
+	if (previous === null) return true;
+	const strip = ({ topicIds: _ignored, ...rest }: ProblemSettingsValues) => rest;
+	return JSON.stringify(strip(next)) !== JSON.stringify(strip(previous));
+}
+
+/** Tartibga bog'liq bo'lmagan tenglik: [1,2] va [2,1] bir xil. */
+function sameIds(next: number[], previous: number[] | undefined): boolean {
+	if (previous === undefined) return false;
+	if (next.length !== previous.length) return false;
+	const sorted = [...previous].sort((a, b) => a - b);
+	return [...next].sort((a, b) => a - b).every((id, index) => id === sorted[index]);
 }
 
 const linkButtonClass =

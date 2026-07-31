@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { taxonomyApi, type SubjectDto } from "@binary/api";
+import { taxonomyApi, type SubjectDto, type TopicDto } from "@binary/api";
 import { Panel } from "@binary/ui";
 import {
 	DIFFICULTIES,
@@ -33,6 +33,7 @@ export function ProblemSettings({
 	titleForSlug?: string;
 }) {
 	const [subjects, setSubjects] = useState<SubjectDto[]>([]);
+	const [topics, setTopics] = useState<TopicDto[]>([]);
 
 	useEffect(() => {
 		taxonomyApi
@@ -42,6 +43,32 @@ export function ProblemSettings({
 				/* tanlanmasa validatsiya ushlaydi */
 			});
 	}, []);
+
+	/*
+	 * Mavzular TANLANGAN FANGA bog'liq, shuning uchun fan o'zgarganda
+	 * qayta o'qiladi. `no-store`: bu ro'yxat `/mavzular` sahifasida
+	 * hozirgina tahrirlangan bo'lishi mumkin, ochiq endpoint esa bir
+	 * soatlik `Cache-Control` yuboradi.
+	 */
+	useEffect(() => {
+		let cancelled = false;
+
+		taxonomyApi
+			.listTopics(values.subjectId, { cache: "no-store" })
+			.then((result) => {
+				if (!cancelled) setTopics(result.topics);
+			})
+			.catch(() => {
+				if (!cancelled) setTopics([]);
+			});
+
+		// Fan tez-tez almashtirilsa, kechikkan javob yangisini bosib
+		// ketmasligi kerak — javoblar tartibi so'rovlar tartibiga mos
+		// kelishi kafolatlanmagan.
+		return () => {
+			cancelled = true;
+		};
+	}, [values.subjectId]);
 
 	function set<K extends keyof ProblemSettingsValues>(key: K, next: ProblemSettingsValues[K]) {
 		onChange({ ...values, [key]: next });
@@ -97,7 +124,18 @@ export function ProblemSettings({
 					<select
 						id="subject"
 						value={values.subjectId}
-						onChange={(e) => set("subjectId", Number(e.target.value))}
+						onChange={(e) =>
+							// Fan almashganda mavzular TOZALANADI: ular oldingi
+							// fanga tegishli va yangi fanning ro'yxatida umuman
+							// ko'rinmaydi — ya'ni foydalanuvchi ularni olib
+							// tashlay olmaydigan, lekin bazada turgan teg
+							// bo'lib qolardi.
+							onChange({
+								...values,
+								subjectId: Number(e.target.value),
+								topicIds: [],
+							})
+						}
 						className={inputClass}
 					>
 						<option value={0}>— tanlang —</option>
@@ -182,6 +220,71 @@ export function ProblemSettings({
 				</p>
 			)}
 
+			{/*
+			 * Mavzular — ko'p tanlovli, shuning uchun `<select multiple>`
+			 * emas, checkbox'lar: ko'p tanlovli select'da Ctrl bosib
+			 * turish kerakligini foydalanuvchi bilmaydi va tasodifan
+			 * oldingi tanlovni yo'qotadi.
+			 */}
+			<div className="mt-4">
+				<p className="text-sm font-semibold">
+					Mavzular{" "}
+					<span className="font-normal text-fg-muted">— katalogdagi filtr shularga tayanadi</span>
+				</p>
+
+				{topics.length === 0 ? (
+					<p className="mt-1.5 text-sm text-fg-muted">
+						Bu fanda mavzu yo'q. Avval «Mavzular» bo'limida qo'shing.
+					</p>
+				) : (
+					<div className="mt-2 flex flex-wrap gap-2">
+						{topics.map((topic) => {
+							const checked = values.topicIds.includes(topic.id);
+							return (
+								<label
+									key={topic.id}
+									className={`flex cursor-pointer items-center gap-2 rounded-pill border px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+										checked
+											? "border-fg bg-fg text-fg-inverted"
+											: "border-border-default text-fg-secondary hover:border-border-hover"
+									}`}
+								>
+									{/*
+									 * Haqiqiy `<input type="checkbox">`, faqat
+									 * ko'zdan yashirilgan: klaviatura, `Tab` va
+									 * skrin rider shu tufayli ishlaydi. `<div>`
+									 * ni `onClick` bilan bosiladigan qilish
+									 * ularning hech birini bermaydi.
+									 */}
+									<input
+										type="checkbox"
+										className="sr-only"
+										checked={checked}
+										onChange={() =>
+											set(
+												"topicIds",
+												// Har doim tartiblangan holda saqlanadi:
+												// "o'zgardimi" tekshiruvi `JSON.stringify`
+												// bilan ishlaydi, ya'ni tartib farq qilsa
+												// ham "o'zgargan" deb ko'rsatardi —
+												// belgini olib, qayta qo'ygandan keyin
+												// "Saqlash" tugmasi yonib qolardi.
+												(checked
+													? values.topicIds.filter((id) => id !== topic.id)
+													: [...values.topicIds, topic.id]
+												).sort((a, b) => a - b),
+											)
+										}
+									/>
+									<span aria-hidden>{checked ? "✓" : "+"}</span>
+									{pickTopicName(topic)}
+								</label>
+							);
+						})}
+					</div>
+				)}
+			</div>
+
 			<div className="mt-4">
 				<label htmlFor="source" className="block text-sm font-semibold">
 					Manba (ixtiyoriy)
@@ -196,6 +299,11 @@ export function ProblemSettings({
 			</div>
 		</Panel>
 	);
+}
+
+/** Admin paneli o'zbekcha, shuning uchun `uz` → birinchi mavjud. */
+function pickTopicName(topic: TopicDto): string {
+	return topic.name["uz"] ?? Object.values(topic.name)[0] ?? topic.slug;
 }
 
 const inputClass =

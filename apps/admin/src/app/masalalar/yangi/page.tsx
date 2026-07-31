@@ -57,6 +57,10 @@ export default function NewProblemPage() {
 						// Bo'sh satr `null` ga: backendda maydon nullable va bo'sh
 						// satr "manba bor, lekin nomi yo'q" degan ma'nosiz holat.
 						source: nullIfEmpty(values.source),
+						// Yaratishda mavzular masala bilan BIR tranzaksiyada
+						// yoziladi (backend `Create` ichida), ya'ni alohida
+						// so'rov kerak emas.
+						topicIds: values.topicIds,
 						statement: {
 							lang: values.statement.lang,
 							title: values.statement.title.trim(),
