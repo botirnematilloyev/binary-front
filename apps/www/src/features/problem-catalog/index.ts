@@ -7,11 +7,13 @@
  */
 export { ProblemTable } from "./ui/problem-table";
 export { CatalogSidebar } from "./ui/catalog-sidebar";
-export { DifficultyFilter } from "./ui/difficulty-filter";
+export { CatalogToolbar } from "./ui/catalog-toolbar";
 export { Pagination } from "./ui/pagination";
 export {
 	difficultyTone,
 	filterQuery,
+	pageCount,
+	pageItems,
 	pageQuery,
 	parseDifficulty,
 	pickName,

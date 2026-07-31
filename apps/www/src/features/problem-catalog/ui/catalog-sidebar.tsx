@@ -1,16 +1,18 @@
 import { getTranslations } from "next-intl/server";
 import { cn, Panel } from "@binary/ui";
-import type { SubjectDto, TopicDto } from "@binary/api";
+import type { SubjectDto } from "@binary/api";
 import { Link } from "@/i18n/navigation";
 import { filterQuery, pickName, type CatalogFilters, type CatalogQuery } from "../model";
 
 /**
- * Katalogning yon paneli: FANLAR va MAVZULAR.
+ * Katalogning yon paneli: FANLAR.
  *
- * Ikkita alohida komponent EMAS, bittasi. Dizaynda bu bitta ustundagi ikki
- * bo'lim, ya'ni bitta ramka ichida; ikkiga bo'linsa ikkita `Panel` chiqadi
- * va ular orasidagi masofani sahifa boshqarishga majbur bo'lardi — ya'ni
- * ko'rinish qarori ikki joyga tarqalardi.
+ * MAVZULAR bu yerdan filtr paneliga KO'CHIRILDI. Sabab kardinallik:
+ * fan 3–4 ta va u asosiy o'q, mavzu esa cheksiz o'sadi (LeetCode'da
+ * 70+ teg bor) — uzun ro'yxat yon panelda ishlatib bo'lmaydigan bo'lib
+ * qoladi. Bir filtr ikki joyda turishi esa undan ham yomon: ikkalasi
+ * bir-biriga zid ko'rinadi va foydalanuvchi qaysi biri "haqiqiy"
+ * ekanini bilmaydi.
  *
  * Filtr — havolalar, tugmalar emas.
  *
@@ -24,18 +26,10 @@ import { filterQuery, pickName, type CatalogFilters, type CatalogQuery } from ".
  */
 export async function CatalogSidebar({
 	subjects,
-	topics,
 	filters,
 	apiLang,
 }: {
 	subjects: SubjectDto[];
-	/**
-	 * Fan tanlangan bo'lsa — faqat o'sha fanning mavzulari.
-	 *
-	 * Bu qaror sahifada emas, chunki so'rovni ham o'sha yerda kesish kerak;
-	 * bu yerda esa faqat kelgan ro'yxat chiziladi.
-	 */
-	topics: TopicDto[];
 	filters: CatalogFilters;
 	apiLang: string;
 }) {
@@ -43,7 +37,9 @@ export async function CatalogSidebar({
 
 	return (
 		<Panel className="p-3">
-			<SectionLabel>{t("subjects")}</SectionLabel>
+			<p className="px-2 pb-2 text-[11px] font-bold tracking-wide text-fg-subtle">
+				{t("subjects")}
+			</p>
 			<ul className="flex flex-col gap-0.5">
 				<li>
 					{/*
@@ -75,69 +71,7 @@ export async function CatalogSidebar({
 					</li>
 				))}
 			</ul>
-
-			{/*
-			 * Mavzular yo'q bo'lsa — sarlavha ham yo'q. Bo'sh "MAVZULAR"
-			 * yozuvi foydalanuvchiga hech narsa aytmaydi, faqat yuklanish
-			 * xatosidek ko'rinadi.
-			 */}
-			{topics.length > 0 && (
-				<>
-					<SectionLabel className="mt-5">{t("topics")}</SectionLabel>
-					<ul className="flex flex-col gap-0.5">
-						<li>
-							{/*
-							 * Mavzular uchun ham "Barchasi" bor, garchi
-							 * dizaynda ko'rsatilmagan bo'lsa ham: usiz mavzu
-							 * tanlangandan keyin undan chiqish yo'li qolmaydi
-							 * (faol qatorni qayta bosish — ko'rinmaydigan
-							 * imkoniyat). Fan esa saqlanadi.
-							 */}
-							<FilterLink
-								query={filterQuery(filters, { topicId: null })}
-								active={filters.topicId === undefined}
-							>
-								{t("all")}
-							</FilterLink>
-						</li>
-						{topics.map((topic) => (
-							<li key={topic.id}>
-								{/*
-								 * Mavzu bilan birga uning FANI ham qo'yiladi.
-								 * `TopicDto.subject_id` aynan shuning uchun
-								 * kerak: "hamma fan" holatida mavzu bosilsa,
-								 * yon panel keyin o'sha fanning mavzularini
-								 * ko'rsatadi va fan yoritilgan bo'ladi —
-								 * ya'ni panel o'zi bilan ziddiyatga tushmaydi.
-								 */}
-								<FilterLink
-									query={filterQuery(filters, {
-										subjectId: topic.subject_id,
-										topicId: topic.id,
-									})}
-									active={filters.topicId === topic.id}
-								>
-									{pickName(topic.name, apiLang)}
-								</FilterLink>
-							</li>
-						))}
-					</ul>
-				</>
-			)}
 		</Panel>
-	);
-}
-
-function SectionLabel({ children, className }: { children: string; className?: string }) {
-	return (
-		<p
-			className={cn(
-				"px-2 pb-2 text-[11px] font-bold tracking-wide text-fg-subtle",
-				className,
-			)}
-		>
-			{children}
-		</p>
 	);
 }
 

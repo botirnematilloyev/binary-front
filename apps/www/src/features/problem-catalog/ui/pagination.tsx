@@ -1,58 +1,98 @@
 import { getTranslations } from "next-intl/server";
 import { cn } from "@binary/ui";
 import { Link } from "@/i18n/navigation";
-import { pageQuery, type CatalogFilters } from "../model";
+import { pageCount, pageItems, pageQuery, type CatalogFilters } from "../model";
 
 /**
- * Sahifalash — "oldingi / keyingi", raqamlar EMAS.
+ * Raqamli sahifalash: `‹ 1 … 4 5 6 … 42 ›`.
  *
- * Shablonda `1 2 3 … 42` turibdi, lekin oxirgi raqamni chizish uchun
- * jami nechta masala borligini bilish kerak, backend esa `total`
- * qaytarmaydi (ro'yxat so'rovi bilan birga `COUNT(*)` ataylab
- * qoldirilgan). To'qib chiqarilgan `42` foydalanuvchini aldardi, shuning
- * uchun bor ma'lumot bilan rost ko'rinish tanlandi.
+ * Ilgari faqat "oldingi / keyingi" edi, chunki backend jami sonni
+ * qaytarmasdi va oxirgi raqamni bilishning yo'li yo'q edi. Endi javobda
+ * `total` bor, ya'ni raqamlarni to'qib chiqarmasdan chizsa bo'ladi.
  *
- * `hasNext` ni sahifa hisoblaydi (to'liq sahifa keldimi degan savol
- * orqali) — bu komponent uni faqat ko'rsatadi.
- *
- * Raqamli sahifalash `total` backendga qo'shilganda qaytadi.
+ * O'sha paytdagi vaqtinchalik hiyla ham yo'qoldi: "keyingi sahifa bormi"
+ * ni to'liq sahifa keldimi degan savol orqali taxmin qilish kerak emas —
+ * masalalar soni aynan 20 ga bo'linganda bo'sh sahifaga olib boradigan
+ * "Keyingi" tugmasi endi paydo bo'lmaydi.
  */
 export async function Pagination({
 	filters,
 	page,
-	hasNext,
+	total,
+	perPage,
 }: {
 	filters: CatalogFilters;
 	page: number;
-	hasNext: boolean;
+	total: number;
+	perPage: number;
 }) {
 	const t = await getTranslations("problems");
+	const count = pageCount(total, perPage);
 
-	// Birinchi sahifada va davomi yo'q bo'lsa — sahifalashning o'zi
-	// keraksiz. Ikkita o'chirilgan tugma ko'rsatish shovqindan boshqa
-	// narsa emas.
-	if (page === 1 && !hasNext) return null;
+	// Bitta sahifa — sahifalashning o'zi keraksiz.
+	if (count <= 1) return null;
 
 	return (
-		<nav className="mt-5 flex items-center justify-center gap-2" aria-label={t("pagination")}>
-			<PageLink filters={filters} page={page - 1} disabled={page === 1}>
+		<nav className="mt-5 flex items-center justify-center gap-1.5" aria-label={t("pagination")}>
+			<Step filters={filters} page={page - 1} disabled={page <= 1}>
 				{t("previous")}
-			</PageLink>
+			</Step>
 
-			{/*
-			 * Joriy sahifa raqami — matn, havola emas. Jami sahifalar soni
-			 * noma'lum, shuning uchun "N / M" ham yozib bo'lmaydi.
-			 */}
-			<span className="px-2 font-mono text-[13px] text-fg-muted">{page}</span>
+			{pageItems(page, count).map((item, index) =>
+				item === "gap" ? (
+					// Uzilish belgisi — havola emas va skrin riderga
+					// o'qilmaydi: u yerda hech qanday ma'lumot yo'q.
+					<span
+						key={`gap-${index}`}
+						aria-hidden="true"
+						className="px-1 font-mono text-[13px] text-fg-subtle"
+					>
+						…
+					</span>
+				) : (
+					<PageNumber key={item} filters={filters} page={item} current={item === page} />
+				),
+			)}
 
-			<PageLink filters={filters} page={page + 1} disabled={!hasNext}>
+			<Step filters={filters} page={page + 1} disabled={page >= count}>
 				{t("next")}
-			</PageLink>
+			</Step>
 		</nav>
 	);
 }
 
-function PageLink({
+function PageNumber({
+	filters,
+	page,
+	current,
+}: {
+	filters: CatalogFilters;
+	page: number;
+	current: boolean;
+}) {
+	const className = cn(
+		"rounded-control px-2.5 py-1.5 font-mono text-[13px] transition-colors",
+		current ? "bg-fg text-fg-inverted" : "text-fg-secondary hover:bg-surface-hover",
+	);
+
+	// Joriy sahifa havola EMAS: o'ziga olib boradigan havola foydasiz va
+	// skrin riderda "shu yerdasiz" degani `aria-current` bilan aytiladi.
+	if (current) {
+		return (
+			<span aria-current="page" className={className}>
+				{page}
+			</span>
+		);
+	}
+
+	return (
+		<Link href={{ pathname: "/masalalar", query: pageQuery(filters, page) }} className={className}>
+			{page}
+		</Link>
+	);
+}
+
+function Step({
 	filters,
 	page,
 	disabled,
@@ -70,11 +110,9 @@ function PageLink({
 			: "border border-border-default text-fg-secondary hover:border-border-hover",
 	);
 
-	// O'chirilgan holat `<span>` bilan beriladi, `<a>` ni `pointer-events`
-	// bilan o'ldirish orqali emas: mavjud bo'lmagan sahifaga havola
-	// klaviatura bilan ham, qidiruv tizimi uchun ham bosiladigan bo'lib
-	// qolardi. `aria-disabled` li havola esa skrin riderga hamon "havola"
-	// deb eshitiladi.
+	// O'chirilgan holat `<span>`: mavjud bo'lmagan sahifaga havola
+	// klaviatura bilan ham, qidiruv tizimi uchun ham bosiladigan
+	// bo'lib qolardi.
 	if (disabled) {
 		return (
 			<span aria-disabled="true" className={className}>

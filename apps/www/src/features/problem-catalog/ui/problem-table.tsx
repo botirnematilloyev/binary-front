@@ -4,11 +4,11 @@ import { Link } from "@/i18n/navigation";
 import type { ProblemRow } from "../model";
 
 /**
- * Shablonda jadvalda MAVZU va YECHDI ustunlari ham bor. Ular hozir
- * QO'SHILMAYDI: ro'yxat javobida mavzular yo'q, "yechdi" hisoblagichi esa
- * backendda ataylab kesilgan (`problem_stats` — tezlik uchun, keyinroq).
- * Bo'sh yoki to'qib chiqarilgan ustun jadvalni to'ldiradi, lekin
- * foydalanuvchiga yolg'on aytadi.
+ * Shablondagi YECHDI ustuni hali QO'SHILMAYDI: u hisoblagichni talab
+ * qiladi (`problem_stats`), backendda esa u ataylab kesilgan. To'qib
+ * chiqarilgan foiz jadvalni to'ldiradi, lekin foydalanuvchiga yolg'on
+ * aytadi. MAVZU ustuni endi bor — ro'yxat javobi mavzularni ham
+ * qaytaradi.
  *
  * Server komponenti bo'lgani uchun tarjimani `getTranslations` beradi —
  * `useTranslations` client hook va bu yerda kerak emas.
@@ -35,6 +35,7 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 					<tr className="border-b border-border-default bg-surface-subtle text-left">
 						<Th className="w-16">{t("columnId")}</Th>
 						<Th>{t("columnProblem")}</Th>
+						<Th className="w-40">{t("columnTopic")}</Th>
 						<Th className="w-28">{t("columnDifficulty")}</Th>
 						<Th className="w-40 text-right">{t("columnLimits")}</Th>
 					</tr>
@@ -62,6 +63,15 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 								>
 									{row.title}
 								</Link>
+							</td>
+							{/*
+							 * Mavzular vergul bilan, alohida chiplar emas:
+							 * jadval qatori baland bo'lib ketmasligi kerak,
+							 * va bu ustun tanlash uchun emas, kontekst
+							 * uchun (tanlash yon panelda).
+							 */}
+							<td className="px-4 py-3 text-[12.5px] text-fg-muted">
+								{row.topics.join(", ")}
 							</td>
 							<td className="px-4 py-3">
 								<Badge tone={row.difficultyTone} size="sm">

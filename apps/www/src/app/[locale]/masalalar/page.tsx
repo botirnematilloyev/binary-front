@@ -4,7 +4,7 @@ import { problemsApi, taxonomyApi } from "@binary/api";
 import { Container } from "@binary/ui";
 import {
 	CatalogSidebar,
-	DifficultyFilter,
+	CatalogToolbar,
 	Pagination,
 	parseDifficulty,
 	PER_PAGE,
@@ -34,6 +34,7 @@ interface PageProps {
 		subject_id?: string;
 		topic_id?: string;
 		difficulty?: string;
+		q?: string;
 		page?: string;
 	}>;
 }
@@ -73,7 +74,12 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	const difficulty = parseDifficulty(query.difficulty);
 	const page = positiveInt(query.page) ?? 1;
 
-	const filters = { subjectId, topicId, difficulty };
+	// Qidiruv matni tozalanadi, lekin QISQARTIRILMAYDI: backend ham
+	// `TrimSpace` qiladi, va ikkalasi bir xil qiymatni ko'rishi kerak —
+	// aks holda formadagi matn URL'dagidan farq qilib qolardi.
+	const searchText = query.q?.trim() || undefined;
+
+	const filters = { subjectId, topicId, difficulty, query: searchText };
 
 	// Mavzu fanga tegishli ekani BU YERDA tekshirilmaydi. Backend ikki
 	// filtrni VA bilan birlashtiradi, ya'ni mos kelmagan juftlik bo'sh
@@ -98,27 +104,25 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	// yozuvi alohida — filtrlar aralashib ketmaydi.
 	const [list, subjects, topics] = await Promise.all([
 		problemsApi.listProblems(
-			{ page, perPage: PER_PAGE, subjectId, topicId, difficulty, lang: apiLang },
+			{
+				page,
+				perPage: PER_PAGE,
+				subjectId,
+				topicId,
+				difficulty,
+				query: searchText,
+				lang: apiLang,
+			},
 			{ revalidate },
 		),
 		taxonomyApi.listSubjects({ revalidate: 3600 }),
 		taxonomyApi.listTopics(subjectId, { revalidate: 3600 }),
 	]);
 
-	// "Keyingi sahifa bormi" — to'liq sahifa keldimi degan savol orqali.
-	//
-	// Avval `PER_PAGE + 1` ta so'rab, ortiqchasi keldimi deb qaralgan edi.
-	// U NOTO'G'RI: backend offset'ni yuborilgan `per_page` dan hisoblaydi
-	// (`(page-1) * per_page`), ya'ni 21 ta so'ralsa 2-sahifa 22-yozuvdan
-	// boshlanadi va 21-masala hech qachon ko'rinmaydi. Buni test topdi.
-	//
-	// Hozirgi usulning bitta kamchiligi bor: masalalar soni aynan 20 ga
-	// bo'linsa, oxirgi sahifada ham "Keyingi" ko'rinadi va u bo'sh
-	// sahifaga olib boradi. Yolg'on emas, lekin ortiqcha bosish.
-	// Yechim — javobga `total` qo'shish (backend rejasidagi A paketi);
-	// o'shanda bu yer ham, raqamli sahifalash ham to'g'ri bo'ladi.
-	const hasNext = list.problems.length === PER_PAGE;
-	const rows = list.problems.map(toProblemRow);
+	// Sahifalash endi `total` ga tayanadi — "to'liq sahifa keldimi"
+	// degan taxminga emas. Bu javobning O'ZIDAN olinadi, chunki
+	// haqiqiy `per_page` so'ralganidan farq qilishi mumkin.
+	const rows = list.problems.map((problem) => toProblemRow(problem, apiLang));
 
 	return (
 		<Container className="py-9">
@@ -128,19 +132,28 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 				<aside>
 					<CatalogSidebar
 						subjects={subjects.subjects}
-						topics={topics.topics}
 						filters={filters}
 						apiLang={apiLang}
 					/>
 				</aside>
 				<div>
 					<div className="mb-4">
-						<DifficultyFilter filters={filters} />
+						<CatalogToolbar
+							filters={filters}
+							topics={topics.topics}
+							locale={locale}
+							apiLang={apiLang}
+						/>
 					</div>
 
 					<ProblemTable rows={rows} />
 
-					<Pagination filters={filters} page={page} hasNext={hasNext} />
+					<Pagination
+						filters={filters}
+						page={list.page}
+						total={list.total}
+						perPage={list.per_page}
+					/>
 				</div>
 			</div>
 		</Container>

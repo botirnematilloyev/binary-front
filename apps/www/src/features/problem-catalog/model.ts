@@ -33,6 +33,8 @@ export interface ProblemRow {
 	difficulty: Difficulty;
 	difficultyTone: NonNullable<BadgeProps["tone"]>;
 	limits: string;
+	/** Jadvaldagi MAVZU ustuni. Bo'sh bo'lishi mumkin. */
+	topics: string[];
 }
 
 /**
@@ -43,7 +45,7 @@ export interface ProblemRow {
  * "1 s", tafsilotda "1000 ms" chiqib, ikkalasi ham to'g'ri bo'lgani
  * holda sayt beg'ubor ko'rinmaydi.
  */
-export function toProblemRow(dto: ProblemSummaryDto): ProblemRow {
+export function toProblemRow(dto: ProblemSummaryDto, apiLang: string): ProblemRow {
 	return {
 		id: dto.id,
 		slug: dto.slug,
@@ -52,6 +54,10 @@ export function toProblemRow(dto: ProblemSummaryDto): ProblemRow {
 		difficulty: dto.difficulty,
 		difficultyTone: DIFFICULTY_TONE[dto.difficulty],
 		limits: `${formatSeconds(dto.time_limit_ms)} · ${formatMemory(dto.memory_limit_kb)}`,
+		// Mavzu nomi ham ko'p tilli, va u sarlavha bilan BIR XIL qoida
+		// bo'yicha tanlanadi — aks holda bir qatorda sarlavha o'zbekcha,
+		// mavzu ruscha chiqishi mumkin.
+		topics: dto.topics.map((topic) => pickName(topic.name, apiLang)),
 	};
 }
 
@@ -75,6 +81,7 @@ export interface CatalogFilters {
 	subjectId?: number | undefined;
 	topicId?: number | undefined;
 	difficulty?: Difficulty | undefined;
+	query?: string | undefined;
 }
 
 /**
@@ -107,6 +114,7 @@ export type CatalogQuery = {
 	subject_id?: number;
 	topic_id?: number;
 	difficulty?: Difficulty;
+	q?: string;
 	page?: number;
 };
 
@@ -115,6 +123,7 @@ export interface CatalogFilterPatch {
 	subjectId?: number | null | undefined;
 	topicId?: number | null | undefined;
 	difficulty?: Difficulty | null | undefined;
+	query?: string | null | undefined;
 }
 
 /**
@@ -143,6 +152,7 @@ export function filterQuery(
 	const subjectId = applyPatch(current.subjectId, patch.subjectId);
 	const topicId = applyPatch(current.topicId, patch.topicId);
 	const difficulty = applyPatch(current.difficulty, patch.difficulty);
+	const searchText = applyPatch(current.query, patch.query);
 
 	// Maydonlar shartli qo'shiladi, `subject_id: undefined` deb emas:
 	// `exactOptionalPropertyTypes` yoqilgan, va aniq `undefined` qiymat
@@ -151,6 +161,9 @@ export function filterQuery(
 	if (subjectId !== undefined) query.subject_id = subjectId;
 	if (topicId !== undefined) query.topic_id = topicId;
 	if (difficulty !== undefined) query.difficulty = difficulty;
+	// Bo'sh qidiruv URL'ga tushmaydi: `?q=` faqat manzilni ifloslantiradi
+	// va backend uni baribir e'tiborsiz qoldiradi.
+	if (searchText) query.q = searchText;
 	return query;
 }
 
@@ -166,6 +179,43 @@ export function filterQuery(
  * manzil bo'lishi kerak, aks holda `/masalalar` va `/masalalar?page=1`
  * bir xil kontentli ikki manzilga aylanadi.
  */
+/**
+ * Jami sondan sahifalar sonini hisoblaydi.
+ *
+ * `Math.max(1, …)`: natija bo'sh bo'lganda ham bitta sahifa bor —
+ * foydalanuvchi "0 / 0" emas, "1" ni ko'rishi kerak.
+ */
+export function pageCount(total: number, perPage: number): number {
+	return Math.max(1, Math.ceil(total / perPage));
+}
+
+/**
+ * Sahifalash uchun ko'rsatiladigan raqamlar: `1 … 4 5 6 … 42`.
+ *
+ * Hamma raqamni chizish mumkin emas — 42 ta sahifada bu 42 ta havola
+ * degani. Har doim birinchi va oxirgi, hamda joriy sahifaning ikki
+ * qo'shnisi ko'rinadi; oradagi uzilish `gap` bilan belgilanadi.
+ *
+ * `Set` ishlatilgan, chunki chekkalarda raqamlar ustma-ust tushadi
+ * (1-sahifada `current - 1` = 0, `1` va `count` bir xil bo'lishi
+ * mumkin) — takrorlanishni qo'lda tekshirish shartsiz.
+ */
+export type PageItem = number | "gap";
+
+export function pageItems(current: number, count: number): PageItem[] {
+	const wanted = new Set([1, count, current - 1, current, current + 1]);
+	const visible = [...wanted].filter((page) => page >= 1 && page <= count).sort((a, b) => a - b);
+
+	const items: PageItem[] = [];
+	let previous = 0;
+	for (const page of visible) {
+		if (previous !== 0 && page - previous > 1) items.push("gap");
+		items.push(page);
+		previous = page;
+	}
+	return items;
+}
+
 export function pageQuery(current: CatalogFilters, page: number): CatalogQuery {
 	const query = filterQuery(current);
 	if (page > 1) query.page = page;
