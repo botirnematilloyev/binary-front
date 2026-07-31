@@ -88,6 +88,7 @@
     "columnId": "ID",
     "columnProblem": "МАСАЛА",
     "columnTopic": "МАВЗУ",
+    "solvedMark": "Ечилган",
     "columnDifficulty": "ҚИЙИНЛИК",
     "columnLimits": "ЛИМИТ",
     "emptyTitle": "Масала топилмади",

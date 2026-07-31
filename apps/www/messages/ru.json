@@ -88,6 +88,7 @@
     "columnId": "ID",
     "columnProblem": "ЗАДАЧА",
     "columnTopic": "ТЕМА",
+    "solvedMark": "Решено",
     "columnDifficulty": "СЛОЖНОСТЬ",
     "columnLimits": "ЛИМИТЫ",
     "emptyTitle": "Задачи не найдены",

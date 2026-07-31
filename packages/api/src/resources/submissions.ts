@@ -199,3 +199,16 @@ export type ActivityDto = z.infer<typeof activitySchema>;
 export function getActivity(days: number, options: RequestOptions & { token: string }) {
 	return request(`/submissions/activity${query({ days })}`, activitySchema, options);
 }
+
+const solvedSchema = z.object({ problem_ids: z.array(z.number().int()) });
+
+/**
+ * Foydalanuvchi yechgan masalalar.
+ *
+ * Katalogda ✓ belgisi uchun. Sahifaning O'ZI serverda render qilinadi
+ * va keshlanadi, shuning uchun bu ro'yxat alohida, mijozdan so'raladi —
+ * aks holda kesh har foydalanuvchi uchun alohida bo'lib ketardi.
+ */
+export function getSolved(options: RequestOptions & { token: string }) {
+	return request("/submissions/solved", solvedSchema, options);
+}

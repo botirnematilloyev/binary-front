@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Badge, Panel } from "@binary/ui";
 import { Link } from "@/i18n/navigation";
 import type { ProblemRow } from "../model";
+import { SolvedMark } from "./solved-marks";
 
 /**
  * Shablondagi YECHDI ustuni hali QO'SHILMAYDI: u hisoblagichni talab
@@ -33,6 +34,10 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 			<table className="w-full border-collapse text-sm">
 				<thead>
 					<tr className="border-b border-border-default bg-surface-subtle text-left">
+						{/* Birinchi ustun sarlavhasiz: ✓ o'z-o'zidan
+						    tushunarli va "HOLAT" degan yozuv faqat joy
+						    egallardi. Dizaynda ham shunday. */}
+						<Th className="w-9"> </Th>
 						<Th className="w-16">{t("columnId")}</Th>
 						<Th>{t("columnProblem")}</Th>
 						<Th className="w-40">{t("columnTopic")}</Th>
@@ -46,6 +51,9 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 							key={row.id}
 							className="border-b border-border-default last:border-0 transition-colors hover:bg-surface-subtle"
 						>
+							<td className="pl-4 text-center">
+								<SolvedMark problemId={row.id} />
+							</td>
 							<td className="px-4 py-3 font-mono text-[12.5px] text-fg-subtle">
 								{row.id}
 							</td>

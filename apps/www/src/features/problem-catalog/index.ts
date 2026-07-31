@@ -9,6 +9,7 @@ export { ProblemTable } from "./ui/problem-table";
 export { CatalogSidebar } from "./ui/catalog-sidebar";
 export { CatalogToolbar } from "./ui/catalog-toolbar";
 export { Pagination } from "./ui/pagination";
+export { SolvedProvider } from "./ui/solved-marks";
 export {
 	difficultyTone,
 	filterQuery,

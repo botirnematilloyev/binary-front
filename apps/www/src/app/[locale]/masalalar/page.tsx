@@ -9,6 +9,7 @@ import {
 	parseDifficulty,
 	PER_PAGE,
 	ProblemTable,
+	SolvedProvider,
 	toProblemRow,
 } from "@/features/problem-catalog";
 import { buildAlternates } from "@/shared/i18n/alternates";
@@ -132,21 +133,24 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 				<aside>
 					<CatalogSidebar
 						subjects={subjects.subjects}
+						topics={topics.topics}
 						filters={filters}
 						apiLang={apiLang}
 					/>
 				</aside>
 				<div>
 					<div className="mb-4">
-						<CatalogToolbar
-							filters={filters}
-							topics={topics.topics}
-							locale={locale}
-							apiLang={apiLang}
-						/>
+						<CatalogToolbar filters={filters} locale={locale} />
 					</div>
 
-					<ProblemTable rows={rows} />
+					{/*
+					 * Jadval SERVERDA chiziladi, ✓ belgilari esa client'da
+					 * ustidan qo'yiladi: sahifa keshlangan, foydalanuvchi
+					 * ma'lumoti esa keshlanmasligi kerak.
+					 */}
+					<SolvedProvider>
+						<ProblemTable rows={rows} />
+					</SolvedProvider>
 
 					<Pagination
 						filters={filters}

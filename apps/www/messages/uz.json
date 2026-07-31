@@ -88,6 +88,7 @@
     "columnId": "ID",
     "columnProblem": "MASALA",
     "columnTopic": "MAVZU",
+    "solvedMark": "Yechilgan",
     "columnDifficulty": "QIYINLIK",
     "columnLimits": "LIMIT",
     "emptyTitle": "Masala topilmadi",

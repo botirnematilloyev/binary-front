@@ -1,8 +1,7 @@
 import { getTranslations } from "next-intl/server";
-import type { TopicDto } from "@binary/api";
 import { getPathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
-import { DIFFICULTIES, filterQuery, pickName, type CatalogFilters } from "../model";
+import { DIFFICULTIES, filterQuery, type CatalogFilters } from "../model";
 import type { Locale } from "@/shared/i18n/locales";
 
 /**
@@ -25,25 +24,19 @@ import type { Locale } from "@/shared/i18n/locales";
  */
 export async function CatalogToolbar({
 	filters,
-	topics,
 	locale,
-	apiLang,
 }: {
 	filters: CatalogFilters;
-	topics: TopicDto[];
 	locale: Locale;
-	apiLang: string;
 }) {
 	const t = await getTranslations("problems");
 	const tDifficulty = await getTranslations("difficulty");
 
-	// Faol filtrlar soni — qidiruv HISOBGA KIRMAYDI, chunki u
-	// maydonning o'zida ko'rinib turibdi. Panel esa yopiq bo'lishi
-	// mumkin, ya'ni ichidagi filtrlar haqida boshqa hech narsa
-	// bilintirmaydi.
-	const activeCount = [filters.difficulty, filters.topicId].filter(
-		(value) => value !== undefined,
-	).length;
+	// Faol filtrlar soni — qidiruv HISOBGA KIRMAYDI, chunki u maydonning
+	// o'zida ko'rinib turibdi. Mavzu ham sanalmaydi: u yon panelda
+	// tanlanadi, aks holda tugmada "1" turib, panel ichi bo'sh
+	// ko'rinardi.
+	const activeCount = filters.difficulty === undefined ? 0 : 1;
 
 	return (
 		<form
@@ -56,8 +49,18 @@ export async function CatalogToolbar({
 			 * Fan yon panelda tanlanadi, shuning uchun u forma maydoni
 			 * emas — lekin forma yuborilganda yo'qolib ketmasligi kerak.
 			 */}
+			{/*
+			 * Fan va mavzu yon panelda tanlanadi, shuning uchun ular
+			 * forma maydoni emas — lekin forma yuborilganda yo'qolib
+			 * ketmasligi kerak. Brauzer faqat forma maydonlarini
+			 * yuboradi, ya'ni yashirin nusxasiz qidiruv tanlangan
+			 * mavzuni jimgina tozalab yuborardi.
+			 */}
 			{filters.subjectId !== undefined && (
 				<input type="hidden" name="subject_id" value={filters.subjectId} />
+			)}
+			{filters.topicId !== undefined && (
+				<input type="hidden" name="topic_id" value={filters.topicId} />
 			)}
 
 			<input
@@ -103,28 +106,6 @@ export async function CatalogToolbar({
 						</select>
 					</Field>
 
-					{/*
-					 * Mavzular ro'yxati bo'sh bo'lsa maydon ham chiqmaydi:
-					 * ichida faqat "Barchasi" turgan tanlov foydalanuvchiga
-					 * hech narsa bermaydi.
-					 */}
-					{topics.length > 0 && (
-						<Field label={t("columnTopic")} className="mt-3">
-							<select
-								name="topic_id"
-								defaultValue={filters.topicId ?? ""}
-								className={selectClass}
-							>
-								<option value="">{t("all")}</option>
-								{topics.map((topic) => (
-									<option key={topic.id} value={topic.id}>
-										{pickName(topic.name, apiLang)}
-									</option>
-								))}
-							</select>
-						</Field>
-					)}
-
 					<div className="mt-4 flex items-center gap-2">
 						<button
 							type="submit"
@@ -144,7 +125,7 @@ export async function CatalogToolbar({
 							<Link
 								href={{
 									pathname: "/masalalar",
-									query: filterQuery(filters, { difficulty: null, topicId: null }),
+									query: filterQuery(filters, { difficulty: null }),
 								}}
 								className="text-[13px] font-semibold text-fg-muted hover:text-fg"
 							>

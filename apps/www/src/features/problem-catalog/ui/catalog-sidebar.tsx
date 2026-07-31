@@ -1,18 +1,23 @@
 import { getTranslations } from "next-intl/server";
 import { cn, Panel } from "@binary/ui";
-import type { SubjectDto } from "@binary/api";
+import type { SubjectDto, TopicDto } from "@binary/api";
 import { Link } from "@/i18n/navigation";
 import { filterQuery, pickName, type CatalogFilters, type CatalogQuery } from "../model";
 
 /**
- * Katalogning yon paneli: FANLAR.
+ * Katalogning yon paneli: FANLAR va MAVZULAR.
  *
- * MAVZULAR bu yerdan filtr paneliga KO'CHIRILDI. Sabab kardinallik:
- * fan 3–4 ta va u asosiy o'q, mavzu esa cheksiz o'sadi (LeetCode'da
- * 70+ teg bor) — uzun ro'yxat yon panelda ishlatib bo'lmaydigan bo'lib
- * qoladi. Bir filtr ikki joyda turishi esa undan ham yomon: ikkalasi
- * bir-biriga zid ko'rinadi va foydalanuvchi qaysi biri "haqiqiy"
- * ekanini bilmaydi.
+ * Mavzular bir muddat filtr panelida turgan edi (uzun ro'yxat yon
+ * panelga sig'maydi degan mulohaza bilan), lekin dizaynda ular aynan
+ * shu yerda va amalda ham shunday qulayroq: fan va mavzu — bitta
+ * taksonomiya, ularni ikki xil joydan tanlash g'alati.
+ *
+ * Panelda mavzu tanlagichi endi YO'Q: bir filtr ikki joyda turishi
+ * ularni bir-biriga zid ko'rsatardi.
+ *
+ * Trigger: mavzular soni o'nlab bo'lsa (LeetCode'da 70+ teg), bu
+ * ro'yxat qidiruvli tanlagichga aylanishi kerak — o'shanda joyi ham
+ * qayta ko'rib chiqiladi.
  *
  * Filtr — havolalar, tugmalar emas.
  *
@@ -26,10 +31,13 @@ import { filterQuery, pickName, type CatalogFilters, type CatalogQuery } from ".
  */
 export async function CatalogSidebar({
 	subjects,
+	topics,
 	filters,
 	apiLang,
 }: {
 	subjects: SubjectDto[];
+	/** Fan tanlangan bo'lsa — faqat o'sha fanning mavzulari. */
+	topics: TopicDto[];
 	filters: CatalogFilters;
 	apiLang: string;
 }) {
@@ -71,6 +79,55 @@ export async function CatalogSidebar({
 					</li>
 				))}
 			</ul>
+
+			{/*
+			 * Mavzular yo'q bo'lsa sarlavha ham yo'q: bo'sh "MAVZULAR"
+			 * yozuvi foydalanuvchiga hech narsa aytmaydi, faqat
+			 * yuklanish xatosidek ko'rinadi.
+			 */}
+			{topics.length > 0 && (
+				<>
+					<p className="mt-5 px-2 pb-2 text-[11px] font-bold tracking-wide text-fg-subtle">
+						{t("topics")}
+					</p>
+					<ul className="flex flex-col gap-0.5">
+						<li>
+							{/*
+							 * Mavzular uchun ham "Barchasi" bor, garchi
+							 * dizaynda ko'rsatilmagan bo'lsa ham: usiz
+							 * mavzu tanlangandan keyin undan chiqish yo'li
+							 * qolmaydi. Fan esa saqlanadi.
+							 */}
+							<FilterLink
+								query={filterQuery(filters, { topicId: null })}
+								active={filters.topicId === undefined}
+							>
+								{t("all")}
+							</FilterLink>
+						</li>
+						{topics.map((topic) => (
+							<li key={topic.id}>
+								{/*
+								 * Mavzu bilan birga uning FANI ham qo'yiladi —
+								 * `TopicDto.subject_id` aynan shuning uchun
+								 * kerak: "hamma fan" holatida mavzu bosilsa,
+								 * panel keyin o'sha fanning mavzularini
+								 * ko'rsatadi va o'zi bilan ziddiyatga tushmaydi.
+								 */}
+								<FilterLink
+									query={filterQuery(filters, {
+										subjectId: topic.subject_id,
+										topicId: topic.id,
+									})}
+									active={filters.topicId === topic.id}
+								>
+									{pickName(topic.name, apiLang)}
+								</FilterLink>
+							</li>
+						))}
+					</ul>
+				</>
+			)}
 		</Panel>
 	);
 }
