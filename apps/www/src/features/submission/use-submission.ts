@@ -20,8 +20,19 @@ export type SubmitErrorCode =
 	| "offline"
 	| "tooLarge"
 	| "tooManyPending"
+	| "noSampleTests"
 	| "loginRequired"
 	| "genericError";
+
+/**
+ * So'rov qaysi maqsadda yuborilgani.
+ *
+ * Natijani KO'RSATISH shunga bog'liq: namunalar bo'yicha run va yechim
+ * verdikt qaytaradi, o'z kirishi bilan run esa dasturning chiqishini.
+ * Serverdan kelgan javob ikkalasida bir xil shaklda, ya'ni farqni faqat
+ * so'rovni yuborgan tomon biladi — shuning uchun u holatda saqlanadi.
+ */
+export type SubmitKind = "submit" | "runSamples" | "runCustom";
 
 /**
  * Holat DISKRIMINATSIYALANGAN union bilan.
@@ -33,11 +44,11 @@ export type SubmitErrorCode =
  */
 export type SubmitState =
 	| { phase: "idle" }
-	| { phase: "submitting" }
-	| { phase: "watching"; submission: SubmissionDto }
-	| { phase: "final"; submission: SubmissionDto }
+	| { phase: "submitting"; kind: SubmitKind }
+	| { phase: "watching"; kind: SubmitKind; submission: SubmissionDto }
+	| { phase: "final"; kind: SubmitKind; submission: SubmissionDto }
 	/** Juda uzoq davom etdi — natija yo'q emas, shunchaki hali kelmagan. */
-	| { phase: "timeout"; submission: SubmissionDto }
+	| { phase: "timeout"; kind: SubmitKind; submission: SubmissionDto }
 	| { phase: "error"; code: SubmitErrorCode };
 
 /*
@@ -56,7 +67,7 @@ export function useSubmission(slug: string) {
 	const { status: sessionStatus } = useSession();
 	const [state, setState] = useState<SubmitState>({ phase: "idle" });
 
-	// Har yangi yuborish oldingi pollingni bekor qiladi. Usiz eski
+	// Har yangi so'rov oldingi pollingni bekor qiladi. Usiz eski
 	// yechimning javobi kech kelib yangisining natijasini bosib ketardi.
 	const generation = useRef(0);
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,56 +83,64 @@ export function useSubmission(slug: string) {
 	// va so'rovlar bekorga davom etadi.
 	useEffect(() => stop, [stop]);
 
-	const watch = useCallback((id: number, startedAt: number, attempt: number, mine: number) => {
-		const delay = POLL_DELAYS_MS[Math.min(attempt, POLL_DELAYS_MS.length - 1)] ?? 2800;
+	const watch = useCallback(
+		(id: number, kind: SubmitKind, startedAt: number, attempt: number, mine: number) => {
+			const delay = POLL_DELAYS_MS[Math.min(attempt, POLL_DELAYS_MS.length - 1)] ?? 2800;
 
-		timer.current = setTimeout(async () => {
-			if (mine !== generation.current) return;
-
-			try {
-				// `withFreshToken` — tokenni so'rov OLDIDAN tekshiradi.
-				// Polling uzoq davom etishi mumkin va aynan shu vaqt
-				// oralig'ida access token eskirishi mumkin.
-				const submission = await withFreshToken((token) =>
-					submissionsApi.getSubmission(id, { token }),
-				);
+			timer.current = setTimeout(async () => {
 				if (mine !== generation.current) return;
 
-				if (submission.is_final) {
-					setState({ phase: "final", submission });
-					return;
+				try {
+					// `withFreshToken` — tokenni so'rov OLDIDAN tekshiradi.
+					// Polling uzoq davom etishi mumkin va aynan shu vaqt
+					// oralig'ida access token eskirishi mumkin.
+					const submission = await withFreshToken((token) =>
+						submissionsApi.getSubmission(id, { token }),
+					);
+					if (mine !== generation.current) return;
+
+					if (submission.is_final) {
+						setState({ phase: "final", kind, submission });
+						return;
+					}
+
+					if (Date.now() - startedAt > POLL_MAX_MS) {
+						setState({ phase: "timeout", kind, submission });
+						return;
+					}
+
+					setState({ phase: "watching", kind, submission });
+					watch(id, kind, startedAt, attempt + 1, mine);
+				} catch (cause) {
+					if (mine !== generation.current) return;
+
+					// Sessiya tugashi qayta urinish bilan tuzalmaydi — darhol
+					// to'xtaymiz. Qolgan xatolar (tarmoq uzilishi, 502) esa
+					// baholash to'xtaganini BILDIRMAYDI, shuning uchun umumiy
+					// vaqt tugagunicha davom etamiz.
+					if (cause instanceof SessionExpiredError) {
+						setState({ phase: "error", code: "loginRequired" });
+						return;
+					}
+
+					if (Date.now() - startedAt > POLL_MAX_MS) {
+						setState({ phase: "error", code: "genericError" });
+						return;
+					}
+					watch(id, kind, startedAt, attempt + 1, mine);
 				}
+			}, delay);
+		},
+		[],
+	);
 
-				if (Date.now() - startedAt > POLL_MAX_MS) {
-					setState({ phase: "timeout", submission });
-					return;
-				}
-
-				setState({ phase: "watching", submission });
-				watch(id, startedAt, attempt + 1, mine);
-			} catch (cause) {
-				if (mine !== generation.current) return;
-
-				// Sessiya tugashi qayta urinish bilan tuzalmaydi — darhol
-				// to'xtaymiz. Qolgan xatolar (tarmoq uzilishi, 502) esa
-				// baholash to'xtaganini BILDIRMAYDI, shuning uchun umumiy
-				// vaqt tugagunicha davom etamiz.
-				if (cause instanceof SessionExpiredError) {
-					setState({ phase: "error", code: "loginRequired" });
-					return;
-				}
-
-				if (Date.now() - startedAt > POLL_MAX_MS) {
-					setState({ phase: "error", code: "genericError" });
-					return;
-				}
-				watch(id, startedAt, attempt + 1, mine);
-			}
-		}, delay);
-	}, []);
-
-	const submit = useCallback(
-		async (language: string, sourceCode: string) => {
+	/**
+	 * Yuborish va sinov bir xil quvurdan o'tadi — faqat chaqiriladigan
+	 * endpoint va `kind` farq qiladi. Ikkita alohida funksiya yozish
+	 * polling mantiqini ikki nusxada saqlashni talab qilardi.
+	 */
+	const start = useCallback(
+		async (kind: SubmitKind, send: (token: string) => Promise<SubmissionDto>) => {
 			stop();
 			const mine = generation.current;
 
@@ -130,30 +149,44 @@ export function useSubmission(slug: string) {
 				return;
 			}
 
-			setState({ phase: "submitting" });
+			setState({ phase: "submitting", kind });
 
 			try {
-				const submission = await withFreshToken((token) =>
-					submissionsApi.submit(slug, { language, sourceCode }, { token }),
-				);
+				const submission = await withFreshToken(send);
 				if (mine !== generation.current) return;
 
 				// Judge shunchalik tez bo'lishi mumkin (biz 20 ms ko'rdik),
 				// shuning uchun birinchi javob allaqachon yakuniy bo'lishi
 				// mumkin — bunda polling umuman boshlanmaydi.
 				if (submission.is_final) {
-					setState({ phase: "final", submission });
+					setState({ phase: "final", kind, submission });
 					return;
 				}
 
-				setState({ phase: "watching", submission });
-				watch(submission.id, Date.now(), 0, mine);
+				setState({ phase: "watching", kind, submission });
+				watch(submission.id, kind, Date.now(), 0, mine);
 			} catch (cause) {
 				if (mine !== generation.current) return;
 				setState({ phase: "error", code: codeFor(cause) });
 			}
 		},
-		[slug, sessionStatus, stop, watch],
+		[sessionStatus, stop, watch],
+	);
+
+	const submit = useCallback(
+		(language: string, sourceCode: string) =>
+			start("submit", (token) =>
+				submissionsApi.submit(slug, { language, sourceCode }, { token }),
+			),
+		[slug, start],
+	);
+
+	const run = useCallback(
+		(language: string, sourceCode: string, customInput?: string) =>
+			start(customInput === undefined ? "runSamples" : "runCustom", (token) =>
+				submissionsApi.run(slug, { language, sourceCode, customInput }, { token }),
+			),
+		[slug, start],
 	);
 
 	const reset = useCallback(() => {
@@ -161,7 +194,7 @@ export function useSubmission(slug: string) {
 		setState({ phase: "idle" });
 	}, [stop]);
 
-	return { state, submit, reset };
+	return { state, submit, run, reset };
 }
 
 function codeFor(cause: unknown): SubmitErrorCode {
@@ -171,8 +204,12 @@ function codeFor(cause: unknown): SubmitErrorCode {
 	if (cause instanceof ApiTransportError) return "offline";
 
 	if (cause instanceof ApiError) {
-		// 413 — backend `ErrSourceTooLarge` uchun aynan shu kodni qaytaradi.
+		// 413 — backend `ErrSourceTooLarge` va `ErrCustomInputTooLarge`
+		// uchun BIR XIL kodni qaytaradi. Kirish hajmini mijoz tomonda
+		// oldindan tekshiramiz, shuning uchun bu yerga kelgan 413 amalda
+		// har doim kod haqida bo'ladi.
 		if (cause.status === 413) return "tooLarge";
+		if (cause.status === 422) return "noSampleTests";
 		if (cause.status === 429) return "tooManyPending";
 		if (cause.status === 401) return "loginRequired";
 	}

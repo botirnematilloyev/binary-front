@@ -50,6 +50,11 @@ const submissionSchema = z.object({
 	time_ms: z.number().int().nullable(),
 	memory_kb: z.number().int().nullable(),
 	compile_output: z.string().optional(),
+	/**
+	 * Dasturning chiqishi — faqat o'z kirishi bilan ishlangan run'da
+	 * keladi. Yechimlarda hech qachon bo'lmaydi.
+	 */
+	run_output: z.string().optional(),
 	/** Faqat egasiga qaytadi. */
 	source_code: z.string().optional(),
 	created_at: z.number().int(),
@@ -72,6 +77,33 @@ export function submit(
 		...options,
 		method: "POST",
 		body: { language: input.language, source_code: input.sourceCode },
+	});
+}
+
+/**
+ * Yechim yubormasdan kodni sinab ko'rish.
+ *
+ * Javob `submit` bilan BIR XIL shaklda — ya'ni polling kodi ham bir xil.
+ * Farq natijada: `customInput` berilmasa namuna testlari bo'yicha verdikt
+ * chiqadi, berilsa `run_output` — dasturning chiqishi.
+ *
+ * `customInput` bo'sh SATR bo'lishi mumkin va bu "berilmagan" dan
+ * boshqa narsa: kirish talab qilmaydigan dasturni ham sinab ko'rish
+ * kerak. Shuning uchun ixtiyoriy maydon, `""` emas.
+ */
+export function run(
+	slug: string,
+	input: { language: string; sourceCode: string; customInput?: string | undefined },
+	options: RequestOptions & { token: string },
+) {
+	return request(`/problems/${encodeURIComponent(slug)}/run`, submissionSchema, {
+		...options,
+		method: "POST",
+		body: {
+			language: input.language,
+			source_code: input.sourceCode,
+			custom_input: input.customInput ?? null,
+		},
 	});
 }
 

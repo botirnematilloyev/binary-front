@@ -88,7 +88,16 @@
     "failedTest": "{n}-testda xato",
     "time": "Vaqt",
     "memory": "Xotira",
-    "compileOutput": "Kompilyator chiqishi"
+    "compileOutput": "Kompilyator chiqishi",
+    "run": "Sinab ko'rish",
+    "running": "Ishlayapti…",
+    "useCustomInput": "O'z kirishim bilan",
+    "customInput": "Kirish",
+    "output": "Chiqish",
+    "noOutput": "Dastur hech narsa chop etmadi.",
+    "noSampleTests": "Bu masalada namuna testi yo'q — o'z kirishingiz bilan sinab ko'ring.",
+    "runHint": "Namuna testlarida sinaydi. Natija tarixga yozilmaydi.",
+    "inputTooLarge": "Kirish juda katta (16 KB dan oshmasin)."
   },
   "verdict": {
     "accepted": "Qabul qilindi",

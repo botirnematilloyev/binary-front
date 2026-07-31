@@ -88,7 +88,16 @@
     "failedTest": "Failed on test {n}",
     "time": "Time",
     "memory": "Memory",
-    "compileOutput": "Compiler output"
+    "compileOutput": "Compiler output",
+    "run": "Run",
+    "running": "Running…",
+    "useCustomInput": "With my own input",
+    "customInput": "Input",
+    "output": "Output",
+    "noOutput": "The program printed nothing.",
+    "noSampleTests": "This problem has no sample tests — try it with your own input.",
+    "runHint": "Runs on the sample tests. The result is not saved to your history.",
+    "inputTooLarge": "The input is too large (16 KB max)."
   },
   "verdict": {
     "accepted": "Accepted",
