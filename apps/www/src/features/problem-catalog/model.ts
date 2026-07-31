@@ -61,11 +61,36 @@ export function difficultyTone(
 	return DIFFICULTY_TONE[difficulty];
 }
 
+/**
+ * Bir sahifadagi masalalar soni.
+ *
+ * Bu yerda, sahifada emas: sahifalash havolalari ham, so'rov ham shu
+ * bitta sondan kelib chiqadi. Ikki joyda yozilsa, biri o'zgarganda
+ * "Keyingi" tugmasi bor sahifada bo'sh ro'yxat ochilardi.
+ */
+export const PER_PAGE = 20;
+
 /** URL'dan o'qilgan joriy filtr holati. */
 export interface CatalogFilters {
 	subjectId?: number | undefined;
 	topicId?: number | undefined;
+	difficulty?: Difficulty | undefined;
 }
+
+/**
+ * URL'dagi qiymatni `Difficulty` ga o'giradi.
+ *
+ * `as Difficulty` bilan majburlab bo'lmaydi: bu qiymat URL'dan keladi,
+ * ya'ni `?difficulty=oson` yoki `?difficulty=<script>` bo'lishi mumkin.
+ * Ro'yxatga tekshirish — bu ma'lumot haqiqatan shu turdan ekaniga
+ * yagona kafolat, va u backendga so'rov ketishidan oldin bo'ladi.
+ */
+export function parseDifficulty(raw: string | undefined): Difficulty | undefined {
+	return DIFFICULTIES.find((value) => value === raw);
+}
+
+/** Tartib mahsulot qarori: osondan qiyinga. */
+export const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard"];
 
 /*
  * Havola manzilidagi so'rov qismi.
@@ -81,12 +106,15 @@ export interface CatalogFilters {
 export type CatalogQuery = {
 	subject_id?: number;
 	topic_id?: number;
+	difficulty?: Difficulty;
+	page?: number;
 };
 
 /** `null` — "bu filtrni olib tashla", `undefined` — "tegma". */
 export interface CatalogFilterPatch {
 	subjectId?: number | null | undefined;
 	topicId?: number | null | undefined;
+	difficulty?: Difficulty | null | undefined;
 }
 
 /**
@@ -103,9 +131,10 @@ export interface CatalogFilterPatch {
  *    filtrda 5-sahifa yo'q — foydalanuvchi bo'sh ro'yxat ko'radi. Bu yerda
  *    `page` umuman ifodalanmagani uchun uni "unutish" mumkin emas.
  *
- * Har maydon alohida yozilgan, umumiy sikl bilan emas: `difficulty` satr
- * bo'ladi, ya'ni `number` ustidan yurgan sikl baribir buzilardi, va aniq
- * yozilgani uchun kompilyator har bir maydonni tekshira oladi.
+ * Har maydon alohida yozilgan, umumiy sikl bilan emas: maydonlar turli
+ * turda (`number` va `Difficulty`) va URL'dagi nomlari boshqa, ya'ni
+ * sikl baribir har biri uchun alohida shox talab qilardi — aniq yozilgani
+ * esa kompilyatorga har bir maydonni tekshirish imkonini beradi.
  */
 export function filterQuery(
 	current: CatalogFilters,
@@ -113,6 +142,7 @@ export function filterQuery(
 ): CatalogQuery {
 	const subjectId = applyPatch(current.subjectId, patch.subjectId);
 	const topicId = applyPatch(current.topicId, patch.topicId);
+	const difficulty = applyPatch(current.difficulty, patch.difficulty);
 
 	// Maydonlar shartli qo'shiladi, `subject_id: undefined` deb emas:
 	// `exactOptionalPropertyTypes` yoqilgan, va aniq `undefined` qiymat
@@ -120,13 +150,35 @@ export function filterQuery(
 	const query: CatalogQuery = {};
 	if (subjectId !== undefined) query.subject_id = subjectId;
 	if (topicId !== undefined) query.topic_id = topicId;
+	if (difficulty !== undefined) query.difficulty = difficulty;
 	return query;
 }
 
-function applyPatch(
-	current: number | undefined,
-	patch: number | null | undefined,
-): number | undefined {
+/**
+ * Sahifalash havolasi — `filterQuery` dan ALOHIDA funksiya.
+ *
+ * `filterQuery` `page` ni ataylab qaytarmaydi, va bu qoida shu yerda ham
+ * buzilmasin: sahifa raqamini qo'shish uchun *boshqa* funksiya chaqirish
+ * kerak. Agar `filterQuery` ga ixtiyoriy `page` argumenti qo'shilganda,
+ * uni tasodifan uzatib yuborish yana mumkin bo'lardi.
+ *
+ * Birinchi sahifa uchun `?page=1` YOZILMAYDI: bo'lim uchun bitta kanonik
+ * manzil bo'lishi kerak, aks holda `/masalalar` va `/masalalar?page=1`
+ * bir xil kontentli ikki manzilga aylanadi.
+ */
+export function pageQuery(current: CatalogFilters, page: number): CatalogQuery {
+	const query = filterQuery(current);
+	if (page > 1) query.page = page;
+	return query;
+}
+
+// Generik: `subject_id` son, `difficulty` esa satr birlashmasi.
+// `null` — "olib tashla" degan sentinel, shuning uchun u qiymat turining
+// o'zida bo'lishi mumkin emas (filtr qiymatlarimizda `null` yo'q).
+function applyPatch<T>(
+	current: T | undefined,
+	patch: T | null | undefined,
+): T | undefined {
 	if (patch === undefined) return current;
 	return patch === null ? undefined : patch;
 }

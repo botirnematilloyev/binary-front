@@ -7,5 +7,16 @@
  */
 export { ProblemTable } from "./ui/problem-table";
 export { CatalogSidebar } from "./ui/catalog-sidebar";
-export { difficultyTone, filterQuery, pickName, toProblemRow } from "./model";
+export { DifficultyFilter } from "./ui/difficulty-filter";
+export { Pagination } from "./ui/pagination";
+export {
+	difficultyTone,
+	filterQuery,
+	pageQuery,
+	parseDifficulty,
+	pickName,
+	toProblemRow,
+	DIFFICULTIES,
+	PER_PAGE,
+} from "./model";
 export type { CatalogFilters, CatalogQuery, ProblemRow } from "./model";

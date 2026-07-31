@@ -2,7 +2,15 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { problemsApi, taxonomyApi } from "@binary/api";
 import { Container } from "@binary/ui";
-import { CatalogSidebar, ProblemTable, toProblemRow } from "@/features/problem-catalog";
+import {
+	CatalogSidebar,
+	DifficultyFilter,
+	Pagination,
+	parseDifficulty,
+	PER_PAGE,
+	ProblemTable,
+	toProblemRow,
+} from "@/features/problem-catalog";
 import { buildAlternates } from "@/shared/i18n/alternates";
 import { apiLangOf, type Locale } from "@/shared/i18n/locales";
 
@@ -62,7 +70,10 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	// tozalash 400 xatosi o'rniga oddiy "filtr yo'q" holatini beradi.
 	const subjectId = positiveInt(query.subject_id);
 	const topicId = positiveInt(query.topic_id);
+	const difficulty = parseDifficulty(query.difficulty);
 	const page = positiveInt(query.page) ?? 1;
+
+	const filters = { subjectId, topicId, difficulty };
 
 	// Mavzu fanga tegishli ekani BU YERDA tekshirilmaydi. Backend ikki
 	// filtrni VA bilan birlashtiradi, ya'ni mos kelmagan juftlik bo'sh
@@ -86,11 +97,27 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	// Manzil (`?subject_id=`) so'rovga kiradi, ya'ni har fan uchun kesh
 	// yozuvi alohida — filtrlar aralashib ketmaydi.
 	const [list, subjects, topics] = await Promise.all([
-		problemsApi.listProblems({ page, subjectId, topicId, lang: apiLang }, { revalidate }),
+		problemsApi.listProblems(
+			{ page, perPage: PER_PAGE, subjectId, topicId, difficulty, lang: apiLang },
+			{ revalidate },
+		),
 		taxonomyApi.listSubjects({ revalidate: 3600 }),
 		taxonomyApi.listTopics(subjectId, { revalidate: 3600 }),
 	]);
 
+	// "Keyingi sahifa bormi" — to'liq sahifa keldimi degan savol orqali.
+	//
+	// Avval `PER_PAGE + 1` ta so'rab, ortiqchasi keldimi deb qaralgan edi.
+	// U NOTO'G'RI: backend offset'ni yuborilgan `per_page` dan hisoblaydi
+	// (`(page-1) * per_page`), ya'ni 21 ta so'ralsa 2-sahifa 22-yozuvdan
+	// boshlanadi va 21-masala hech qachon ko'rinmaydi. Buni test topdi.
+	//
+	// Hozirgi usulning bitta kamchiligi bor: masalalar soni aynan 20 ga
+	// bo'linsa, oxirgi sahifada ham "Keyingi" ko'rinadi va u bo'sh
+	// sahifaga olib boradi. Yolg'on emas, lekin ortiqcha bosish.
+	// Yechim — javobga `total` qo'shish (backend rejasidagi A paketi);
+	// o'shanda bu yer ham, raqamli sahifalash ham to'g'ri bo'ladi.
+	const hasNext = list.problems.length === PER_PAGE;
 	const rows = list.problems.map(toProblemRow);
 
 	return (
@@ -102,12 +129,18 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 					<CatalogSidebar
 						subjects={subjects.subjects}
 						topics={topics.topics}
-						filters={{ subjectId, topicId }}
+						filters={filters}
 						apiLang={apiLang}
 					/>
 				</aside>
 				<div>
+					<div className="mb-4">
+						<DifficultyFilter filters={filters} />
+					</div>
+
 					<ProblemTable rows={rows} />
+
+					<Pagination filters={filters} page={page} hasNext={hasNext} />
 				</div>
 			</div>
 		</Container>
