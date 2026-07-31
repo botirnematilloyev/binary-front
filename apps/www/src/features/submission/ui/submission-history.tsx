@@ -79,10 +79,13 @@ export function SubmissionHistory({
 	// yuqorida, yuborish panelida allaqachon bor.
 	if (sessionStatus !== "authenticated") return null;
 
+	/*
+	 * Sarlavhasiz. Chaqiruvchi kontekstni o'zi beradi — hozir u
+	 * `<details>` ning sarlavhasi, ya'ni bu yerda yana bir `<h2>` bir
+	 * narsani ikki marta aytardi.
+	 */
 	return (
-		<section className="mt-9">
-			<h2 className="text-lg font-bold">{t("history")}</h2>
-
+		<div>
 			{state.phase === "loading" && (
 				<Panel className="mt-3 h-24 animate-pulse bg-surface-subtle" />
 			)}
@@ -149,6 +152,6 @@ export function SubmissionHistory({
 					</ul>
 				</Panel>
 			)}
-		</section>
+		</div>
 	);
 }

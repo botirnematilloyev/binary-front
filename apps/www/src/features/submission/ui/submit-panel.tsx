@@ -1,26 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { LanguageDto } from "@binary/api";
 import { Button, Panel } from "@binary/ui";
 import { useSession } from "@binary/session";
 import { useSubmission } from "../use-submission";
+import { CodeEditor } from "./code-editor";
 import { SubmissionHistory } from "./submission-history";
 import { VerdictCard } from "./verdict-card";
 
 /**
- * Yechim yuborish paneli — client "orol".
+ * Yechim yozish paneli — masala sahifasining o'ng ustuni.
  *
- * Tillar ro'yxati SERVERDA olinadi va prop bo'lib keladi: shunda brauzer
+ * Shart chapda qoladi va o'z holicha aylanadi, panel esa yopishib turadi
+ * (`sticky` sahifada). Shu tufayli setter yozgan shartga qarab turib kod
+ * yozish mumkin — oldin ular ustma-ust joylashgan edi va foydalanuvchi
+ * shartni ko'rish uchun yuqoriga qaytishi kerak edi.
+ *
+ * Tillar ro'yxati SERVERDA olinadi va prop bo'lib keladi: brauzer
  * qo'shimcha so'rov yubormaydi va sahifa baribir to'liq server tomonda
  * render qilinadi (SEO uchun muhim).
- *
- * Muharrir hozircha `<textarea>`. Bu ATAYLAB: Monaco ~2 MB bundle
- * qo'shadi, CodeMirror 6 esa ~150 KB — ikkisi ham birinchi ishlaydigan
- * yuborish oqimidan MUHIMROQ emas. Trigger: sintaksis bo'yash yoki qavs
- * juftlash so'ralganda CodeMirror 6 qo'shiladi (Monaco emas — hajmi
- * tufayli).
  */
 export function SubmitPanel({
 	slug,
@@ -56,14 +56,10 @@ export function SubmitPanel({
 
 	// Mahalliy validatsiya (bo'sh kod) va serverdan kelgan xato bir joyda
 	// ko'rsatiladi, lekin manbalari boshqa: birinchisi yuborishdan oldin,
-	// ikkinchisi keyin. Bittasini ikkinchisi bosib ketmasligi uchun
-	// mahalliy xato ustunroq — u yangiroq ma'lumot.
-	const errorMessage =
-		localError ?? (state.phase === "error" ? t(state.code) : null);
+	// ikkinchisi keyin. Mahalliy xato ustunroq — u yangiroq ma'lumot.
+	const errorMessage = localError ?? (state.phase === "error" ? t(state.code) : null);
 
-	async function onSubmit(event: FormEvent) {
-		event.preventDefault();
-
+	async function onSubmit() {
 		if (code.trim() === "") {
 			setLocalError(t("emptyCode"));
 			return;
@@ -72,33 +68,9 @@ export function SubmitPanel({
 		await submit(language, code);
 	}
 
-	/**
-	 * Tab tugmasi 4 bo'shliq qo'yadi.
-	 *
-	 * Usiz Tab fokusni keyingi elementga o'tkazadi — kod yozayotgan odam
-	 * uchun bu formadan chiqib ketish degani. `preventDefault` esa
-	 * klaviatura bilan yuradigan foydalanuvchini formada QAMAB qo'ymaydi,
-	 * chunki `Escape` va `Shift+Tab` ishlashda davom etadi.
-	 */
-	function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-		if (event.key !== "Tab" || event.shiftKey) return;
-
-		event.preventDefault();
-		const target = event.currentTarget;
-		const { selectionStart, selectionEnd, value } = target;
-		const next = `${value.slice(0, selectionStart)}    ${value.slice(selectionEnd)}`;
-
-		setCode(next);
-		// React holatni yangilagandan keyin kursorni joyiga qo'yish kerak,
-		// aks holda u matn oxiriga sakraydi.
-		requestAnimationFrame(() => {
-			target.selectionStart = target.selectionEnd = selectionStart + 4;
-		});
-	}
-
 	if (sessionStatus === "anonymous") {
 		return (
-			<Panel className="mt-8 px-5 py-6">
+			<Panel className="px-5 py-6">
 				<p className="text-fg-secondary">{t("loginRequired")}</p>
 				<a
 					href={`/kirish?next=${encodeURIComponent(`/masalalar/${slug}`)}`}
@@ -111,59 +83,40 @@ export function SubmitPanel({
 	}
 
 	return (
-		<section className="mt-9">
-			<h2 className="text-lg font-bold">{t("title")}</h2>
+		<section className="flex flex-col gap-3">
+			<div className="flex items-center gap-3">
+				<h2 className="text-lg font-bold">{t("title")}</h2>
+				<select
+					value={language}
+					onChange={(event) => setLanguage(event.target.value)}
+					aria-label={t("language")}
+					className="ml-auto rounded-control border border-border-strong bg-surface px-2.5 py-1.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+				>
+					{languages.map((item) => (
+						<option key={item.code} value={item.code}>
+							{item.name} {item.version}
+						</option>
+					))}
+				</select>
+			</div>
 
-			<form onSubmit={onSubmit} className="mt-3">
-				<div className="flex items-center gap-3">
-					<label htmlFor="language" className="text-sm font-semibold">
-						{t("language")}
-					</label>
-					<select
-						id="language"
-						value={language}
-						onChange={(event) => setLanguage(event.target.value)}
-						className="rounded-control border border-border-strong bg-surface px-2.5 py-1.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
-					>
-						{languages.map((item) => (
-							<option key={item.code} value={item.code}>
-								{item.name} {item.version}
-							</option>
-						))}
-					</select>
-				</div>
+			{/* Balandlik qat'iy: panel yopishib turadi, ya'ni u ekrandan
+			    balandroq bo'lsa `sticky` ishlamay qoladi. */}
+			<div className="h-[420px]">
+				<CodeEditor value={code} onChange={setCode} language={language} disabled={busy} />
+			</div>
 
-				<label htmlFor="code" className="mt-4 block text-sm font-semibold">
-					{t("code")}
-				</label>
-				<textarea
-					id="code"
-					value={code}
-					onChange={(event) => setCode(event.target.value)}
-					onKeyDown={onKeyDown}
-					placeholder={t("codePlaceholder")}
-					rows={14}
-					spellCheck={false}
-					// Brauzerlar kod uchun avtomatik tuzatishni yoqib yuboradi
-					// va u qo'shtirnoqlarni "chiroyli" belgilarga almashtiradi —
-					// natijada kompilyatsiya xatosi chiqadi.
-					autoCorrect="off"
-					autoCapitalize="off"
-					className="mt-1.5 w-full resize-y rounded-card border border-border-strong bg-surface p-3 font-mono text-[13px] leading-relaxed focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
-				/>
+			{errorMessage && (
+				<p role="alert" className="text-sm text-danger">
+					{errorMessage}
+				</p>
+			)}
 
-				{errorMessage && (
-					<p role="alert" className="mt-2 text-sm text-danger">
-						{errorMessage}
-					</p>
-				)}
-
-				<div className="mt-3">
-					<Button type="submit" disabled={busy}>
-						{state.phase === "submitting" ? t("submitting") : t("submit")}
-					</Button>
-				</div>
-			</form>
+			<div className="flex items-center gap-3">
+				<Button type="button" onClick={() => void onSubmit()} disabled={busy}>
+					{state.phase === "submitting" ? t("submitting") : t("submit")}
+				</Button>
+			</div>
 
 			{(state.phase === "watching" ||
 				state.phase === "final" ||
@@ -171,7 +124,22 @@ export function SubmitPanel({
 				<VerdictCard submission={state.submission} stillJudging={state.phase === "timeout"} />
 			)}
 
-			<SubmissionHistory problemId={problemId} reloadKey={historyKey} />
+			{/*
+			 * Tarix yopiq holatda boshlanadi. O'ng ustun tor va yopishib
+			 * turadi — uzun ro'yxat panelni ekrandan baland qilib, `sticky`
+			 * ni buzardi. Kerak bo'lganda ochiladi.
+			 */}
+			<details className="group">
+				<summary className="cursor-pointer list-none text-sm font-semibold text-fg-muted hover:text-fg">
+					{t("history")}
+					<span aria-hidden className="ml-1.5 inline-block transition-transform group-open:rotate-90">
+						›
+					</span>
+				</summary>
+				<div className="mt-2">
+					<SubmissionHistory problemId={problemId} reloadKey={historyKey} />
+				</div>
+			</details>
 		</section>
 	);
 }

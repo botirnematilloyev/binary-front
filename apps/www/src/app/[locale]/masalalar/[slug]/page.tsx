@@ -83,8 +83,17 @@ export default async function ProblemPage({ params }: PageProps) {
 	const tDifficulty = await getTranslations("difficulty");
 
 	return (
-		<Container className="py-9">
-			<article className="max-w-[760px]">
+		/*
+		 * Ikki ustun: shart chapda, muharrir o'ngda.
+		 *
+		 * Konteyner shu sahifada kengroq (1400px) — standart 1080px da
+		 * ikkita ustun ham torayib, kod ham, shart ham noqulay bo'lardi.
+		 * Boshqa sahifalar standart kenglikda qoladi, chunki u yerda
+		 * o'qish uchun tor ustun afzal.
+		 */
+		<Container className="max-w-[1400px] py-9">
+			<div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)]">
+			<article className="min-w-0">
 				<div className="flex items-center gap-2.5">
 					<span className="font-mono text-[12.5px] text-fg-subtle">#{problem.id}</span>
 					<Badge tone={difficultyTone(problem.difficulty)} size="sm">
@@ -136,13 +145,22 @@ export default async function ProblemPage({ params }: PageProps) {
 				)}
 
 				{statement.notes && <Section title={t("notes")}>{statement.notes}</Section>}
+			</article>
 
+			{/*
+			 * Panel yopishib turadi: shart uzun bo'lsa ham muharrir ko'z
+			 * oldida qoladi. `self-start` shart — usiz grid elementi
+			 * balandlikni to'ldirish uchun cho'ziladi va `sticky` ta'sir
+			 * qilmaydi.
+			 */}
+			<aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
 				<SubmitPanel
 					slug={slug}
 					problemId={problem.id}
 					languages={languages.languages}
 				/>
-			</article>
+			</aside>
+			</div>
 		</Container>
 	);
 }
