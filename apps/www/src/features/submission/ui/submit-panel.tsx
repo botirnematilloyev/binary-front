@@ -14,6 +14,20 @@ import { VerdictCard } from "./verdict-card";
 /** Backenddagi `MaxCustomInputBytes` bilan bir xil — UMUMIY hajm. */
 const MAX_CUSTOM_INPUT = 16 * 1024;
 
+/*
+ * Muharrir ostidagi uchta bo'lim.
+ *
+ * Ilgari ular uchta xil boshqaruv edi: "O'z kirishim bilan" belgisi,
+ * verdikt kartasi (o'z-o'zidan paydo bo'ladigan) va "Yuborishlaringiz"
+ * ochiluvchi bloki. Uchtasi uch xil ishlar, ekranda esa bir-birining
+ * ostiga tushib, panelni cho'zib yuborardi.
+ *
+ * Bitta tab qatori ularni tenglashtiradi va panel balandligini
+ * BARQAROR qiladi — bu `sticky` ustun uchun muhim: ichkarida nima
+ * bo'lishidan qat'i nazar, panel ekrandan baland bo'lib qolmaydi.
+ */
+type Tab = "tests" | "result" | "history";
+
 /**
  * Yechim yozish paneli — masala sahifasining o'ng ustuni.
  *
@@ -29,10 +43,19 @@ export function SubmitPanel({
 	slug,
 	problemId,
 	languages,
+	samples,
 }: {
 	slug: string;
 	problemId: number;
 	languages: LanguageDto[];
+	/**
+	 * Namunali testlar — "Testlar" tab'ida ko'rsatiladi.
+	 *
+	 * Ular sahifada allaqachon bor (shart ostida), lekin bu yerda ham
+	 * kerak: foydalanuvchi kod yozayotganda qaysi kirish bilan
+	 * ishlatayotganini KO'RIB turishi kerak, tepaga aylantirmasdan.
+	 */
+	samples: { input: string; expected_output: string }[];
 }) {
 	const t = useTranslations("submission");
 	const { status: sessionStatus } = useSession();
@@ -41,6 +64,7 @@ export function SubmitPanel({
 	const [language, setLanguage] = useState(languages[0]?.code ?? "");
 	const [code, setCode] = useState("");
 	const [useCustom, setUseCustom] = useState(false);
+	const [tab, setTab] = useState<Tab>("tests");
 	// Kamida bitta holat har doim bor — bo'sh ro'yxatni backend rad etadi
 	// va foydalanuvchiga "avval holat qo'shing" deyish ortiqcha qadam.
 	const [cases, setCases] = useState<string[]>([""]);
@@ -60,6 +84,21 @@ export function SubmitPanel({
 		if (lastFinalId.current === state.submission.id) return;
 		lastFinalId.current = state.submission.id;
 		setHistoryKey((n) => n + 1);
+	}, [state]);
+
+	/*
+	 * Natija kelganda kerakli tab O'ZI ochiladi.
+	 *
+	 * O'z kirishi bilan ishlangan run "Testlar" da qoladi: chiqish har
+	 * holatning yonida ko'rsatiladi va ularni ko'z bilan moslashtirish
+	 * shart emas. Qolgan hamma narsa "Natija" ga o'tadi — aks holda
+	 * foydalanuvchi tugmani bosib, hech narsa o'zgarmaganini ko'rardi.
+	 */
+	useEffect(() => {
+		if (state.phase !== "watching" && state.phase !== "final" && state.phase !== "timeout") {
+			return;
+		}
+		setTab(state.kind === "runCustom" ? "tests" : "result");
 	}, [state]);
 
 	const busy = state.phase === "submitting" || state.phase === "watching";
@@ -124,113 +163,197 @@ export function SubmitPanel({
 				<CodeEditor value={code} onChange={setCode} language={language} disabled={busy} />
 			</div>
 
-			<label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-				<input
-					type="checkbox"
-					checked={useCustom}
-					onChange={(event) => setUseCustom(event.target.checked)}
-					className="size-4 cursor-pointer"
-				/>
-				{t("useCustomInput")}
-			</label>
-
-			{useCustom && (
-				<CustomCases
-					cases={cases}
-					onChange={setCases}
-					active={activeCase}
-					onActiveChange={setActiveCase}
-					disabled={busy}
-					outputs={
-						state.phase === "final" && state.kind === "runCustom"
-							? state.submission.run_outputs
-							: undefined
-					}
-					failedIndex={
-						state.phase === "final" &&
-						state.kind === "runCustom" &&
-						state.submission.failed_test !== null
-							? state.submission.failed_test - 1
-							: null
-					}
-					verdict={
-						state.phase === "final" && state.kind === "runCustom"
-							? state.submission.verdict
-							: null
-					}
-				/>
-			)}
-
 			{errorMessage && (
 				<p role="alert" className="text-sm text-danger">
 					{errorMessage}
 				</p>
 			)}
 
-			<div className="flex flex-wrap items-center gap-3">
-				<Button
-					type="button"
-					variant="outline"
-					onClick={() => {
-						// `undefined` va bo'sh SATR farqli: birinchisi
-						// "namunalar bo'yicha", ikkinchisi "kirishsiz ishga tushir".
-						if (validate()) void run(language, code, useCustom ? cases : undefined);
-					}}
-					disabled={busy}
-				>
-					{busy && state.phase !== "submitting" ? t("running") : t("run")}
-				</Button>
+			{/* ── Tab qatori: chapda bo'limlar, o'ngda amallar ── */}
+			<div className="flex flex-wrap items-center gap-2 border-b border-border-default">
+				<div className="flex">
+					<TabButton active={tab === "tests"} onClick={() => setTab("tests")}>
+						{t("tabTests")}
+					</TabButton>
+					<TabButton active={tab === "result"} onClick={() => setTab("result")}>
+						{t("tabResult")}
+					</TabButton>
+					<TabButton active={tab === "history"} onClick={() => setTab("history")}>
+						{t("tabHistory")}
+					</TabButton>
+				</div>
 
-				<Button
-					type="button"
-					onClick={() => {
-						if (validate()) void submit(language, code);
-					}}
-					disabled={busy}
-				>
-					{state.phase === "submitting" && state.kind === "submit"
-						? t("submitting")
-						: t("submit")}
-				</Button>
+				<div className="ml-auto flex items-center gap-2 pb-2">
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() => {
+							// `undefined` va bo'sh SATR farqli: birinchisi
+							// "namunalar bo'yicha", ikkinchisi "kirishsiz ishga tushir".
+							if (validate()) void run(language, code, useCustom ? cases : undefined);
+						}}
+						disabled={busy}
+					>
+						{busy && state.phase !== "submitting" ? t("running") : t("run")}
+					</Button>
+
+					<Button
+						type="button"
+						size="sm"
+						onClick={() => {
+							if (validate()) void submit(language, code);
+						}}
+						disabled={busy}
+					>
+						{state.phase === "submitting" && state.kind === "submit"
+							? t("submitting")
+							: t("submit")}
+					</Button>
+				</div>
 			</div>
 
-			{!useCustom && <p className="text-sm text-fg-muted">{t("runHint")}</p>}
+			{tab === "tests" && (
+				<div className="flex flex-col gap-3">
+					{/*
+					 * Rejim tanlagichi — belgi (checkbox) emas.
+					 *
+					 * Belgi "yoqilgan/o'chirilgan" deb o'qiladi, bu yerda
+					 * esa ikki TENG variant bor: namunalar bo'yicha yoki
+					 * o'z kirishi bilan. Segment tugmalari ikkalasini ham
+					 * ko'rsatadi, ya'ni foydalanuvchi ikkinchi variant
+					 * borligini bilish uchun belgini bosib ko'rishi
+					 * shart emas.
+					 */}
+					<div className="flex gap-1.5">
+						<ModeButton active={!useCustom} onClick={() => setUseCustom(false)}>
+							{t("modeSamples")}
+						</ModeButton>
+						<ModeButton active={useCustom} onClick={() => setUseCustom(true)}>
+							{t("modeCustom")}
+						</ModeButton>
+					</div>
 
-			{/*
-			 * Verdikt kartasi FAQAT yechim va namunalar bo'yicha run uchun.
-			 * O'z kirishi bilan ishlangan run natijasi holat tab'ining
-			 * ichida ko'rsatiladi — kirish va chiqish yonma-yon turishi
-			 * ularni ko'z bilan moslashtirishdan ozod qiladi.
-			 */}
-			{(state.phase === "watching" ||
-				state.phase === "final" ||
-				state.phase === "timeout") &&
-				state.kind !== "runCustom" && (
+					{useCustom ? (
+						<CustomCases
+							cases={cases}
+							onChange={setCases}
+							active={activeCase}
+							onActiveChange={setActiveCase}
+							disabled={busy}
+							outputs={
+								state.phase === "final" && state.kind === "runCustom"
+									? state.submission.run_outputs
+									: undefined
+							}
+							failedIndex={
+								state.phase === "final" &&
+								state.kind === "runCustom" &&
+								state.submission.failed_test !== null
+									? state.submission.failed_test - 1
+									: null
+							}
+							verdict={
+								state.phase === "final" && state.kind === "runCustom"
+									? state.submission.verdict
+									: null
+							}
+						/>
+					) : samples.length === 0 ? (
+						<p className="text-sm text-fg-muted">{t("noSamples")}</p>
+					) : (
+						/*
+						 * Namunalar faqat O'QISH uchun: ular masalaning bir
+						 * qismi va tahrirlansa, run natijasi masalaga
+						 * aloqasiz bo'lib qolardi. Tahrirlash kerak bo'lsa —
+						 * "O'z kirishim" rejimi bor.
+						 */
+						<ul className="flex flex-col gap-2">
+							{samples.map((sample, index) => (
+								<li key={index} className="rounded-control border border-border-default p-3">
+									<p className="text-[11px] font-bold tracking-wide text-fg-subtle">
+										{t("sampleNumber", { number: index + 1 })}
+									</p>
+									<div className="mt-2 grid gap-2 sm:grid-cols-2">
+										<pre className="overflow-x-auto rounded-control bg-surface-subtle p-2 font-mono text-[12.5px]">
+											{sample.input}
+										</pre>
+										<pre className="overflow-x-auto rounded-control bg-surface-subtle p-2 font-mono text-[12.5px]">
+											{sample.expected_output}
+										</pre>
+									</div>
+								</li>
+							))}
+						</ul>
+					)}
+				</div>
+			)}
+
+			{tab === "result" &&
+				((state.phase === "watching" ||
+					state.phase === "final" ||
+					state.phase === "timeout") &&
+				state.kind !== "runCustom" ? (
 					<VerdictCard
 						submission={state.submission}
 						stillJudging={state.phase === "timeout"}
 					/>
-				)}
+				) : (
+					// Bo'sh tab ham xabar berishi kerak: "hech narsa yo'q"
+					// bilan "yuklanmadi" ni foydalanuvchi farqlay olsin.
+					<p className="text-sm text-fg-muted">{t("noResult")}</p>
+				))}
 
-			{/*
-			 * Tarix yopiq holatda boshlanadi. O'ng ustun tor va yopishib
-			 * turadi — uzun ro'yxat panelni ekrandan baland qilib, `sticky`
-			 * ni buzardi.
-			 */}
-			<details className="group">
-				<summary className="cursor-pointer list-none text-sm font-semibold text-fg-muted hover:text-fg">
-					{t("history")}
-					<span
-						aria-hidden
-						className="ml-1.5 inline-block transition-transform group-open:rotate-90"
-					>
-						›
-					</span>
-				</summary>
-				<div className="mt-2">
-					<SubmissionHistory problemId={problemId} reloadKey={historyKey} />
-				</div>
-			</details>
+			{tab === "history" && <SubmissionHistory problemId={problemId} reloadKey={historyKey} />}
+
 		</section>
+	);
+}
+
+function TabButton({
+	active,
+	onClick,
+	children,
+}: {
+	active: boolean;
+	onClick: () => void;
+	children: string;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			aria-pressed={active}
+			className={`-mb-px cursor-pointer border-b-2 px-3.5 py-2 text-sm font-semibold transition-colors ${
+				active ? "border-fg text-fg" : "border-transparent text-fg-muted hover:text-fg"
+			}`}
+		>
+			{children}
+		</button>
+	);
+}
+
+function ModeButton({
+	active,
+	onClick,
+	children,
+}: {
+	active: boolean;
+	onClick: () => void;
+	children: string;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			aria-pressed={active}
+			className={`cursor-pointer rounded-pill px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+				active
+					? "bg-fg text-fg-inverted"
+					: "border border-border-default text-fg-secondary hover:border-border-hover"
+			}`}
+		>
+			{children}
+		</button>
 	);
 }

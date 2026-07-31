@@ -158,6 +158,7 @@ export default async function ProblemPage({ params }: PageProps) {
 					slug={slug}
 					problemId={problem.id}
 					languages={languages.languages}
+					samples={problem.samples}
 				/>
 			</aside>
 			</div>
