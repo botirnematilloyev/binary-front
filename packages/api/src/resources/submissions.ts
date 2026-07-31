@@ -57,6 +57,16 @@ const submissionSchema = z.object({
 	run_outputs: z.array(z.string()).optional(),
 	/** Faqat egasiga qaytadi. */
 	source_code: z.string().optional(),
+	/**
+	 * Yechim qaysi masalaga tegishli. Faqat RO'YXATDA keladi: bitta
+	 * yechim sahifasida masala nomi allaqachon kontekstda bor.
+	 */
+	problem: z
+		.object({
+			slug: z.string(),
+			title: z.string(),
+		})
+		.optional(),
 	created_at: z.number().int(),
 	judged_at: z.number().int().nullable(),
 });
@@ -121,6 +131,8 @@ export function listSubmissions(
 		page?: number | undefined;
 		perPage?: number | undefined;
 		problemId?: number | undefined;
+		/** Masala nomlari qaysi tilda kerakligi. */
+		lang?: string | undefined;
 	},
 	options: RequestOptions & { token: string },
 ) {
@@ -128,6 +140,7 @@ export function listSubmissions(
 		page: params.page,
 		per_page: params.perPage,
 		problem_id: params.problemId,
+		lang: params.lang,
 	});
 	return request(
 		`/submissions${search}`,
@@ -138,4 +151,51 @@ export function listSubmissions(
 		}),
 		options,
 	);
+}
+
+// ---- profil ----
+
+const statsSchema = z.object({
+	/** Yechilgan MASALALAR soni — yechimlar soni emas. */
+	solved: z.number().int(),
+	attempted: z.number().int(),
+	total: z.number().int(),
+	accepted: z.number().int(),
+	/** Yechim bo'lmasa `null` — nol qiymat 1970-yilni bildirardi. */
+	first_at: z.number().int().nullable(),
+	last_at: z.number().int().nullable(),
+	by_language: z.array(
+		z.object({
+			code: z.string(),
+			name: z.string(),
+			total: z.number().int(),
+			accepted: z.number().int(),
+		}),
+	),
+});
+
+export type StatsDto = z.infer<typeof statsSchema>;
+
+export function getStats(options: RequestOptions & { token: string }) {
+	return request("/submissions/stats", statsSchema, options);
+}
+
+const activitySchema = z.object({
+	days: z.array(
+		z.object({
+			/** `YYYY-MM-DD` (UTC) — kalendar kuni, vaqt belgisi emas. */
+			day: z.string(),
+			count: z.number().int(),
+		}),
+	),
+});
+
+export type ActivityDto = z.infer<typeof activitySchema>;
+
+/**
+ * Kunlik faollik. Yozuv BO'LMAGAN kunlar javobda yo'q — bo'sh
+ * kataklarni mijoz o'zi to'ldiradi.
+ */
+export function getActivity(days: number, options: RequestOptions & { token: string }) {
+	return request(`/submissions/activity${query({ days })}`, activitySchema, options);
 }

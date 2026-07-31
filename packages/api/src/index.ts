@@ -21,6 +21,7 @@ export * as adminTopicsApi from "./resources/admin-topics";
 export * as taxonomyApi from "./resources/taxonomy";
 export * as submissionsApi from "./resources/submissions";
 export * as authApi from "./resources/auth";
+export * as profileApi from "./resources/profile";
 
 export type {
 	Difficulty,
@@ -49,10 +50,19 @@ export type {
 } from "./resources/admin-problems";
 
 export type {
+	ActivityDto,
 	LanguageDto,
+	StatsDto,
 	SubmissionDto,
 	SubmissionStatus,
 	Verdict,
 } from "./resources/submissions";
 
 export type { AuthDto, DeviceInfo, MeDto, OtpProvider, Role } from "./resources/auth";
+
+export type {
+	DistrictDto,
+	RegionDto,
+	SessionDto,
+	UpdateMeInput,
+} from "./resources/profile";

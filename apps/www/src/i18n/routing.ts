@@ -61,5 +61,6 @@ export const routing = defineRouting({
 		"/masalalar": "/masalalar",
 		"/masalalar/[slug]": "/masalalar/[slug]",
 		"/kirish": "/kirish",
+		"/profil": "/profil",
 	},
 });

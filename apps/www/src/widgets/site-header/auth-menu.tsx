@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSession } from "@binary/session";
+import { Link } from "@/i18n/navigation";
 
 /**
  * Sarlavhadagi sessiya qismi.
@@ -56,6 +57,19 @@ export function AuthMenu() {
 							{user.role}
 						</p>
 					)}
+				</li>
+				<li>
+					{/*
+					 * `Link` `@/i18n/navigation` dan: menyu ichidagi havola
+					 * joriy tilni saqlashi kerak, aks holda `/ru/masalalar`
+					 * dan profilga o'tgan odam o'zbekchaga tushib qolardi.
+					 */}
+					<Link
+						href="/profil"
+						className="block rounded-control px-3 py-2 text-sm font-semibold text-fg transition-colors hover:bg-surface-hover"
+					>
+						{t("profile")}
+					</Link>
 				</li>
 				<li>
 					<button
