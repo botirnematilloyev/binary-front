@@ -111,6 +111,9 @@
     "hard": "Qiyin"
   },
   "submission": {
+  	"loadIntoEditor": "Muharrirga yuklash",
+  	"codeUnavailable": "Kod topilmadi.",
+  	"overwriteCode": "Muharrirdagi kod almashtiriladi. Davom etamizmi?",
   	"restoredFrom": "Oxirgi urinishingiz yuklandi ({date})",
   	"tabTests": "Testlar",
   	"tabResult": "Natija",

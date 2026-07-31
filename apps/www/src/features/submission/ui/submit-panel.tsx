@@ -395,7 +395,28 @@ export function SubmitPanel({
 					<p className="text-sm text-fg-muted">{t("noResult")}</p>
 				))}
 
-			{tab === "history" && <SubmissionHistory problemId={problemId} reloadKey={historyKey} />}
+			{tab === "history" && (
+				<SubmissionHistory
+					problemId={problemId}
+					reloadKey={historyKey}
+					onLoadCode={(next, languageCode) => {
+						/*
+						 * Yozib turgan kodni SO'RAMASDAN bosib o'tmaymiz.
+						 * Tiklangan kod (`touched === false`) boshqa gap:
+						 * uni foydalanuvchi yozmagan, ya'ni yo'qotadigan
+						 * narsa yo'q.
+						 */
+						if (touched.current && code.trim() !== "" && !window.confirm(t("overwriteCode"))) {
+							return;
+						}
+
+						touched.current = true;
+						setCode(next);
+						setLanguage(languageCode);
+						setRestoredAt(null);
+					}}
+				/>
+			)}
 
 		</section>
 	);

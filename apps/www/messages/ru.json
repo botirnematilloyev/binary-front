@@ -111,6 +111,9 @@
     "hard": "Сложно"
   },
   "submission": {
+  	"loadIntoEditor": "Загрузить в редактор",
+  	"codeUnavailable": "Код не найден.",
+  	"overwriteCode": "Код в редакторе будет заменён. Продолжить?",
   	"restoredFrom": "Загружена последняя попытка ({date})",
   	"tabTests": "Тесты",
   	"tabResult": "Результат",

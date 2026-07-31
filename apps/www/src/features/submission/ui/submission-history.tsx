@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useFormatter, useNow, useTranslations } from "next-intl";
+import { useLocale, useNow, useTranslations } from "next-intl";
 import { submissionsApi, type SubmissionDto } from "@binary/api";
 import { Badge, Button, Panel } from "@binary/ui";
 import { formatMemory, formatMs } from "@/shared/format";
+import { relativeTime, type Locale } from "@/shared/i18n/locales";
 import { useSession, withFreshToken } from "@binary/session";
 import { verdictTone } from "../model";
 
@@ -32,14 +33,21 @@ type State =
 export function SubmissionHistory({
 	problemId,
 	reloadKey,
+	onLoadCode,
 }: {
 	problemId: number;
 	reloadKey: number;
+	/**
+	 * Kodni muharrirga yuklash. Panel o'zi hal qiladi — u yerda
+	 * foydalanuvchi nima yozgani ma'lum, ya'ni ustidan yozishdan oldin
+	 * so'rash kerakmi yoki yo'qmi ham o'sha yerda bilinadi.
+	 */
+	onLoadCode: (code: string, languageCode: string) => void;
 }) {
 	const t = useTranslations("submission");
 	const tVerdict = useTranslations("verdict");
 	const tStatus = useTranslations("submissionStatus");
-	const format = useFormatter();
+	const locale = useLocale() as Locale;
 	const { status: sessionStatus } = useSession();
 
 	/*
@@ -57,6 +65,42 @@ export function SubmissionHistory({
 	const now = useNow({ updateInterval: 60_000 });
 
 	const [state, setState] = useState<State>({ phase: "loading" });
+
+	/*
+	 * Ochilgan yechim va yuklab olingan kodlar.
+	 *
+	 * Kod ro'yxatda kelmaydi (`source_code` u yerda ataylab yo'q — har
+	 * qator kilobaytlab matn bo'lardi), shuning uchun u faqat qator
+	 * ochilganda so'raladi va keyin eslab qolinadi: bir yechimni ikki
+	 * marta ochish ikkinchi so'rov qilmaydi.
+	 */
+	const [openID, setOpenID] = useState<number | null>(null);
+	const [codes, setCodes] = useState<Record<number, string>>({});
+	const [loadingID, setLoadingID] = useState<number | null>(null);
+
+	async function toggle(id: number) {
+		if (openID === id) {
+			setOpenID(null);
+			return;
+		}
+
+		setOpenID(id);
+		if (codes[id] !== undefined) return;
+
+		setLoadingID(id);
+		try {
+			const detail = await withFreshToken((token) =>
+				submissionsApi.getSubmission(id, { token }),
+			);
+			// `source_code` faqat EGASIGA qaytadi. Bo'sh bo'lsa — bu
+			// xato emas, shunchaki ko'rsatadigan narsa yo'q.
+			setCodes((current) => ({ ...current, [id]: detail.source_code ?? "" }));
+		} catch {
+			setCodes((current) => ({ ...current, [id]: "" }));
+		} finally {
+			setLoadingID(null);
+		}
+	}
 
 	const load = useCallback(async () => {
 		setState({ phase: "loading" });
@@ -109,44 +153,90 @@ export function SubmissionHistory({
 				<Panel className="mt-3">
 					<ul>
 						{state.items.map((item) => (
-							<li
-								key={item.id}
-								className="flex flex-wrap items-center gap-3 border-b border-border-default px-4 py-2.5 last:border-0"
-							>
-								{item.verdict ? (
-									<Badge tone={verdictTone(item.verdict)} size="sm">
-										{tVerdict(item.verdict)}
-									</Badge>
-								) : (
-									<Badge size="sm">{tStatus(item.status)}</Badge>
-								)}
+							<li key={item.id} className="border-b border-border-default last:border-0">
+								{/*
+								 * Butun qator tugma: kodni ko'rish uchun aniq
+								 * "ochish" havolasini qidirish shart emas.
+								 * Haqiqiy `<button>` — klaviatura va skrin
+								 * rider shu tufayli ishlaydi.
+								 */}
+								<button
+									type="button"
+									onClick={() => void toggle(item.id)}
+									aria-expanded={openID === item.id}
+									className="flex w-full flex-wrap items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-subtle"
+								>
+									{item.verdict ? (
+										<Badge tone={verdictTone(item.verdict)} size="sm">
+											{tVerdict(item.verdict)}
+										</Badge>
+									) : (
+										<Badge size="sm">{tStatus(item.status)}</Badge>
+									)}
 
-								<span className="text-sm text-fg-secondary">
-									{item.language.name} {item.language.version}
-								</span>
-
-								{item.failed_test !== null && (
-									<span className="text-sm text-fg-muted">
-										{t("failedTest", { n: item.failed_test })}
+									<span className="text-sm text-fg-secondary">
+										{item.language.name} {item.language.version}
 									</span>
-								)}
 
-								<span className="ml-auto flex items-center gap-3 font-mono text-[12px] text-fg-muted">
-									{item.time_ms !== null && <span>{formatMs(item.time_ms)}</span>}
-									{item.memory_kb !== null && <span>{formatMemory(item.memory_kb)}</span>}
-									{/*
-									 * Nisbiy vaqt (`2 daqiqa oldin`) — `useFormatter`
-									 * orqali, ya'ni til bilan birga o'zgaradi.
-									 * `<time>` tegi va `dateTime` atributi esa aniq
-									 * vaqtni mashina o'qiy oladigan shaklda saqlaydi.
-									 */}
-									<time
-										dateTime={new Date(item.created_at * 1000).toISOString()}
-										className="whitespace-nowrap"
-									>
-										{format.relativeTime(new Date(item.created_at * 1000), now)}
-									</time>
-								</span>
+									{item.failed_test !== null && (
+										<span className="text-sm text-fg-muted">
+											{t("failedTest", { n: item.failed_test })}
+										</span>
+									)}
+
+									<span className="ml-auto flex items-center gap-3 font-mono text-[12px] text-fg-muted">
+										{item.time_ms !== null && <span>{formatMs(item.time_ms)}</span>}
+										{item.memory_kb !== null && <span>{formatMemory(item.memory_kb)}</span>}
+										{/*
+										 * Nisbiy vaqt `format.relativeTime` bilan EMAS:
+										 * Chrome'da `uz` uchun ma'lumot yo'q va u inglizcha
+										 * "yesterday" bilan `-1 d` qaytaradi.
+										 * `<time>` tegi va `dateTime` atributi esa aniq
+										 * vaqtni mashina o'qiy oladigan shaklda saqlaydi.
+										 */}
+										<time
+											dateTime={new Date(item.created_at * 1000).toISOString()}
+											className="whitespace-nowrap"
+										>
+											{relativeTime(locale, new Date(item.created_at * 1000), now)}
+										</time>
+										<span aria-hidden className="text-fg-subtle">
+											{openID === item.id ? "▾" : "▸"}
+										</span>
+									</span>
+								</button>
+
+								{openID === item.id && (
+									<div className="px-4 pb-3">
+										{loadingID === item.id ? (
+											<div className="h-16 animate-pulse rounded-control bg-surface-subtle" />
+										) : codes[item.id] ? (
+											<>
+												{/*
+												 * `<pre>` — muharrir emas: bu yerda kod
+												 * faqat o'qiladi, ikkinchi CodeMirror
+												 * nusxasi esa har qator uchun alohida
+												 * bo'lardi va sahifani og'irlashtirardi.
+												 */}
+												<pre className="max-h-64 overflow-auto rounded-control bg-surface-subtle p-3 font-mono text-[12.5px] leading-relaxed">
+													{codes[item.id]}
+												</pre>
+												<Button
+													variant="outline"
+													size="sm"
+													className="mt-2"
+													onClick={() =>
+														onLoadCode(codes[item.id] ?? "", item.language.code)
+													}
+												>
+													{t("loadIntoEditor")}
+												</Button>
+											</>
+										) : (
+											<p className="text-sm text-fg-muted">{t("codeUnavailable")}</p>
+										)}
+									</div>
+								)}
 							</li>
 						))}
 					</ul>

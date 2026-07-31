@@ -111,6 +111,9 @@
     "hard": "Қийин"
   },
   "submission": {
+  	"loadIntoEditor": "Муҳаррирга юклаш",
+  	"codeUnavailable": "Код топилмади.",
+  	"overwriteCode": "Муҳаррирдаги код алмаштирилади. Давом этамизми?",
   	"restoredFrom": "Охирги уринишингиз юкланди ({date})",
   	"tabTests": "Тестлар",
   	"tabResult": "Натижа",

@@ -154,3 +154,65 @@ export function weekdayName(segment: Locale, date: Date): string {
     timeZone: "UTC",
   }).format(date);
 }
+
+/*
+ * Nisbiy vaqt — yana o'sha `uz` bo'shlig'i.
+ *
+ * `Intl.RelativeTimeFormat("uz")` Chrome'da inglizcha "yesterday" va
+ * ildizdan olingan `-3 h`, `-5 min` qaytaradi (2026-08-01 da
+ * tekshirilgan). Ya'ni tarixdagi vaqt ustuni o'zbekcha sahifada
+ * `-1 d` bo'lib chiqardi.
+ *
+ * Birlik tanlash mantig'i ikkala shox uchun ham UMUMIY: aks holda
+ * o'zbekcha "2 soat oldin" deganda ruscha "вчера" chiqib qolishi
+ * mumkin edi.
+ */
+const MINUTE = 60;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+const MONTH = 30 * DAY;
+const YEAR = 365 * DAY;
+
+/** O'zbekchada son ko'plik shaklini o'zgartirmaydi — "3 kun oldin". */
+const UZ_UNITS: Record<Intl.RelativeTimeFormatUnit, string> = {
+	second: "soniya",
+	seconds: "soniya",
+	minute: "daqiqa",
+	minutes: "daqiqa",
+	hour: "soat",
+	hours: "soat",
+	day: "kun",
+	days: "kun",
+	week: "hafta",
+	weeks: "hafta",
+	month: "oy",
+	months: "oy",
+	quarter: "chorak",
+	quarters: "chorak",
+	year: "yil",
+	years: "yil",
+};
+
+function pickUnit(seconds: number): { value: number; unit: Intl.RelativeTimeFormatUnit } {
+	if (seconds < MINUTE) return { value: Math.floor(seconds), unit: "second" };
+	if (seconds < HOUR) return { value: Math.floor(seconds / MINUTE), unit: "minute" };
+	if (seconds < DAY) return { value: Math.floor(seconds / HOUR), unit: "hour" };
+	if (seconds < MONTH) return { value: Math.floor(seconds / DAY), unit: "day" };
+	if (seconds < YEAR) return { value: Math.floor(seconds / MONTH), unit: "month" };
+	return { value: Math.floor(seconds / YEAR), unit: "year" };
+}
+
+export function relativeTime(segment: Locale, date: Date, now: Date): string {
+	const seconds = Math.max(0, (now.getTime() - date.getTime()) / 1000);
+	const { value, unit } = pickUnit(seconds);
+
+	if (segment === "uz") {
+		if (unit === "second" && value < 30) return "hozirgina";
+		return `${value} ${UZ_UNITS[unit]} oldin`;
+	}
+
+	return new Intl.RelativeTimeFormat(localeOf(segment).hreflang, { numeric: "auto" }).format(
+		-value,
+		unit,
+	);
+}

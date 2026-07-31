@@ -111,6 +111,9 @@
     "hard": "Hard"
   },
   "submission": {
+  	"loadIntoEditor": "Load into editor",
+  	"codeUnavailable": "Code not found.",
+  	"overwriteCode": "The code in the editor will be replaced. Continue?",
   	"restoredFrom": "Your last attempt was restored ({date})",
   	"tabTests": "Tests",
   	"tabResult": "Result",
