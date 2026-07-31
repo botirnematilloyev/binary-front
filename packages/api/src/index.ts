@@ -17,6 +17,7 @@ export {
 
 export * as problemsApi from "./resources/problems";
 export * as adminProblemsApi from "./resources/admin-problems";
+export * as adminTopicsApi from "./resources/admin-topics";
 export * as taxonomyApi from "./resources/taxonomy";
 export * as submissionsApi from "./resources/submissions";
 export * as authApi from "./resources/auth";
@@ -31,6 +32,12 @@ export type {
 } from "./resources/problems";
 
 export type { SubjectDto, TopicDto } from "./resources/taxonomy";
+
+export type {
+	AdminTopicDto,
+	CreateTopicInput,
+	UpdateTopicInput,
+} from "./resources/admin-topics";
 
 export type {
 	AdminProblemDto,

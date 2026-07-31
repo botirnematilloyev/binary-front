@@ -69,6 +69,20 @@ export interface RequestOptions {
 	token?: string | undefined;
 	/** Next'ning kesh boshqaruvi. Faqat server tomonda ta'sir qiladi. */
 	revalidate?: number | false;
+	/**
+	 * Brauzerning HTTP keshi.
+	 *
+	 * Bu kerak, chunki ba'zi ochiq endpointlar (`/topics`, `/subjects`,
+	 * `/languages`) `Cache-Control: public, max-age=3600` yuboradi — bu
+	 * ommaviy sayt uchun to'g'ri, lekin admin panel uchun halokatli:
+	 * yangi mavzu qo'shilgandan keyin ro'yxatni qayta so'rasak, brauzer
+	 * bir soat davomida ESKI javobni qaytaradi va panel "saqlanmadi"
+	 * bo'lib ko'rinadi. Yozgandan keyin o'qiydigan joyda `"no-store"`.
+	 *
+	 * `revalidate` bilan birga berilmasligi kerak — Next ikkalasini
+	 * ziddiyat deb hisoblaydi.
+	 */
+	cache?: RequestCache;
 	signal?: AbortSignal;
 }
 
@@ -98,7 +112,7 @@ export async function request<T>(
 	schema: z.ZodType<T>,
 	options: RequestOptions = {},
 ): Promise<T> {
-	const { method = "GET", body, token, revalidate, signal } = options;
+	const { method = "GET", body, token, revalidate, cache, signal } = options;
 
 	const headers: Record<string, string> = { Accept: "application/json" };
 	if (body !== undefined) headers["Content-Type"] = "application/json";
@@ -117,6 +131,7 @@ export async function request<T>(
 			signal: combined,
 			...(body !== undefined ? { body: JSON.stringify(body) } : {}),
 			...(revalidate === undefined ? {} : { next: { revalidate } }),
+			...(cache === undefined ? {} : { cache }),
 		});
 	} catch (cause) {
 		throw new ApiTransportError(path, cause);
