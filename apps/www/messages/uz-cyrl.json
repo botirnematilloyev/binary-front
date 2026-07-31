@@ -111,6 +111,11 @@
     "hard": "Қийин"
   },
   "submission": {
+  	"testNumber": "{n}-тест",
+  	"testsRunning": "{total} та тест текшириляпти…",
+  	"testsAllPassed": "Ҳамма тестлардан ўтди ({total} та)",
+  	"testsFailedAt": "{n}-тестда тўхтади ({total} тадан)",
+  	"testsNotRun": "Тестлар ишламади",
   	"loadIntoEditor": "Муҳаррирга юклаш",
   	"codeUnavailable": "Код топилмади.",
   	"overwriteCode": "Муҳаррирдаги код алмаштирилади. Давом этамизми?",
@@ -154,7 +159,7 @@
     "inputTooLarge": "Кириш жуда катта (16 KB дан ошмасин).",
     "case": "Ҳолат {n}",
     "addCase": "Ҳолат қўшиш",
-    "removeCase": "Ҳолатни ўчириш",
+    "removeCaseN": "{n}-ҳолатни ўчириш",
     "caseFailed": "Шу ҳолатда тўхтади",
     "maxCases": "Кўпи билан {n} та ҳолат"
   },

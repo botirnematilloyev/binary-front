@@ -159,6 +159,7 @@ export default async function ProblemPage({ params }: PageProps) {
 					problemId={problem.id}
 					languages={languages.languages}
 					samples={problem.samples}
+					testCount={problem.test_count}
 				/>
 			</aside>
 			</div>

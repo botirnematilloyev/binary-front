@@ -111,6 +111,11 @@
     "hard": "Hard"
   },
   "submission": {
+  	"testNumber": "Test {n}",
+  	"testsRunning": "Running {total} tests…",
+  	"testsAllPassed": "All tests passed ({total})",
+  	"testsFailedAt": "Stopped at test {n} of {total}",
+  	"testsNotRun": "Tests did not run",
   	"loadIntoEditor": "Load into editor",
   	"codeUnavailable": "Code not found.",
   	"overwriteCode": "The code in the editor will be replaced. Continue?",
@@ -154,7 +159,7 @@
     "inputTooLarge": "The input is too large (16 KB max).",
     "case": "Case {n}",
     "addCase": "Add case",
-    "removeCase": "Remove case",
+    "removeCaseN": "Remove case {n}",
     "caseFailed": "Stopped on this case",
     "maxCases": "At most {n} cases"
   },

@@ -9,6 +9,7 @@ import { useSubmission } from "../use-submission";
 import { CodeEditor } from "./code-editor";
 import { CustomCases } from "./custom-cases";
 import { SubmissionHistory } from "./submission-history";
+import { TestProgress } from "./test-progress";
 import { VerdictCard } from "./verdict-card";
 
 /** Backenddagi `MaxCustomInputBytes` bilan bir xil — UMUMIY hajm. */
@@ -44,6 +45,7 @@ export function SubmitPanel({
 	problemId,
 	languages,
 	samples,
+	testCount,
 }: {
 	slug: string;
 	problemId: number;
@@ -56,6 +58,8 @@ export function SubmitPanel({
 	 * ishlatayotganini KO'RIB turishi kerak, tepaga aylantirmasdan.
 	 */
 	samples: { input: string; expected_output: string }[];
+	/** Jami testlar soni — tekshiruv holatini ko'rsatish uchun. */
+	testCount: number;
 }) {
 	const t = useTranslations("submission");
 	const format = useFormatter();
@@ -385,10 +389,26 @@ export function SubmitPanel({
 					state.phase === "final" ||
 					state.phase === "timeout") &&
 				state.kind !== "runCustom" ? (
-					<VerdictCard
-						submission={state.submission}
-						stillJudging={state.phase === "timeout"}
-					/>
+					<div className="flex flex-col gap-4">
+						{/*
+						 * Testlar holati verdikt kartasidan TEPADA: odam
+						 * avval "qayerda to'xtadi" ni ko'radi, keyin
+						 * tafsilotni. Teskarisi bo'lsa, ko'z avval raqamlarga
+						 * tushib, keyin yuqoriga qaytishga majbur bo'lardi.
+						 *
+						 * O'z kirishi bilan ishlangan run bu yerga umuman
+						 * tushmaydi: u yerda masalaning testlari ishlamaydi.
+						 */}
+						<TestProgress
+							total={testCount}
+							submission={state.submission}
+							running={state.phase === "watching"}
+						/>
+						<VerdictCard
+							submission={state.submission}
+							stillJudging={state.phase === "timeout"}
+						/>
+					</div>
 				) : (
 					// Bo'sh tab ham xabar berishi kerak: "hech narsa yo'q"
 					// bilan "yuklanmadi" ni foydalanuvchi farqlay olsin.

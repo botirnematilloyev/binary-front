@@ -111,6 +111,11 @@
     "hard": "Qiyin"
   },
   "submission": {
+  	"testNumber": "{n}-test",
+  	"testsRunning": "{total} ta test tekshirilyapti…",
+  	"testsAllPassed": "Hamma testlardan o'tdi ({total} ta)",
+  	"testsFailedAt": "{n}-testda to'xtadi ({total} tadan)",
+  	"testsNotRun": "Testlar ishlamadi",
   	"loadIntoEditor": "Muharrirga yuklash",
   	"codeUnavailable": "Kod topilmadi.",
   	"overwriteCode": "Muharrirdagi kod almashtiriladi. Davom etamizmi?",
@@ -154,7 +159,7 @@
     "inputTooLarge": "Kirish juda katta (16 KB dan oshmasin).",
     "case": "Holat {n}",
     "addCase": "Holat qo'shish",
-    "removeCase": "Holatni o'chirish",
+    "removeCaseN": "{n}-holatni o'chirish",
     "caseFailed": "Shu holatda to'xtadi",
     "maxCases": "Ko'pi bilan {n} ta holat"
   },

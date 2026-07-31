@@ -78,6 +78,17 @@ const problemDetailSchema = z.object({
 	available_langs: z.array(z.string()),
 	/** Namunalar `test_cases WHERE is_sample` dan keladi, shartdan nusxa emas. */
 	samples: z.array(sampleSchema),
+	/*
+	 * Jami testlar soni — yashirinlari ham. Ularning MAZMUNI qaytmaydi,
+	 * faqat soni: u tekshiruv holatini ko'rsatish uchun kerak.
+	 *
+	 * `total` dan farqli, bu maydon MAJBURIY EMAS. Farq oqibatda:
+	 * `total` yo'q bo'lsa sahifalash jimgina yolg'on ko'rsatardi, bu
+	 * yerda esa nol qiymat "testlar holatini chizmaymiz" degani —
+	 * ya'ni degradatsiya xavfsiz. Shu tufayli eski backend bilan ham
+	 * sahifa ishlaydi va deploy tartibiga bog'liq qolmaydi.
+	 */
+	test_count: z.number().int().default(0),
 });
 
 export type ProblemSummaryDto = z.infer<typeof problemSummarySchema>;
