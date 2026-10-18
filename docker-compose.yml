@@ -1,0 +1,41 @@
+# www.binary.uz — prod. Admin bu yerda yo'q: u statik, `deploy/admin.Dockerfile`.
+#
+#   cp .env.production.example .env && $EDITOR .env
+#   docker compose up -d --build
+#
+# Backend (binary repo) avval ko'tarilgan bo'lishi shart: SSR so'rovlari
+# uning tarmog'i ichidan `binary_api` ga boradi.
+services:
+  www:
+    build:
+      context: .
+      dockerfile: deploy/www.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?set NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?set NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_TELEGRAM_BOT: ${NEXT_PUBLIC_TELEGRAM_BOT:-}
+    container_name: binary_www
+    restart: unless-stopped
+    environment:
+      # Server tomonidagi so'rovlar (SSR, sitemap) TLS va nginx'ni chetlab,
+      # to'g'ridan-to'g'ri konteynerga boradi.
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://binary_api:8080/api/v1}
+    # 127.0.0.1 — faqat nginx yeta oladi. 3000 EMAS: u serverda MALL ILP
+    # web'iga tegishli.
+    ports:
+      - "127.0.0.1:${WWW_PORT:-3002}:3000"
+    networks: [default, backend]
+    # 2 yadro, 3.7 GB va qo'shni loyihalar: chegarasiz Node xotirasi
+    # sizib, butun serverni sekinlashtirishi mumkin.
+    cpus: 0.75
+    mem_limit: 384m
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+networks:
+  # binary repo'ning compose tarmog'i (`/srv/binary` dan ko'tarilgani uchun
+  # nomi `binary_default`).
+  backend:
+    external: true
+    name: ${BACKEND_NETWORK:-binary_default}
