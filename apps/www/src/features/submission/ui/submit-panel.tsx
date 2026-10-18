@@ -6,6 +6,7 @@ import { submissionsApi, type LanguageDto } from "@binary/api";
 import { Button, Panel } from "@binary/ui";
 import { useSession, withFreshToken } from "@binary/session";
 import { useSubmission } from "../use-submission";
+import { AcceptedBurst } from "./accepted-burst";
 import { CodeEditor } from "./code-editor";
 import { CustomCases } from "./custom-cases";
 import { SubmissionHistory } from "./submission-history";
@@ -93,6 +94,8 @@ export function SubmitPanel({
 	// Bir xil yechim uchun ikki marta ortmasligi kerak: `state` obyekti
 	// polling davomida bir necha marta yangilanadi.
 	const lastFinalId = useRef<number | null>(null);
+	const lastCelebratedId = useRef<number | null>(null);
+	const [acceptedBurstId, setAcceptedBurstId] = useState<number | null>(null);
 
 	useEffect(() => {
 		// FAQAT haqiqiy yuborish tarixni o'zgartiradi — sinovlar u yerda
@@ -101,6 +104,14 @@ export function SubmitPanel({
 		if (lastFinalId.current === state.submission.id) return;
 		lastFinalId.current = state.submission.id;
 		setHistoryKey((n) => n + 1);
+	}, [state]);
+
+	useEffect(() => {
+		if (state.phase !== "final" || state.kind !== "submit") return;
+		if (state.submission.verdict !== "accepted") return;
+		if (lastCelebratedId.current === state.submission.id) return;
+		lastCelebratedId.current = state.submission.id;
+		setAcceptedBurstId(state.submission.id);
 	}, [state]);
 
 	/*
@@ -192,6 +203,10 @@ export function SubmitPanel({
 		return true;
 	}
 
+	const customInputPlaceholder = samples[0]?.input?.trim()
+		? samples[0].input
+		: undefined;
+
 	if (sessionStatus === "anonymous") {
 		return (
 			<Panel className="px-5 py-6">
@@ -208,6 +223,10 @@ export function SubmitPanel({
 
 	return (
 		<section className="flex flex-col gap-3">
+			{acceptedBurstId !== null && (
+				<AcceptedBurst onDone={() => setAcceptedBurstId(null)} />
+			)}
+
 			<div className="flex items-center gap-3">
 				<h2 className="text-lg font-bold">{t("title")}</h2>
 				<select
@@ -336,6 +355,7 @@ export function SubmitPanel({
 							active={activeCase}
 							onActiveChange={setActiveCase}
 							disabled={busy}
+							placeholder={customInputPlaceholder}
 							outputs={
 								state.phase === "final" && state.kind === "runCustom"
 									? state.submission.run_outputs
@@ -400,13 +420,18 @@ export function SubmitPanel({
 						 * tushmaydi: u yerda masalaning testlari ishlamaydi.
 						 */}
 						<TestProgress
-							total={testCount}
+							total={state.kind === "runSamples" ? samples.length : testCount}
 							submission={state.submission}
 							running={state.phase === "watching"}
 						/>
 						<VerdictCard
 							submission={state.submission}
 							stillJudging={state.phase === "timeout"}
+							scopeLabel={
+								state.kind === "runSamples"
+									? t("sampleRunScope")
+									: t("submitRunScope")
+							}
 						/>
 					</div>
 				) : (

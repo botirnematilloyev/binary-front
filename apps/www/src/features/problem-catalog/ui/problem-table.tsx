@@ -5,12 +5,6 @@ import type { ProblemRow } from "../model";
 import { SolvedMark } from "./solved-marks";
 
 /**
- * Shablondagi YECHDI ustuni hali QO'SHILMAYDI: u hisoblagichni talab
- * qiladi (`problem_stats`), backendda esa u ataylab kesilgan. To'qib
- * chiqarilgan foiz jadvalni to'ldiradi, lekin foydalanuvchiga yolg'on
- * aytadi. MAVZU ustuni endi bor — ro'yxat javobi mavzularni ham
- * qaytaradi.
- *
  * Server komponenti bo'lgani uchun tarjimani `getTranslations` beradi —
  * `useTranslations` client hook va bu yerda kerak emas.
  */
@@ -38,11 +32,11 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 						    tushunarli va "HOLAT" degan yozuv faqat joy
 						    egallardi. Dizaynda ham shunday. */}
 						<Th className="w-9"> </Th>
-						<Th className="w-16">{t("columnId")}</Th>
+						<Th className="w-20">{t("columnId")}</Th>
 						<Th>{t("columnProblem")}</Th>
 						<Th className="w-40">{t("columnTopic")}</Th>
 						<Th className="w-28">{t("columnDifficulty")}</Th>
-						<Th className="w-40 text-right">{t("columnLimits")}</Th>
+						<Th className="w-28 text-right">{t("columnAcceptance")}</Th>
 					</tr>
 				</thead>
 				<tbody>
@@ -55,7 +49,7 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 								<SolvedMark problemId={row.id} />
 							</td>
 							<td className="px-4 py-3 font-mono text-[12.5px] text-fg-subtle">
-								{row.id}
+								{row.displayId}
 							</td>
 							<td className="px-4 py-3">
 								{/*
@@ -86,8 +80,8 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 									{tDifficulty(row.difficulty)}
 								</Badge>
 							</td>
-							<td className="px-4 py-3 text-right font-mono text-[12px] text-fg-muted">
-								{row.limits}
+							<td className="px-4 py-3 text-right font-mono text-[13px] text-fg-muted">
+								{row.acceptanceRate === null ? "—" : `${row.acceptanceRate}%`}
 							</td>
 						</tr>
 					))}

@@ -9,6 +9,8 @@
   "nav": {
     "home": "Bosh sahifa",
     "problems": "Masalalar",
+    "roadmap": "Yo'l xaritasi",
+    "rating": "Reyting",
     "login": "Kirish",
     "logout": "Chiqish",
     "profile": "Profil"
@@ -37,6 +39,7 @@
   },
   "home": {
   	"metaTitle": "binary.uz — algoritm va matematikadan masalalar",
+  	"mascotAlt": "Binary maskoti — kaskali va planshetli gopher",
   	"eyebrow": "ANIQ FANLAR PLATFORMASI",
   	"title": "Algoritm va matematikani amaliyot orqali o'rganing",
   	"subtitle": "Masala yeching, yechimingiz avtomatik tekshiriladi, natijani darhol ko'rasiz. Python, C++ va Go — bepul.",
@@ -60,7 +63,11 @@
   	"step3Text": "Har bir test alohida tekshiriladi, qaysi birida to'xtagani ko'rinadi.",
   	"roadmapTitle": "Ustida ishlanyapti",
   	"roadmapText": "Kontestlar, reyting va kurslar — masalalar to'plami kengaygan sayin qo'shiladi.",
-  	"roadmapCta": "Hozircha masalalarni ko'ring"
+  	"roadmapCta": "Hozircha masalalarni ko'ring",
+  	"footerProblems": "Masalalar",
+  	"footerContests": "Kontestlar",
+  	"footerTelegram": "Telegram",
+  	"footerGithub": "GitHub"
   },
   "profile": {
   	"title": "Profil",
@@ -115,9 +122,20 @@
     "columnTopic": "MAVZU",
     "solvedMark": "Yechilgan",
     "columnDifficulty": "QIYINLIK",
-    "columnLimits": "LIMIT",
+    "columnAcceptance": "YECHDI",
     "emptyTitle": "Masala topilmadi",
     "emptyHint": "Filtrlarni o'zgartirib ko'ring."
+  },
+  "leaderboard": {
+    "title": "Reyting",
+    "metaDescription": "binary.uz foydalanuvchilarining practice reytingi.",
+    "columnRank": "O'RIN",
+    "columnUser": "FOYDALANUVCHI",
+    "columnSolved": "YECHILGAN",
+    "columnRating": "REYTING",
+    "columnChange": "O'ZGARISH",
+    "emptyTitle": "Hali reyting yo'q",
+    "emptyHint": "Birinchi qabul qilingan yechimlardan keyin jadval to'ladi."
   },
   "problem": {
     "statement": "Shart",
@@ -149,7 +167,7 @@
   	"tabResult": "Natija",
   	"tabHistory": "Yuborishlar",
   	"modeSamples": "Namunalar",
-  	"modeCustom": "O'z kirishim",
+    "modeCustom": "Qo'lda testlash",
   	"noSamples": "Bu masalada namunali test yo'q.",
   	"noResult": "Hali natija yo'q. Kodni yozib, «Sinab ko'rish» yoki «Yuborish» ni bosing.",
   	"sampleNumber": "{number}-namuna",
@@ -177,10 +195,16 @@
     "compileOutput": "Kompilyator chiqishi",
     "run": "Sinab ko'rish",
     "running": "Ishlayapti…",
-    "customInput": "Kirish",
-    "output": "Chiqish",
+    "customInput": "Kirish ma'lumoti",
+    "customInputPlaceholder": "Dastur stdin orqali oladigan ma'lumotni yozing",
+    "customTestTitle": "Qo'lda testlash",
+    "customTestHint": "Bu holatlar faqat sinash uchun; yechimlar tarixiga tushmaydi.",
+    "runCustomHint": "Kirishni yozib, «Sinab ko'rish» ni bosing.",
+    "output": "Dastur chiqishi",
     "noOutput": "Dastur hech narsa chop etmadi.",
     "noSampleTests": "Bu masalada namuna testi yo'q — o'z kirishingiz bilan sinab ko'ring.",
+    "sampleRunScope": "Namuna testlari",
+    "submitRunScope": "Yakuniy tekshiruv",
     "inputTooLarge": "Kirish juda katta (16 KB dan oshmasin).",
     "case": "Holat {n}",
     "addCase": "Holat qo'shish",
@@ -209,8 +233,20 @@
     "retry": "Qayta urinish"
   },
   "notFound": {
+    "eyebrow": "404 · yo'l uzildi",
     "title": "Sahifa topilmadi",
     "hint": "Manzil o'zgargan bo'lishi mumkin, yoki masala hali nashr qilinmagan.",
-    "cta": "Masalalarga qaytish"
+    "checkUrl": "Manzilda xato yozilmaganini tekshiring.",
+    "publishedOnly": "Ba'zi masalalar nashr qilingandan keyingina ko'rinadi.",
+    "cta": "Masalalarga qaytish",
+    "roadmapCta": "Yo'l xaritasini ochish"
+  },
+  "roadmap": {
+    "title": "Yo'l xaritasi",
+    "metaDescription": "Mavzular bo'yicha yo'l xaritasi.",
+    "summaryTopics": "{done}/{total} mavzu tugallandi",
+    "summaryProblems": "{solved}/{total} masala yechildi",
+    "problems": "{solved}/{total} masala",
+    "empty": "Bu fanda hali mavzular yo'q."
   }
 }

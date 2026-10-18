@@ -51,6 +51,8 @@ export async function SiteHeader() {
 
 				<nav className="flex min-w-0 flex-1 items-center gap-5">
 					<NavLink href="/masalalar">{t("problems")}</NavLink>
+					<NavLink href="/yol-xaritasi">{t("roadmap")}</NavLink>
+					<NavLink href="/reyting">{t("rating")}</NavLink>
 				</nav>
 
 				<LanguageSwitcher />

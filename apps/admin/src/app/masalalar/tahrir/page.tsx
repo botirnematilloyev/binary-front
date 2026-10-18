@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
 	ApiError,
 	adminProblemsApi,
@@ -11,8 +11,10 @@ import {
 } from "@binary/api";
 import { withFreshToken } from "@binary/session";
 import { Badge, Button, Container, Panel } from "@binary/ui";
+import { IconButton, TrashIcon } from "@/shared/ui/icon-button";
 import {
 	blankStatement,
+	deleteErrorMessage,
 	ProblemSettings,
 	saveErrorMessage,
 	STATEMENT_LANGS,
@@ -68,6 +70,7 @@ const STATUS_LABEL: Record<
  * yuqorida), va bitta "Saqlash" hamma o'zgarishni yuboradi.
  */
 function Workspace() {
+	const router = useRouter();
 	const params = useSearchParams();
 	const rawId = params.get("id");
 	const id = rawId !== null && /^\d+$/.test(rawId) ? Number(rawId) : null;
@@ -292,6 +295,25 @@ function Workspace() {
 		}
 	}
 
+	async function deleteProblem() {
+		if (id === null) return;
+
+		const label = byLang[lang]?.title || byLang["uz"]?.title || settings?.slug || `#${id}`;
+		if (!window.confirm(`"${label}" masalasi butunlay o'chirilsinmi?`)) return;
+
+		setBusy(true);
+		setError(null);
+		setNotice(null);
+		try {
+			await withFreshToken((token) => adminProblemsApi.remove(id, { token }));
+			router.replace("/");
+		} catch (cause) {
+			setError(deleteErrorMessage(cause));
+		} finally {
+			setBusy(false);
+		}
+	}
+
 	if (load.phase === "loading") return <Skeleton />;
 
 	if (load.phase === "error" || !settings) {
@@ -353,6 +375,14 @@ function Workspace() {
 					<Button type="button" onClick={() => void save()} disabled={busy || !dirty}>
 						{busy ? "Bajarilyapti…" : dirty ? "Saqlash" : "Saqlangan"}
 					</Button>
+
+					<IconButton
+						label="Masalani o'chirish"
+						tone="danger"
+						icon={<TrashIcon />}
+						onClick={() => void deleteProblem()}
+						disabled={busy}
+					/>
 
 					{status === "published" ? (
 						<Button

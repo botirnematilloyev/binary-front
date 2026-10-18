@@ -1,6 +1,5 @@
 import type { BadgeProps } from "@binary/ui";
 import type { Difficulty, ProblemSummaryDto } from "@binary/api";
-import { formatMemory, formatSeconds } from "@/shared/format";
 
 /*
  * `Record<Difficulty, T>` ATAYLAB — `Record<string, T>` yoki `switch`
@@ -26,13 +25,14 @@ const DIFFICULTY_TONE: Record<Difficulty, NonNullable<BadgeProps["tone"]>> = {
 
 export interface ProblemRow {
 	id: number;
+	displayId: string;
 	slug: string;
 	title: string;
 	/** Sarlavha so'ralgan tilda kelmasa, `titleLang` shu haqda xabar beradi. */
 	titleLang: string;
 	difficulty: Difficulty;
 	difficultyTone: NonNullable<BadgeProps["tone"]>;
-	limits: string;
+	acceptanceRate: number | null;
 	/** Jadvaldagi MAVZU ustuni. Bo'sh bo'lishi mumkin. */
 	topics: string[];
 }
@@ -48,17 +48,23 @@ export interface ProblemRow {
 export function toProblemRow(dto: ProblemSummaryDto, apiLang: string): ProblemRow {
 	return {
 		id: dto.id,
+		displayId: formatProblemId(dto.id),
 		slug: dto.slug,
 		title: dto.title,
 		titleLang: dto.lang,
 		difficulty: dto.difficulty,
 		difficultyTone: DIFFICULTY_TONE[dto.difficulty],
-		limits: `${formatSeconds(dto.time_limit_ms)} · ${formatMemory(dto.memory_limit_kb)}`,
+		acceptanceRate:
+			dto.attempts > 0 ? Math.round((dto.accepted / dto.attempts) * 100) : null,
 		// Mavzu nomi ham ko'p tilli, va u sarlavha bilan BIR XIL qoida
 		// bo'yicha tanlanadi — aks holda bir qatorda sarlavha o'zbekcha,
 		// mavzu ruscha chiqishi mumkin.
 		topics: dto.topics.map((topic) => pickName(topic.name, apiLang)),
 	};
+}
+
+export function formatProblemId(id: number): string {
+	return `M${String(id).padStart(3, "0")}`;
 }
 
 export function difficultyTone(

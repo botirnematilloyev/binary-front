@@ -16,51 +16,58 @@ import { verdictTone } from "../model";
 export function VerdictCard({
 	submission,
 	stillJudging,
+	scopeLabel,
 }: {
 	submission: SubmissionDto;
 	stillJudging: boolean;
+	scopeLabel: string;
 }) {
 	const t = useTranslations("submission");
 	const tVerdict = useTranslations("verdict");
 	const tStatus = useTranslations("submissionStatus");
+	const title = submission.verdict ? tVerdict(submission.verdict) : tStatus(submission.status);
 
 	return (
-		<Panel className="mt-4">
-			<div aria-live="polite" className="flex flex-wrap items-center gap-3 px-4 py-3">
-				{submission.verdict ? (
-					<Badge tone={verdictTone(submission.verdict)}>
-						{tVerdict(submission.verdict)}
-					</Badge>
-				) : (
-					<span className="flex items-center gap-2 text-sm font-semibold text-fg-muted">
-						{/* Aylanuvchi indikator `aria-hidden`: matn allaqachon
-						    holatni aytib turadi, ikkinchi marta o'qish shovqin. */}
-						<span
-							aria-hidden
-							className="size-3.5 animate-spin rounded-full border-2 border-border-strong border-t-accent"
+		<Panel className="mt-4 overflow-hidden">
+			<div aria-live="polite" className="px-4 py-3">
+				<div className="flex flex-wrap items-start gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="flex flex-wrap items-center gap-2">
+							{submission.verdict ? (
+								<Badge tone={verdictTone(submission.verdict)}>
+									{tVerdict(submission.verdict)}
+								</Badge>
+							) : (
+								<span className="flex items-center gap-2 text-sm font-semibold text-fg-muted">
+									{/* Aylanuvchi indikator `aria-hidden`: matn allaqachon
+									    holatni aytib turadi, ikkinchi marta o'qish shovqin. */}
+									<span
+										aria-hidden
+										className="size-3.5 animate-spin rounded-full border-2 border-border-strong border-t-accent"
+									/>
+									{tStatus(submission.status)}
+								</span>
+							)}
+							<span className="rounded-pill bg-surface-subtle px-2 py-0.5 text-[12px] font-semibold text-fg-muted">
+								{scopeLabel}
+							</span>
+						</div>
+						<p className="mt-2 text-base font-bold text-fg">{title}</p>
+						{submission.failed_test !== null && (
+							<p className="mt-1 text-sm text-danger">
+								{t("failedTest", { n: submission.failed_test })}
+							</p>
+						)}
+					</div>
+
+					<div className="grid min-w-[190px] grid-cols-2 gap-2">
+						<Metric label={t("time")} value={submission.time_ms !== null ? formatMs(submission.time_ms) : "—"} />
+						<Metric
+							label={t("memory")}
+							value={submission.memory_kb !== null ? formatMemory(submission.memory_kb) : "—"}
 						/>
-						{tStatus(submission.status)}
-					</span>
-				)}
-
-				{submission.failed_test !== null && (
-					<span className="text-sm text-fg-secondary">
-						{t("failedTest", { n: submission.failed_test })}
-					</span>
-				)}
-
-				<span className="ml-auto flex gap-3 font-mono text-[12px] text-fg-muted">
-					{submission.time_ms !== null && (
-						<span>
-							{t("time")}: {formatMs(submission.time_ms)}
-						</span>
-					)}
-					{submission.memory_kb !== null && (
-						<span>
-							{t("memory")}: {formatMemory(submission.memory_kb)}
-						</span>
-					)}
-				</span>
+					</div>
+				</div>
 			</div>
 
 			{stillJudging && (
@@ -86,5 +93,14 @@ export function VerdictCard({
 				</div>
 			)}
 		</Panel>
+	);
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+	return (
+		<div className="rounded-control border border-border-default bg-surface-subtle px-3 py-2">
+			<p className="text-[11px] font-bold tracking-wide text-fg-subtle">{label}</p>
+			<p className="mt-1 font-mono text-[12.5px] text-fg-secondary">{value}</p>
+		</div>
 	);
 }

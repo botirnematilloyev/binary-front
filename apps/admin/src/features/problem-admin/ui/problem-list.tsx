@@ -9,6 +9,7 @@ import {
 } from "@binary/api";
 import { withFreshToken } from "@binary/session";
 import { Badge, Button, Panel } from "@binary/ui";
+import { IconLink, PencilIcon } from "@/shared/ui/icon-button";
 
 type Filter = ProblemStatus | "all";
 
@@ -133,7 +134,7 @@ export function ProblemList() {
 								<Th className="w-40">SLUG</Th>
 								<Th className="w-24">QIYINLIK</Th>
 								<Th className="w-28">HOLAT</Th>
-								<Th className="w-24"> </Th>
+								<Th className="w-20"> </Th>
 							</tr>
 						</thead>
 						<tbody>
@@ -155,7 +156,7 @@ export function ProblemList() {
 											{STATUS[problem.status].label}
 										</Badge>
 									</td>
-									<td className="px-4 py-2.5 text-right whitespace-nowrap">
+									<td className="px-4 py-2.5">
 										{/*
 										 * BITTA havola. Oldin "Shart" va "Testlar" alohida
 										 * edi va setter qaysi birini bosishni o'ylab
@@ -165,12 +166,13 @@ export function ProblemList() {
 										 * `pathname` mavjud marshrutlarga tekshiriladi,
 										 * query esa erkin qoladi.
 										 */}
-										<Link
-											href={{ pathname: "/masalalar/tahrir", query: { id: problem.id } }}
-											className="text-sm font-semibold text-accent hover:text-accent-hover"
-										>
-											Ochish
-										</Link>
+										<div className="flex justify-end">
+											<IconLink
+												href={{ pathname: "/masalalar/tahrir", query: { id: problem.id } }}
+												label="Tahrirlash"
+												icon={<PencilIcon />}
+											/>
+										</div>
 									</td>
 								</tr>
 							))}

@@ -9,6 +9,8 @@
   "nav": {
     "home": "Главная",
     "problems": "Задачи",
+    "roadmap": "Дорожная карта",
+    "rating": "Рейтинг",
     "login": "Войти",
     "logout": "Выйти",
     "profile": "Профиль"
@@ -37,6 +39,7 @@
   },
   "home": {
   	"metaTitle": "binary.uz — задачи по алгоритмам и математике",
+  	"mascotAlt": "Маскот binary — гофер в каске с планшетом",
   	"eyebrow": "ПЛАТФОРМА ТОЧНЫХ НАУК",
   	"title": "Изучайте алгоритмы и математику на практике",
   	"subtitle": "Решайте задачи, решение проверяется автоматически, результат виден сразу. Python, C++ и Go — бесплатно.",
@@ -60,7 +63,11 @@
   	"step3Text": "Каждый тест проверяется отдельно — видно, на каком именно остановилось.",
   	"roadmapTitle": "В работе",
   	"roadmapText": "Контесты, рейтинг и курсы — появятся по мере роста набора задач.",
-  	"roadmapCta": "А пока — к задачам"
+  	"roadmapCta": "А пока — к задачам",
+  	"footerProblems": "Задачи",
+  	"footerContests": "Контесты",
+  	"footerTelegram": "Telegram",
+  	"footerGithub": "GitHub"
   },
   "profile": {
   	"title": "Профиль",
@@ -115,9 +122,20 @@
     "columnTopic": "ТЕМА",
     "solvedMark": "Решено",
     "columnDifficulty": "СЛОЖНОСТЬ",
-    "columnLimits": "ЛИМИТЫ",
+    "columnAcceptance": "ПРИНЯТО",
     "emptyTitle": "Задачи не найдены",
     "emptyHint": "Попробуйте изменить фильтры."
+  },
+  "leaderboard": {
+    "title": "Рейтинг",
+    "metaDescription": "Практический рейтинг пользователей binary.uz.",
+    "columnRank": "МЕСТО",
+    "columnUser": "ПОЛЬЗОВАТЕЛЬ",
+    "columnSolved": "РЕШЕНО",
+    "columnRating": "РЕЙТИНГ",
+    "columnChange": "ИЗМЕНЕНИЕ",
+    "emptyTitle": "Рейтинга пока нет",
+    "emptyHint": "Таблица появится после первых принятых решений."
   },
   "problem": {
     "statement": "Условие",
@@ -209,8 +227,20 @@
     "retry": "Попробовать снова"
   },
   "notFound": {
+    "eyebrow": "404 · маршрут оборван",
     "title": "Страница не найдена",
     "hint": "Возможно, адрес изменился, или задача ещё не опубликована.",
-    "cta": "Вернуться к задачам"
+    "checkUrl": "Проверьте, нет ли ошибки в адресе.",
+    "publishedOnly": "Некоторые задачи видны только после публикации.",
+    "cta": "Вернуться к задачам",
+    "roadmapCta": "Открыть карту"
+  },
+  "roadmap": {
+    "title": "Дорожная карта",
+    "metaDescription": "Дорожная карта по темам.",
+    "summaryTopics": "{done}/{total} тем пройдено",
+    "summaryProblems": "{solved}/{total} задач решено",
+    "problems": "{solved}/{total} задач",
+    "empty": "В этом предмете пока нет тем."
   }
 }

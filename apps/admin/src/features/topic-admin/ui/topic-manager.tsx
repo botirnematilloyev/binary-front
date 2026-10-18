@@ -9,6 +9,7 @@ import {
 } from "@binary/api";
 import { withFreshToken } from "@binary/session";
 import { Button, Panel } from "@binary/ui";
+import { IconButton, PencilIcon, TrashIcon } from "@/shared/ui/icon-button";
 import {
 	cleanName,
 	describeError,
@@ -72,8 +73,28 @@ export function TopicManager() {
 			subjectId: topic.subject_id,
 			slug: topic.slug,
 			name: { ...topic.name },
+			requires: [],
 		});
 		formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+		/*
+		 * Bog'lanishlar ALOHIDA so'rov bilan keladi va forma ular
+		 * kelguncha kutmaydi: nom bilan slugni tahrirlash uchun ular
+		 * kerak emas.
+		 *
+		 * Javob kelganda draft to'liq almashtirilmaydi, faqat
+		 * `requires` qo'shiladi — aks holda o'sha lahzada yozilgan
+		 * harflar yo'qolardi.
+		 */
+		void withFreshToken((token) => adminTopicsApi.listPrerequisites(topic.id, { token }))
+			.then((result) => {
+				setDraft((current) =>
+					current === null ? current : { ...current, requires: result.requires },
+				);
+			})
+			.catch(() => {
+				setMessage("Oldingi mavzularni yuklab bo'lmadi — ularni tahrirlamang, aks holda ro'yxat bo'shab qoladi.");
+			});
 	};
 
 	const cancel = () => {
@@ -95,7 +116,7 @@ export function TopicManager() {
 		setMessage(null);
 		try {
 			const name = cleanName(draft.name);
-			await withFreshToken((token) =>
+			const saved = await withFreshToken((token) =>
 				editing === null
 					? adminTopicsApi.create(
 							{ subjectId: draft.subjectId, slug: draft.slug, name },
@@ -107,6 +128,27 @@ export function TopicManager() {
 							{ token },
 						),
 			);
+
+			/*
+			 * Bog'lanishlar mavzu SAQLANGANDAN KEYIN yoziladi: yangi
+			 * mavzuning id'si yaratilgunga qadar ma'lum emas.
+			 *
+			 * Ikki so'rov — ikki xil natija bo'lishi mumkin: mavzu
+			 * saqlanib, bog'lanishlar rad etilishi (halqa). Shuning
+			 * uchun xato xabari "saqlanmadi" emas, "mavzu saqlandi,
+			 * bog'lanishlar esa yo'q" deyishi kerak — aks holda setter
+			 * hammasini qaytadan kiritishga urinardi.
+			 */
+			try {
+				await withFreshToken((token) =>
+					adminTopicsApi.setPrerequisites(saved.id, draft.requires, { token }),
+				);
+			} catch (error) {
+				await load();
+				setMessage(`Mavzu saqlandi, lekin oldingi mavzular yozilmadi. ${describeError(error, "save")}`);
+				setSaving(false);
+				return;
+			}
 			setDraft(null);
 			setEditing(null);
 			await load();
@@ -244,6 +286,45 @@ export function TopicManager() {
 							))}
 						</div>
 
+						<fieldset className="mt-5">
+							<legend className="text-sm font-semibold">
+								Oldingi mavzular{" "}
+								<span className="font-normal text-fg-muted">
+									— yo'l xaritasida shu mavzuga qaysilaridan keyin kelinadi
+								</span>
+							</legend>
+
+							{/*
+							 * Faqat SHU fandagi mavzular ko'rsatiladi: yo'l
+							 * xaritasi fan ichida quriladi va boshqa fandagi
+							 * bog'lanish chizmada umuman chizilmaydi (server
+							 * ham uni hisobga olmaydi).
+							 */}
+							<div className="mt-2 grid max-h-56 gap-1.5 overflow-y-auto rounded-control border border-border-default p-3 sm:grid-cols-2">
+								{topics
+									.filter(
+										(item) => item.subject_id === draft.subjectId && item.id !== editing,
+									)
+									.map((item) => (
+										<label key={item.id} className="flex items-center gap-2 text-sm">
+											<input
+												type="checkbox"
+												checked={draft.requires.includes(item.id)}
+												onChange={(event) =>
+													setDraft({
+														...draft,
+														requires: event.target.checked
+															? [...draft.requires, item.id]
+															: draft.requires.filter((id) => id !== item.id),
+													})
+												}
+											/>
+											{displayName(item.name)}
+										</label>
+									))}
+							</div>
+						</fieldset>
+
 						{message !== null && (
 							<p role="alert" className="mt-4 text-sm text-danger">
 								{message}
@@ -285,7 +366,7 @@ export function TopicManager() {
 								<Th>NOMI</Th>
 								<Th className="w-40">FAN</Th>
 								<Th className="w-40">SLUG</Th>
-								<Th className="w-32"> </Th>
+								<Th className="w-24"> </Th>
 							</tr>
 						</thead>
 						<tbody>
@@ -304,21 +385,21 @@ export function TopicManager() {
 									<td className="px-4 py-2.5 font-mono text-[12px] text-fg-muted">
 										{topic.slug}
 									</td>
-									<td className="px-4 py-2.5 text-right whitespace-nowrap">
-										<button
-											type="button"
-											onClick={() => startEdit(topic)}
-											className="cursor-pointer text-sm font-semibold text-accent hover:text-accent-hover"
-										>
-											Tahrirlash
-										</button>
-										<button
-											type="button"
-											onClick={() => void remove(topic)}
-											className="ml-3 cursor-pointer text-sm font-semibold text-fg-muted hover:text-danger"
-										>
-											O'chirish
-										</button>
+									<td className="px-4 py-2.5">
+										<div className="flex justify-end gap-1">
+											<IconButton
+												label="Tahrirlash"
+												tone="accent"
+												icon={<PencilIcon />}
+												onClick={() => startEdit(topic)}
+											/>
+											<IconButton
+												label="O'chirish"
+												tone="danger"
+												icon={<TrashIcon />}
+												onClick={() => void remove(topic)}
+											/>
+										</div>
 									</td>
 								</tr>
 							))}

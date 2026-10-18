@@ -20,6 +20,7 @@ export * as adminProblemsApi from "./resources/admin-problems";
 export * as adminTopicsApi from "./resources/admin-topics";
 export * as taxonomyApi from "./resources/taxonomy";
 export * as submissionsApi from "./resources/submissions";
+export * as leaderboardApi from "./resources/leaderboard";
 export * as authApi from "./resources/auth";
 export * as profileApi from "./resources/profile";
 
@@ -32,7 +33,12 @@ export type {
 	StatementDto,
 } from "./resources/problems";
 
-export type { SubjectDto, TopicDto } from "./resources/taxonomy";
+export type {
+	RoadmapDto,
+	RoadmapNodeDto,
+	SubjectDto,
+	TopicDto,
+} from "./resources/taxonomy";
 
 export type {
 	AdminTopicDto,
@@ -57,6 +63,11 @@ export type {
 	SubmissionStatus,
 	Verdict,
 } from "./resources/submissions";
+
+export type {
+	LeaderboardDto,
+	LeaderboardEntryDto,
+} from "./resources/leaderboard";
 
 export type { AuthDto, DeviceInfo, MeDto, OtpProvider, Role } from "./resources/auth";
 

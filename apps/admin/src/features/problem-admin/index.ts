@@ -4,6 +4,7 @@ export { StatementEditor } from "./ui/statement-editor";
 export { TestCasesEditor } from "./ui/test-cases-editor";
 export {
 	blankStatement,
+	deleteErrorMessage,
 	DIFFICULTIES,
 	emptyForm,
 	saveErrorMessage,

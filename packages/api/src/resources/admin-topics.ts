@@ -85,3 +85,30 @@ export function remove(id: number, options: RequestOptions & { token: string }) 
 		method: "DELETE",
 	});
 }
+
+const prerequisitesSchema = z.object({
+	requires: z.array(z.number().int()),
+});
+
+export function listPrerequisites(id: number, options: RequestOptions & { token: string }) {
+	return request(`/admin/topics/${id}/prerequisites`, prerequisitesSchema, options);
+}
+
+/**
+ * Oldingi mavzularni BUTUNLIGICHA almashtiradi (PUT).
+ *
+ * Bog'lanishlar halqa hosil qilsa backend **409** qaytaradi — masalan
+ * "A dan B ga" bor holda "B dan A ga" qo'shilsa. Chaqiruvchi buni
+ * ushlab tushuntirishi kerak.
+ */
+export function setPrerequisites(
+	id: number,
+	requires: number[],
+	options: RequestOptions & { token: string },
+) {
+	return request(`/admin/topics/${id}/prerequisites`, prerequisitesSchema, {
+		...options,
+		method: "PUT",
+		body: { requires },
+	});
+}

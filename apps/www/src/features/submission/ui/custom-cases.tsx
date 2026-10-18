@@ -26,6 +26,7 @@ export function CustomCases({
 	disabled,
 	active,
 	onActiveChange,
+	placeholder,
 }: {
 	cases: string[];
 	onChange: (next: string[]) => void;
@@ -37,6 +38,7 @@ export function CustomCases({
 	disabled?: boolean;
 	active: number;
 	onActiveChange: (index: number) => void;
+	placeholder?: string | undefined;
 }) {
 	const t = useTranslations("submission");
 	const tVerdict = useTranslations("verdict");
@@ -70,10 +72,29 @@ export function CustomCases({
 
 	const output = outputs?.[active];
 	const activeFailed = failedIndex === active;
+	const canAdd = cases.length < MAX_CASES && !disabled;
 
 	return (
-		<div>
-			<div className="flex flex-wrap items-center gap-1.5">
+		<div className="rounded-card border border-border-default bg-surface">
+			<div className="flex flex-wrap items-center gap-2 border-b border-border-default px-3 py-2">
+				<div>
+					<p className="text-sm font-bold text-fg">{t("customTestTitle")}</p>
+					<p className="text-[12.5px] text-fg-muted">{t("customTestHint")}</p>
+				</div>
+
+				<button
+					type="button"
+					onClick={add}
+					disabled={!canAdd}
+					aria-label={t("addCase")}
+					title={t("addCase")}
+					className="ml-auto inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-control border border-border-default text-fg-muted transition-colors hover:border-border-hover hover:bg-surface-hover hover:text-fg disabled:cursor-not-allowed disabled:opacity-45"
+				>
+					+
+				</button>
+			</div>
+
+			<div className="flex flex-wrap items-center gap-1.5 px-3 pt-3">
 				{cases.map((_, index) => (
 					/*
 					 * Chip ichida ikkinchi tugma bor, ya'ni ular
@@ -84,7 +105,7 @@ export function CustomCases({
 					 */
 					<div
 						key={index}
-						className={`group relative flex items-center rounded-pill transition-colors ${
+						className={`group relative flex h-8 items-center rounded-control transition-colors ${
 							index === active
 								? "bg-fg text-fg-inverted"
 								: "border border-border-default text-fg-secondary hover:border-border-hover"
@@ -94,7 +115,7 @@ export function CustomCases({
 							type="button"
 							onClick={() => onActiveChange(index)}
 							aria-pressed={index === active}
-							className="cursor-pointer py-1 pr-2.5 pl-3 text-[13px] font-semibold"
+							className="h-full cursor-pointer px-3 text-[13px] font-semibold"
 						>
 							{t("case", { n: index + 1 })}
 							{/* Qaysi holatda to'xtagani tab'ning O'ZIDA ko'rinadi —
@@ -107,11 +128,6 @@ export function CustomCases({
 						</button>
 
 						{/*
-						 * O'chirish tugmasi chipning ichida, o'ng chekkada.
-						 * Ilgari u alohida "Holatni o'chirish" havolasi edi
-						 * va u FAOL holatni o'chirardi — ya'ni boshqasini
-						 * o'chirish uchun avval uni tanlash kerak edi.
-						 *
 						 * Bitta holat qolganda ko'rinmaydi: bo'sh ro'yxatni
 						 * backend rad etadi va "avval holat qo'shing" degan
 						 * holatga tushib qolish ortiqcha qadam.
@@ -122,10 +138,10 @@ export function CustomCases({
 								onClick={() => remove(index)}
 								disabled={disabled}
 								aria-label={t("removeCaseN", { n: index + 1 })}
-								className={`mr-1.5 cursor-pointer rounded-full px-1 text-[13px] leading-none transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+								className={`mr-1.5 flex size-5 cursor-pointer items-center justify-center rounded-full text-[13px] leading-none transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
 									index === active
-										? "text-fg-inverted/60 hover:text-fg-inverted"
-										: "text-fg-subtle hover:text-danger"
+										? "text-fg-inverted/60 hover:bg-white/10 hover:text-fg-inverted"
+										: "text-fg-subtle hover:bg-danger-tint hover:text-danger"
 								}`}
 							>
 								×
@@ -133,58 +149,62 @@ export function CustomCases({
 						)}
 					</div>
 				))}
-
-				{cases.length < MAX_CASES && (
-					<button
-						type="button"
-						onClick={add}
-						disabled={disabled}
-						aria-label={t("addCase")}
-						className="cursor-pointer rounded-pill border border-border-default px-2.5 py-1 text-[13px] font-semibold text-fg-muted transition-colors hover:border-border-hover hover:text-fg disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						+
-					</button>
-				)}
 			</div>
 
-			<textarea
-				value={cases[active] ?? ""}
-				onChange={(event) => update(active, event.target.value)}
-				disabled={disabled}
-				rows={3}
-				spellCheck={false}
-				autoCorrect="off"
-				placeholder="5 3"
-				aria-label={t("customInput")}
-				className="mt-2 w-full resize-y rounded-card border border-border-strong bg-surface p-2.5 font-mono text-[13px] leading-relaxed focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:bg-surface-muted"
-			/>
+			<div className="grid gap-3 p-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.72fr)]">
+				<label className="flex min-w-0 flex-col gap-1.5">
+					<span className="text-[11px] font-bold tracking-wide text-fg-subtle">
+						{t("customInput")}
+					</span>
+					<textarea
+						value={cases[active] ?? ""}
+						onChange={(event) => update(active, event.target.value)}
+						disabled={disabled}
+						rows={5}
+						spellCheck={false}
+						autoCorrect="off"
+						placeholder={placeholder || t("customInputPlaceholder")}
+						className="min-h-32 w-full resize-y rounded-control border border-border-strong bg-surface-subtle p-3 font-mono text-[13px] leading-relaxed focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:bg-surface-muted"
+					/>
+				</label>
 
-			{/*
-			 * Chiqish AYNAN shu holat uchun. Hamma natijalarni bir ro'yxatda
-			 * ko'rsatish mumkin edi, lekin unda kirish va chiqishni ko'z
-			 * bilan moslashtirishga to'g'ri kelardi — tab esa ularni yonma-yon
-			 * ushlab turadi.
-			 */}
-			{output !== undefined && (
-				<div className="mt-3">
-					<div className="flex items-center gap-2">
-						<p className="text-[11px] font-bold tracking-wide text-fg-subtle">
-							{t("output")}
-						</p>
-						{activeFailed && verdict && (
+				{/*
+				 * Chiqish AYNAN shu holat uchun. Hamma natijalarni bir ro'yxatda
+				 * ko'rsatish mumkin edi, lekin unda kirish va chiqishni ko'z
+				 * bilan moslashtirishga to'g'ri kelardi — tab esa ularni yonma-yon
+				 * ushlab turadi.
+				 */}
+				<div className="min-w-0 rounded-control border border-border-default bg-surface">
+					<div className="flex min-h-10 items-center gap-2 border-b border-border-default px-3">
+						<p className="text-[11px] font-bold tracking-wide text-fg-subtle">{t("output")}</p>
+						{output !== undefined && activeFailed && verdict && (
 							<Badge tone={verdictTone(verdict)} size="sm">
 								{tVerdict(verdict)}
 							</Badge>
 						)}
 					</div>
-					<pre className="mt-1 max-h-40 overflow-auto rounded-card border border-border-default bg-surface-subtle p-2.5 font-mono text-[12.5px] leading-relaxed whitespace-pre-wrap">
-						{output !== "" ? output : <span className="text-fg-subtle">{t("noOutput")}</span>}
-					</pre>
-					{activeFailed && (
-						<p className="mt-1.5 text-sm text-danger">{t("caseFailed")}</p>
+					{output !== undefined ? (
+						<>
+							<pre className="max-h-40 overflow-auto p-3 font-mono text-[12.5px] leading-relaxed whitespace-pre-wrap">
+								{output !== "" ? (
+									output
+								) : (
+									<span className="text-fg-subtle">{t("noOutput")}</span>
+								)}
+							</pre>
+							{activeFailed && (
+								<p className="border-t border-border-default px-3 py-2 text-sm text-danger">
+									{t("caseFailed")}
+								</p>
+							)}
+						</>
+					) : (
+						<p className="px-3 py-8 text-center text-sm text-fg-muted">
+							{t("runCustomHint")}
+						</p>
 					)}
 				</div>
-			)}
+			</div>
 		</div>
 	);
 }

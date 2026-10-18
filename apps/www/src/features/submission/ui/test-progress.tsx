@@ -26,7 +26,7 @@ export function TestProgress({
 	submission,
 	running,
 }: {
-	/** Masaladagi jami testlar soni (`test_count`). */
+	/** Shu ishga tushirishda ko'rsatiladigan testlar soni. */
 	total: number;
 	/** Yakuniy yoki oraliq natija; hali yo'q bo'lsa `null`. */
 	submission: SubmissionDto | null;

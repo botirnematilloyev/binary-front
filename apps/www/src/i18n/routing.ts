@@ -59,6 +59,8 @@ export const routing = defineRouting({
 	pathnames: {
 		"/": "/",
 		"/masalalar": "/masalalar",
+		"/yol-xaritasi": "/yol-xaritasi",
+		"/reyting": "/reyting",
 		"/masalalar/[slug]": "/masalalar/[slug]",
 		"/kirish": "/kirish",
 		"/profil": "/profil",

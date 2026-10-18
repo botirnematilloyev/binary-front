@@ -36,10 +36,19 @@ export interface TopicDraft {
 	subjectId: number;
 	slug: string;
 	name: NameDraft;
+	/**
+	 * Oldingi mavzular — yo'l xaritasidagi chiziqlar.
+	 *
+	 * Draft'ning bir qismi, garchi u ALOHIDA so'rov bilan saqlansa ham
+	 * (`PUT /admin/topics/{id}/prerequisites`). Sabab foydalanuvchi
+	 * tomonda: setter uchun bu bitta forma va bitta "Saqlash" tugmasi;
+	 * nechta so'rov ketishi uning muammosi emas.
+	 */
+	requires: number[];
 }
 
 export function emptyDraft(subjectId: number): TopicDraft {
-	return { subjectId, slug: "", name: {} };
+	return { subjectId, slug: "", name: {}, requires: [] };
 }
 
 /**
@@ -97,9 +106,17 @@ export function describeError(error: unknown, action: "save" | "delete"): string
 	}
 
 	if (error.status === 409) {
-		return action === "delete"
-			? "Bu mavzu masalalarga biriktirilgan. Avval o'sha masalalardan olib tashlang."
-			: "Bu slug band — boshqa mavzuda ishlatilyapti.";
+		if (action === "delete") {
+			return "Bu mavzu masalalarga biriktirilgan. Avval o'sha masalalardan olib tashlang.";
+		}
+		// Ikkala 409 ham "holat to'sqinlik qilyapti" degani, lekin
+		// sabablari butunlay boshqa. Backend xabari ularni ajratadi,
+		// shuning uchun tarjima ham o'sha xabarga qarab tanlanadi:
+		// aks holda halqa haqidagi xato "slug band" bo'lib chiqardi.
+		if (error.message.includes("cycle")) {
+			return "Bunday bog'lanish halqa hosil qiladi: tanlangan mavzu (bevosita yoki bir necha qadam orqali) shu mavzuning o'zini talab qilyapti.";
+		}
+		return "Bu slug band — boshqa mavzuda ishlatilyapti.";
 	}
 	if (error.status === 404) {
 		return "Mavzu topilmadi — boshqa birov o'chirgan bo'lishi mumkin.";

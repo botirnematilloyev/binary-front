@@ -186,3 +186,20 @@ export function saveErrorMessage(cause: unknown): string {
 
 	return "Saqlashda xatolik yuz berdi. Qayta urinib ko'ring.";
 }
+
+export function deleteErrorMessage(cause: unknown): string {
+	if (cause instanceof SessionExpiredError) return "Sessiya tugadi. Qaytadan kiring.";
+	if (cause instanceof ApiTransportError) {
+		return "Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.";
+	}
+
+	if (cause instanceof ApiError) {
+		if (cause.status === 409) {
+			return "Bu masalaga yechim yuborilgan. Bunday masalani o'chirib bo'lmaydi; arxivga oling.";
+		}
+		if (cause.status === 404) return "Masala topilmadi — boshqa birov o'chirgan bo'lishi mumkin.";
+		if (cause.status === 403) return "Ruxsat yetarli emas.";
+	}
+
+	return "O'chirishda xatolik yuz berdi. Qayta urinib ko'ring.";
+}

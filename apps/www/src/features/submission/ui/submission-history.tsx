@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode, type SVGProps } from "react";
 import { useLocale, useNow, useTranslations } from "next-intl";
 import { submissionsApi, type SubmissionDto } from "@binary/api";
-import { Badge, Button, Panel } from "@binary/ui";
+import { Badge, Button, Panel, cn } from "@binary/ui";
 import { formatMemory, formatMs } from "@/shared/format";
 import { relativeTime, type Locale } from "@/shared/i18n/locales";
 import { useSession, withFreshToken } from "@binary/session";
@@ -152,7 +152,11 @@ export function SubmissionHistory({
 			{state.phase === "ready" && state.items.length > 0 && (
 				<Panel className="mt-3">
 					<ul>
-						{state.items.map((item) => (
+						{state.items.map((item) => {
+							const failedLabel =
+								item.failed_test !== null ? t("failedTest", { n: item.failed_test }) : null;
+
+							return (
 							<li key={item.id} className="border-b border-border-default last:border-0">
 								{/*
 								 * Butun qator tugma: kodni ko'rish uchun aniq
@@ -164,29 +168,44 @@ export function SubmissionHistory({
 									type="button"
 									onClick={() => void toggle(item.id)}
 									aria-expanded={openID === item.id}
-									className="flex w-full flex-wrap items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-subtle"
+									className="grid w-full grid-cols-1 gap-2 px-4 py-2.5 text-left transition-colors hover:bg-surface-subtle sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
 								>
-									{item.verdict ? (
-										<Badge tone={verdictTone(item.verdict)} size="sm">
-											{tVerdict(item.verdict)}
-										</Badge>
-									) : (
-										<Badge size="sm">{tStatus(item.status)}</Badge>
-									)}
+									<span className="flex min-w-0 items-center gap-3">
+										{item.verdict ? (
+											<Badge
+												tone={verdictTone(item.verdict)}
+												size="sm"
+												className="max-w-[45vw] shrink-0 overflow-hidden text-ellipsis sm:max-w-[180px]"
+											>
+												{tVerdict(item.verdict)}
+											</Badge>
+										) : (
+											<Badge
+												size="sm"
+												className="max-w-[45vw] shrink-0 overflow-hidden text-ellipsis sm:max-w-[180px]"
+											>
+												{tStatus(item.status)}
+											</Badge>
+										)}
 
-									<span className="text-sm text-fg-secondary">
-										{item.language.name} {item.language.version}
+										<span className="min-w-[72px] max-w-[140px] truncate whitespace-nowrap text-sm text-fg-secondary">
+											{item.language.name} {item.language.version}
+										</span>
+
+										{failedLabel !== null && (
+											<span className="min-w-0 truncate text-sm text-fg-muted" title={failedLabel}>
+												{failedLabel}
+											</span>
+										)}
 									</span>
 
-									{item.failed_test !== null && (
-										<span className="text-sm text-fg-muted">
-											{t("failedTest", { n: item.failed_test })}
-										</span>
-									)}
-
-									<span className="ml-auto flex items-center gap-3 font-mono text-[12px] text-fg-muted">
-										{item.time_ms !== null && <span>{formatMs(item.time_ms)}</span>}
-										{item.memory_kb !== null && <span>{formatMemory(item.memory_kb)}</span>}
+									<span className="flex min-w-0 items-center gap-2 font-mono text-[12px] text-fg-muted sm:justify-end sm:gap-3">
+										{item.time_ms !== null && (
+											<span className="whitespace-nowrap">{formatMs(item.time_ms)}</span>
+										)}
+										{item.memory_kb !== null && (
+											<span className="whitespace-nowrap">{formatMemory(item.memory_kb)}</span>
+										)}
 										{/*
 										 * Nisbiy vaqt `format.relativeTime` bilan EMAS:
 										 * Chrome'da `uz` uchun ma'lumot yo'q va u inglizcha
@@ -200,7 +219,7 @@ export function SubmissionHistory({
 										>
 											{relativeTime(locale, new Date(item.created_at * 1000), now)}
 										</time>
-										<span aria-hidden className="text-fg-subtle">
+										<span aria-hidden className="shrink-0 text-fg-subtle">
 											{openID === item.id ? "▾" : "▸"}
 										</span>
 									</span>
@@ -221,16 +240,15 @@ export function SubmissionHistory({
 												<pre className="max-h-64 overflow-auto rounded-control bg-surface-subtle p-3 font-mono text-[12.5px] leading-relaxed">
 													{codes[item.id]}
 												</pre>
-												<Button
-													variant="outline"
-													size="sm"
-													className="mt-2"
-													onClick={() =>
-														onLoadCode(codes[item.id] ?? "", item.language.code)
-													}
-												>
-													{t("loadIntoEditor")}
-												</Button>
+												<div className="mt-2 flex justify-end">
+													<IconButton
+														label={t("loadIntoEditor")}
+														icon={<UploadToEditorIcon />}
+														onClick={() =>
+															onLoadCode(codes[item.id] ?? "", item.language.code)
+														}
+													/>
+												</div>
 											</>
 										) : (
 											<p className="text-sm text-fg-muted">{t("codeUnavailable")}</p>
@@ -238,10 +256,57 @@ export function SubmissionHistory({
 									</div>
 								)}
 							</li>
-						))}
+							);
+						})}
 					</ul>
 				</Panel>
 			)}
 		</div>
+	);
+}
+
+function IconButton({
+	label,
+	icon,
+	onClick,
+}: {
+	label: string;
+	icon: ReactNode;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			aria-label={label}
+			title={label}
+			onClick={onClick}
+			className={cn(
+				"inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-control border border-border-default text-fg-muted transition-colors",
+				"hover:border-accent hover:bg-accent-tint hover:text-accent",
+				"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+			)}
+		>
+			{icon}
+		</button>
+	);
+}
+
+function UploadToEditorIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+			{...props}
+			className={cn("size-4", props.className)}
+		>
+			<path d="M12 15V4" />
+			<path d="m7 9 5-5 5 5" />
+			<path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+		</svg>
 	);
 }

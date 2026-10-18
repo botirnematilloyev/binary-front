@@ -9,6 +9,8 @@
   "nav": {
     "home": "Home",
     "problems": "Problems",
+    "roadmap": "Roadmap",
+    "rating": "Rating",
     "login": "Sign in",
     "logout": "Sign out",
     "profile": "Profile"
@@ -37,6 +39,7 @@
   },
   "home": {
   	"metaTitle": "binary.uz — algorithm and math problems",
+  	"mascotAlt": "The binary mascot — a gopher in a hard hat holding a tablet",
   	"eyebrow": "PLATFORM FOR EXACT SCIENCES",
   	"title": "Learn algorithms and maths by practising",
   	"subtitle": "Solve problems, get them judged automatically, see the result at once. Python, C++ and Go — free.",
@@ -60,7 +63,11 @@
   	"step3Text": "Every test is checked separately, so you see exactly where it stopped.",
   	"roadmapTitle": "In progress",
   	"roadmapText": "Contests, rating and courses — they arrive as the problem set grows.",
-  	"roadmapCta": "For now, browse the problems"
+  	"roadmapCta": "For now, browse the problems",
+  	"footerProblems": "Problems",
+  	"footerContests": "Contests",
+  	"footerTelegram": "Telegram",
+  	"footerGithub": "GitHub"
   },
   "profile": {
   	"title": "Profile",
@@ -115,9 +122,20 @@
     "columnTopic": "TOPIC",
     "solvedMark": "Solved",
     "columnDifficulty": "DIFFICULTY",
-    "columnLimits": "LIMITS",
+    "columnAcceptance": "ACCEPTED",
     "emptyTitle": "No problems found",
     "emptyHint": "Try changing the filters."
+  },
+  "leaderboard": {
+    "title": "Rating",
+    "metaDescription": "The binary.uz practice rating.",
+    "columnRank": "RANK",
+    "columnUser": "USER",
+    "columnSolved": "SOLVED",
+    "columnRating": "RATING",
+    "columnChange": "CHANGE",
+    "emptyTitle": "No rating yet",
+    "emptyHint": "The table will appear after the first accepted solutions."
   },
   "problem": {
     "statement": "Statement",
@@ -149,7 +167,7 @@
   	"tabResult": "Result",
   	"tabHistory": "Submissions",
   	"modeSamples": "Samples",
-  	"modeCustom": "Custom input",
+    "modeCustom": "Manual test",
   	"noSamples": "This problem has no sample tests.",
   	"noResult": "No result yet. Write your code and press Run or Submit.",
   	"sampleNumber": "Sample {number}",
@@ -177,10 +195,16 @@
     "compileOutput": "Compiler output",
     "run": "Run",
     "running": "Running…",
-    "customInput": "Input",
-    "output": "Output",
+    "customInput": "Input data",
+    "customInputPlaceholder": "Write the data your program reads from stdin",
+    "customTestTitle": "Manual test",
+    "customTestHint": "These cases are only for trying code; they do not appear in submissions.",
+    "runCustomHint": "Write input and press Run.",
+    "output": "Program output",
     "noOutput": "The program printed nothing.",
     "noSampleTests": "This problem has no sample tests — try it with your own input.",
+    "sampleRunScope": "Sample tests",
+    "submitRunScope": "Final judging",
     "inputTooLarge": "The input is too large (16 KB max).",
     "case": "Case {n}",
     "addCase": "Add case",
@@ -209,8 +233,20 @@
     "retry": "Try again"
   },
   "notFound": {
+    "eyebrow": "404 · broken route",
     "title": "Page not found",
     "hint": "The address may have changed, or the problem is not published yet.",
-    "cta": "Back to problems"
+    "checkUrl": "Check the address for a typo.",
+    "publishedOnly": "Some problems are visible only after they are published.",
+    "cta": "Back to problems",
+    "roadmapCta": "Open roadmap"
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "metaDescription": "A topic roadmap.",
+    "summaryTopics": "{done}/{total} topics done",
+    "summaryProblems": "{solved}/{total} problems solved",
+    "problems": "{solved}/{total} problems",
+    "empty": "This subject has no topics yet."
   }
 }

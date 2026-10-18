@@ -306,3 +306,17 @@ export function unpublish(id: number, options: RequestOptions & { token: string 
 		method: "POST",
 	});
 }
+
+/**
+ * Masalani butunlay o'chirish.
+ *
+ * Backend `problem_statements`, `test_cases` va `problem_topics` ni
+ * cascade bilan olib tashlaydi. Agar masalaga submission bog'langan
+ * bo'lsa, baza himoya qiladi va backend **409** qaytaradi.
+ */
+export function remove(id: number, options: RequestOptions & { token: string }) {
+	return request(`/admin/problems/${id}`, z.void(), {
+		...options,
+		method: "DELETE",
+	});
+}
