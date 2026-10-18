@@ -17,6 +17,16 @@ const config: NextConfig = {
 	poweredByHeader: false,
 
 	typedRoutes: true,
+
+	/**
+	 * Botdagi «Kirish» tugmasi backend'da `<WEB_APP_URL>/login?code=…` deb
+	 * yasaladi, sahifa esa `/kirish`. Query (`code`) redirect'da saqlanadi.
+	 * Vaqtinchalik (307): manzil bot tomonida o'zgarsa, brauzer eskisini
+	 * eslab qolmasin.
+	 */
+	async redirects() {
+		return [{ source: "/login", destination: "/kirish", permanent: false }];
+	},
 };
 
 // Plugin `src/i18n/request.ts` ni topib, server komponentlariga tarjima

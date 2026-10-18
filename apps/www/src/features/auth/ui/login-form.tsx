@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError, ApiTransportError, authApi } from "@binary/api";
 import { Button } from "@binary/ui";
@@ -17,13 +17,41 @@ const CODE_LENGTH = 6;
  * bejiz emas: Gmail SMTP kunlik kvotaga ega va u tugaganda kodlar
  * JIMGINA kelmay qo'yadi, Telegram'da esa bunday chegara yo'q.
  */
-export function LoginForm({ next }: { next?: string | undefined }) {
+export function LoginForm({
+	next,
+	initialCode,
+}: {
+	next?: string | undefined;
+	/** Botdagi «Kirish» tugmasidan kelgan kod (`/kirish?code=…`). */
+	initialCode?: string | undefined;
+}) {
 	const t = useTranslations("auth");
 	const { signIn } = useSession();
 
 	const [code, setCode] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
+
+	/**
+	 * Bot tugmasidan kelgan kod darhol ishlatiladi — odam uni qayta
+	 * yozishi shart emas. Kod bir martalik, shuning uchun URL'dan
+	 * o'chiriladi: tarixda qolib, sahifa yangilanganda ikkinchi marta
+	 * yuborilmasin. `useRef` — StrictMode'dagi ikkinchi effekt chaqiruvi
+	 * ham kodni ikki marta yubormasin.
+	 */
+	const consumed = useRef(false);
+	useEffect(() => {
+		if (consumed.current || !initialCode || !/^\d{6}$/.test(initialCode)) return;
+		consumed.current = true;
+
+		const url = new URL(window.location.href);
+		url.searchParams.delete("code");
+		window.history.replaceState(null, "", url.pathname + url.search);
+
+		setCode(initialCode);
+		void verify(initialCode);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [initialCode]);
 
 	async function onSubmit(event: FormEvent) {
 		event.preventDefault();
@@ -33,12 +61,16 @@ export function LoginForm({ next }: { next?: string | undefined }) {
 			return;
 		}
 
+		await verify(code);
+	}
+
+	async function verify(value: string) {
 		setPending(true);
 		setError(null);
 
 		try {
 			const auth = await authApi.verifyTelegramLogin({
-				code,
+				code: value,
 				device: { deviceName: "Web", platform: "web" },
 			});
 			await signIn(auth);

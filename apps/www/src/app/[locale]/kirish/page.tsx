@@ -9,7 +9,7 @@ const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT ?? "binary_uz_admin_bot
 
 interface PageProps {
 	params: Promise<{ locale: Locale }>;
-	searchParams: Promise<{ next?: string }>;
+	searchParams: Promise<{ next?: string; code?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -31,7 +31,9 @@ export default async function LoginPage({ params, searchParams }: PageProps) {
 	const { locale } = await params;
 	setRequestLocale(locale);
 
-	const { next } = await searchParams;
+	// `code` — botdagi «Kirish» tugmasi shu yerga `/login?code=…` orqali
+	// olib keladi (next.config.ts dagi redirect).
+	const { next, code } = await searchParams;
 	const t = await getTranslations("auth");
 
 	return (
@@ -64,7 +66,7 @@ export default async function LoginPage({ params, searchParams }: PageProps) {
 						{t("openBot")} ↗
 					</a>
 
-					<LoginForm next={next} />
+					<LoginForm next={next} initialCode={code} />
 				</Panel>
 			</div>
 		</Container>
