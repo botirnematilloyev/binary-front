@@ -21,8 +21,16 @@ export async function SiteHeader() {
 
 	return (
 		<header className="border-b border-border-default bg-canvas">
-			<Container className="flex h-[62px] items-center gap-6">
-				<Link href="/" className="shrink-0" aria-label={t("home")}>
+			{/*
+			 * Tor ekranda navigatsiya ikkinchi qatorga tushadi (`order-last
+			 * w-full`), `md` dan boshlab logotip va til tanlagich orasida
+			 * turadi. Ilgari havolalar `whitespace-nowrap` bo'lgani uchun
+			 * joy yetmaganda ular til tanlagich USTIGA chiqib ketardi.
+			 * `overflow-x-auto` — oxirgi himoya: joy baribir yetmasa (uzun
+			 * tarjima, yangi bo'lim) qator ustma-ust tushmay, suriladi.
+			 */}
+			<Container className="flex flex-wrap items-center gap-x-6">
+				<Link href="/" className="flex h-[62px] shrink-0 items-center" aria-label={t("home")}>
 					{/*
 					 * `width`/`height` — rasmning HAQIQIY nisbati (1329×445).
 					 * Next ulardan joyni oldindan band qiladi, ya'ni rasm
@@ -49,14 +57,16 @@ export async function SiteHeader() {
 					/>
 				</Link>
 
-				<nav className="flex min-w-0 flex-1 items-center gap-5">
+				<nav className="order-last -mt-2 flex w-full items-center gap-5 overflow-x-auto pb-2 [scrollbar-width:none] md:order-none md:mt-0 md:w-auto md:min-w-0 md:flex-1 md:pb-0">
 					<NavLink href="/masalalar">{t("problems")}</NavLink>
 					<NavLink href="/yol-xaritasi">{t("roadmap")}</NavLink>
 					<NavLink href="/reyting">{t("rating")}</NavLink>
 				</nav>
 
-				<LanguageSwitcher />
-				<AuthMenu />
+				<div className="ml-auto flex shrink-0 items-center gap-3 md:gap-6">
+					<LanguageSwitcher />
+					<AuthMenu />
+				</div>
 			</Container>
 		</header>
 	);
