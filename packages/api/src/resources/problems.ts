@@ -35,6 +35,8 @@ const problemSummarySchema = z.object({
 	memory_limit_kb: z.number().int(),
 	attempts: z.number().int().default(0),
 	accepted: z.number().int().default(0),
+	/** Yechganlar — har bir foydalanuvchi bir marta, qayta yuborishlar hisoblanmaydi. */
+	solvers: z.number().int().default(0),
 	published_at: z.number().int().nullable(),
 	/** Jadvaldagi MAVZU ustuni uchun; tafsilotdagi bilan bir xil DTO. */
 	topics: z.array(topicSchema),

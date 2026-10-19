@@ -122,7 +122,7 @@
     "columnTopic": "MAVZU",
     "solvedMark": "Yechilgan",
     "columnDifficulty": "QIYINLIK",
-    "columnAcceptance": "YECHDI",
+    "columnSolved": "YECHDI",
     "emptyTitle": "Masala topilmadi",
     "emptyHint": "Filtrlarni o'zgartirib ko'ring."
   },

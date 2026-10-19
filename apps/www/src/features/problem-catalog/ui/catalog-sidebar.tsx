@@ -43,6 +43,25 @@ export async function CatalogSidebar({
 }) {
 	const t = await getTranslations("problems");
 
+	// API mavzularni `sort` bo'yicha beradi, va har fanning `sort` i 10 dan
+	// boshlanadi — "hamma fan" holatida ikki fanning mavzulari aralashib
+	// ketardi (Saralash, Kiritish va chiqarish, O'zgaruvchilar...). Shuning
+	// uchun fanlar tartibida guruhlanadi; fanning sarlavhasi faqat bir
+	// nechta guruh bo'lganda chiqadi. Fani ro'yxatda yo'q mavzu yo'qolmaydi —
+	// oxirida sarlavhasiz turadi.
+	const groups = subjects
+		.map((subject) => ({
+			key: String(subject.id),
+			title: pickName(subject.name, apiLang),
+			topics: topics.filter((topic) => topic.subject_id === subject.id),
+		}))
+		.filter((group) => group.topics.length > 0);
+	const orphans = topics.filter(
+		(topic) => !subjects.some((subject) => subject.id === topic.subject_id),
+	);
+	if (orphans.length > 0) groups.push({ key: "other", title: "", topics: orphans });
+	const showGroupTitles = groups.length > 1;
+
 	return (
 		<Panel className="p-3">
 			<p className="px-2 pb-2 text-[11px] font-bold tracking-wide text-fg-subtle">
@@ -105,24 +124,35 @@ export async function CatalogSidebar({
 								{t("all")}
 							</FilterLink>
 						</li>
-						{topics.map((topic) => (
-							<li key={topic.id}>
-								{/*
-								 * Mavzu bilan birga uning FANI ham qo'yiladi —
-								 * `TopicDto.subject_id` aynan shuning uchun
-								 * kerak: "hamma fan" holatida mavzu bosilsa,
-								 * panel keyin o'sha fanning mavzularini
-								 * ko'rsatadi va o'zi bilan ziddiyatga tushmaydi.
-								 */}
-								<FilterLink
-									query={filterQuery(filters, {
-										subjectId: topic.subject_id,
-										topicId: topic.id,
-									})}
-									active={filters.topicId === topic.id}
-								>
-									{pickName(topic.name, apiLang)}
-								</FilterLink>
+						{groups.map((group) => (
+							<li key={group.key}>
+								{showGroupTitles && group.title && (
+									<p className="mt-3 px-2.5 pb-1 text-[12px] font-semibold text-fg-muted">
+										{group.title}
+									</p>
+								)}
+								<ul className="flex flex-col gap-0.5">
+									{group.topics.map((topic) => (
+										<li key={topic.id}>
+											{/*
+											 * Mavzu bilan birga uning FANI ham qo'yiladi —
+											 * `TopicDto.subject_id` aynan shuning uchun
+											 * kerak: "hamma fan" holatida mavzu bosilsa,
+											 * panel keyin o'sha fanning mavzularini
+											 * ko'rsatadi va o'zi bilan ziddiyatga tushmaydi.
+											 */}
+											<FilterLink
+												query={filterQuery(filters, {
+													subjectId: topic.subject_id,
+													topicId: topic.id,
+												})}
+												active={filters.topicId === topic.id}
+											>
+												{pickName(topic.name, apiLang)}
+											</FilterLink>
+										</li>
+									))}
+								</ul>
 							</li>
 						))}
 					</ul>

@@ -36,7 +36,7 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 						<Th>{t("columnProblem")}</Th>
 						<Th className="w-40">{t("columnTopic")}</Th>
 						<Th className="w-28">{t("columnDifficulty")}</Th>
-						<Th className="w-28 text-right">{t("columnAcceptance")}</Th>
+						<Th className="w-28 text-right">{t("columnSolved")}</Th>
 					</tr>
 				</thead>
 				<tbody>
@@ -81,7 +81,7 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 								</Badge>
 							</td>
 							<td className="px-4 py-3 text-right font-mono text-[13px] text-fg-muted">
-								{row.acceptanceRate === null ? "—" : `${row.acceptanceRate}%`}
+								{row.solvers}
 							</td>
 						</tr>
 					))}

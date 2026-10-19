@@ -122,7 +122,7 @@
     "columnTopic": "ТЕМА",
     "solvedMark": "Решено",
     "columnDifficulty": "СЛОЖНОСТЬ",
-    "columnAcceptance": "ПРИНЯТО",
+    "columnSolved": "РЕШИЛИ",
     "emptyTitle": "Задачи не найдены",
     "emptyHint": "Попробуйте изменить фильтры."
   },
