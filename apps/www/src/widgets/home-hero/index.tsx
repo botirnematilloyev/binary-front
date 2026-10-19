@@ -38,10 +38,15 @@ export async function HomeHero({
 
 				<div className="mt-7 flex flex-wrap gap-3">
 					<Link href="/masalalar" className={buttonClass({ size: "lg" })}>
-						{t("cta")}
+						{t("cta")} <span aria-hidden>→</span>
 					</Link>
+					{/*
+           * Ikkinchi tugma "Kirish" emas: kirgan foydalanuvchiga ham
+           * ko'rinardi va yangi kelgan odamga "nimadan boshlayman?"
+           * savoliga javob bermasdi. Yo'l xaritasi esa beradi.
+           */}
 					<Link
-						href="/kirish"
+						href="/yol-xaritasi"
 						className={buttonClass({ size: "lg", variant: "outline" })}
 					>
 						{t("ctaSecondary")}
@@ -52,8 +57,10 @@ export async function HomeHero({
          * Raqamlar API'dan keladi. To'qib chiqarilgan "840+" yozish
          * oson edi va aynan shuning uchun qilinmadi: bosh sahifadagi
          * son katalogdagi bilan mos kelmasa, birinchi bosgan odam
-         * buni darrov ko'radi.
+         * buni darrov ko'radi. Xuddi shu sabab bilan "0 masala" ham
+         * ko'rsatilmaydi — sahifa chaqiruvchida bo'sh ro'yxat beradi.
          */}
+				{stats.length > 0 && (
 				<dl className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
 					{stats.map((item) => (
 						<div key={item.label} className="flex items-baseline gap-1.5">
@@ -63,6 +70,7 @@ export async function HomeHero({
 						</div>
 					))}
 				</dl>
+				)}
 			</div>
 
 			<Mascot />

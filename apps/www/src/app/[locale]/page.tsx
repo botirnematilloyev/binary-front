@@ -47,12 +47,18 @@ export default async function HomePage({ params }: PageProps) {
 		taxonomyApi.listSubjects({ revalidate }),
 	]);
 
-	const stats = [
-		{ value: String(all.total), label: t("statProblems") },
-		{ value: String(subjects.subjects.length), label: t("statSubjects") },
-		{ value: "3", label: t("statLanguages") },
-		{ value: t("statFreeValue"), label: t("statFree") },
-	];
+	// Masala yo'q bo'lsa raqamlar qatori umuman chiqmaydi: "0 masala"
+	// platforma bo'shligini e'lon qiladi. "0 so'm" ham olib tashlandi —
+	// boshqa raqamlar yonida u ham "hali hech narsa yo'q" deb o'qilardi;
+	// bepulligi subtitle'da aytilgan.
+	const stats =
+		all.total > 0
+			? [
+					{ value: String(all.total), label: t("statProblems") },
+					{ value: String(subjects.subjects.length), label: t("statSubjects") },
+					{ value: "3", label: t("statLanguages") },
+				]
+			: [];
 
 	return (
 		<>
@@ -85,6 +91,17 @@ export default async function HomePage({ params }: PageProps) {
 							</li>
 						))}
 					</ol>
+				</section>
+
+				{/*
+         * Brend shiori. Nomning ma'nosi (0 va 1) bu yerda metafora
+         * sifatida turadi — ikkilik sanoq tizimining ta'rifi emas.
+         */}
+				<section className="mt-20 border-l-2 border-accent pl-5">
+					<p className="font-display text-[20px] font-bold">{t("tagline")}</p>
+					<p className="mt-2 max-w-[620px] text-fg-secondary">
+						{t("taglineText")}
+					</p>
 				</section>
 			</Container>
 			<HomeFooter />
