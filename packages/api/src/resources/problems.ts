@@ -37,6 +37,8 @@ const problemSummarySchema = z.object({
 	accepted: z.number().int().default(0),
 	/** Yechganlar — har bir foydalanuvchi bir marta, qayta yuborishlar hisoblanmaydi. */
 	solvers: z.number().int().default(0),
+	/** Urinib ko'rganlar — kamida bitta yechim yuborgan foydalanuvchilar. */
+	attempters: z.number().int().default(0),
 	published_at: z.number().int().nullable(),
 	/** Jadvaldagi MAVZU ustuni uchun; tafsilotdagi bilan bir xil DTO. */
 	topics: z.array(topicSchema),

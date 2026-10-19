@@ -80,8 +80,16 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 									{tDifficulty(row.difficulty)}
 								</Badge>
 							</td>
-							<td className="px-4 py-3 text-right font-mono text-[13px] text-fg-muted">
-								{row.solvers}
+							{/*
+							 * Ikkalasi ham FOYDALANUVCHILAR soni, yuborishlar emas:
+							 * bitta odamning o'n urinishi "10 dan 1" ko'rsatib,
+							 * masalani amalda bo'lganidan qiyinroq qilib ko'rsatardi.
+							 */}
+							<td
+								className="px-4 py-3 text-right font-mono text-[13px] text-fg-muted"
+								title={t("solvedHint", { solvers: row.solvers, attempters: row.attempters })}
+							>
+								<span className="text-fg">{row.solvers}</span>/{row.attempters}
 							</td>
 						</tr>
 					))}

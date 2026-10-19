@@ -123,6 +123,7 @@
     "solvedMark": "Solved",
     "columnDifficulty": "DIFFICULTY",
     "columnSolved": "SOLVED",
+    "solvedHint": "{attempters} tried, {solvers} solved",
     "emptyTitle": "No problems found",
     "emptyHint": "Try changing the filters."
   },

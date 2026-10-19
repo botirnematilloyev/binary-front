@@ -32,8 +32,9 @@ export interface ProblemRow {
 	titleLang: string;
 	difficulty: Difficulty;
 	difficultyTone: NonNullable<BadgeProps["tone"]>;
-	/** YECHDI ustuni: masalani yechgan foydalanuvchilar soni. */
+	/** YECHDI ustuni: `solvers/attempters` — "100 kishidan 75 tasi yechdi". */
 	solvers: number;
+	attempters: number;
 	/** Jadvaldagi MAVZU ustuni. Bo'sh bo'lishi mumkin. */
 	topics: string[];
 }
@@ -56,6 +57,7 @@ export function toProblemRow(dto: ProblemSummaryDto, apiLang: string): ProblemRo
 		difficulty: dto.difficulty,
 		difficultyTone: DIFFICULTY_TONE[dto.difficulty],
 		solvers: dto.solvers,
+		attempters: dto.attempters,
 		// Mavzu nomi ham ko'p tilli, va u sarlavha bilan BIR XIL qoida
 		// bo'yicha tanlanadi — aks holda bir qatorda sarlavha o'zbekcha,
 		// mavzu ruscha chiqishi mumkin.

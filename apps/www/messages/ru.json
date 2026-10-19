@@ -123,6 +123,7 @@
     "solvedMark": "Решено",
     "columnDifficulty": "СЛОЖНОСТЬ",
     "columnSolved": "РЕШИЛИ",
+    "solvedHint": "Пробовали: {attempters}, решили: {solvers}",
     "emptyTitle": "Задачи не найдены",
     "emptyHint": "Попробуйте изменить фильтры."
   },

@@ -123,6 +123,7 @@
     "solvedMark": "Yechilgan",
     "columnDifficulty": "QIYINLIK",
     "columnSolved": "YECHDI",
+    "solvedHint": "{attempters} kishi urinib ko'rgan, {solvers} tasi yechgan",
     "emptyTitle": "Masala topilmadi",
     "emptyHint": "Filtrlarni o'zgartirib ko'ring."
   },

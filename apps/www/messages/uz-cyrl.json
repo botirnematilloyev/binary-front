@@ -123,6 +123,7 @@
     "solvedMark": "Ечилган",
     "columnDifficulty": "ҚИЙИНЛИК",
     "columnSolved": "ЕЧДИ",
+    "solvedHint": "{attempters} киши уриниб кўрган, {solvers} таси ечган",
     "emptyTitle": "Масала топилмади",
     "emptyHint": "Филтрларни ўзгартириб кўринг."
   },
