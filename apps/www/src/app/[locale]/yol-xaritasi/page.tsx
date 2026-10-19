@@ -16,9 +16,6 @@ import { apiLangOf, type Locale } from "@/shared/i18n/locales";
  */
 export const revalidate = 300;
 
-/** Fan tanlanmaganda ochiladigan xarita. */
-const DEFAULT_SUBJECT = "algorithm";
-
 interface PageProps {
 	params: Promise<{ locale: Locale }>;
 	searchParams: Promise<{ fan?: string }>;
@@ -31,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	return {
 		title: t("title"),
 		description: t("metaDescription"),
-		// Fan tanlovi (`?fan=math`) canonical'ga kirmaydi: u bir
+		// Fan tanlovi (`?fan=algorithm`) canonical'ga kirmaydi: u bir
 		// sahifaning kesimi, alohida sahifa emas.
 		alternates: buildAlternates({ pathname: "/yol-xaritasi" }, { canonicalLocale: locale }),
 	};
@@ -42,14 +39,18 @@ export default async function RoadmapPage({ params, searchParams }: PageProps) {
 	setRequestLocale(locale);
 
 	const { fan } = await searchParams;
-	const subject = fan?.trim() || DEFAULT_SUBJECT;
 	const t = await getTranslations("roadmap");
 	const apiLang = apiLangOf(locale);
 
-	const [roadmap, subjects] = await Promise.all([
-		fetchRoadmap(subject),
-		taxonomyApi.listSubjects({ revalidate: 3600 }),
-	]);
+	const subjects = await taxonomyApi.listSubjects({ revalidate: 3600 });
+
+	// Fan tanlanmasa — ro'yxatdagi birinchisi (API `sort` bo'yicha beradi).
+	// Slug qattiq yozilmaydi: fanlar admin'da o'zgaradi, va birinchi fan
+	// o'quv yo'lining boshi bo'lib turadi.
+	const subject = fan?.trim() || subjects.subjects[0]?.slug;
+	if (!subject) notFound();
+
+	const roadmap = await fetchRoadmap(subject);
 
 	return (
 		<Container className="py-9">
