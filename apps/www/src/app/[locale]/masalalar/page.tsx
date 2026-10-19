@@ -70,7 +70,7 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	// `?page=-5` bo'lishi mumkin. `undefined` ga aylantiramiz va API'ga
 	// yubormaymiz — backend ham o'z tomonidan tekshiradi, lekin bu yerda
 	// tozalash 400 xatosi o'rniga oddiy "filtr yo'q" holatini beradi.
-	const subjectId = positiveInt(query.subject_id);
+	const requestedSubjectId = positiveInt(query.subject_id);
 	const topicId = positiveInt(query.topic_id);
 	const difficulty = parseDifficulty(query.difficulty);
 	const page = positiveInt(query.page) ?? 1;
@@ -79,6 +79,19 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	// `TrimSpace` qiladi, va ikkalasi bir xil qiymatni ko'rishi kerak —
 	// aks holda formadagi matn URL'dagidan farq qilib qolardi.
 	const searchText = query.q?.trim() || undefined;
+
+	// Fan ro'yxati birinchi keladi: fan tanlanmagan bo'lsa, ro'yxatdagi
+	// BIRINCHI fan (sort bo'yicha — Fundamental dasturlash) ochiladi.
+	// "Barchasi" yo'q: ikki fanning mavzulari birga ~35 ta bo'lib, yon
+	// panel sahifadan uzun chiqardi. Bu so'rov 1 soat keshda, ya'ni
+	// ketma-ket kutish amalda vaqt olmaydi.
+	//
+	// Ro'yxatda yo'q `?subject_id=` ham birinchi fanga tushadi — bo'sh
+	// katalog ko'rsatgandan ko'ra shunisi foydaliroq.
+	const subjects = await taxonomyApi.listSubjects({ revalidate: 3600 });
+	const subjectId = subjects.subjects.some((s) => s.id === requestedSubjectId)
+		? requestedSubjectId
+		: subjects.subjects[0]?.id;
 
 	const filters = { subjectId, topicId, difficulty, query: searchText };
 
@@ -92,9 +105,9 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	// O'girish faqat reyestr orqali bo'ladi.
 	const apiLang = apiLangOf(locale);
 
-	// Uchta so'rov bir-biriga bog'liq emas, shuning uchun ketma-ket
+	// Qolgan ikki so'rov bir-biriga bog'liq emas, shuning uchun ketma-ket
 	// kutmaymiz: `await` larni ketma-ket yozish sahifa yuklanishini
-	// uch barobar sekinlashtiradigan eng keng tarqalgan xato.
+	// sekinlashtiradigan eng keng tarqalgan xato.
 	//
 	// `listTopics(subjectId)` — fan tanlangan bo'lsa faqat o'sha fanning
 	// mavzulari. Aks holda "Matematika" tanlab turib "Graflar" bosiladi va
@@ -103,7 +116,7 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 	//
 	// Manzil (`?subject_id=`) so'rovga kiradi, ya'ni har fan uchun kesh
 	// yozuvi alohida — filtrlar aralashib ketmaydi.
-	const [list, subjects, topics] = await Promise.all([
+	const [list, topics] = await Promise.all([
 		problemsApi.listProblems(
 			{
 				page,
@@ -116,7 +129,6 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 			},
 			{ revalidate },
 		),
-		taxonomyApi.listSubjects({ revalidate: 3600 }),
 		taxonomyApi.listTopics(subjectId, { revalidate: 3600 }),
 	]);
 

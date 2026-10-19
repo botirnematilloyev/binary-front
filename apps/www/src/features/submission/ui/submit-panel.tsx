@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { submissionsApi, type LanguageDto } from "@binary/api";
 import { Button, Panel } from "@binary/ui";
 import { useSession, withFreshToken } from "@binary/session";
+import { readPreferredLanguage, savePreferredLanguage } from "../preferred-language";
 import { useSubmission } from "../use-submission";
 import { AcceptedBurst } from "./accepted-burst";
 import { CodeEditor } from "./code-editor";
@@ -96,6 +97,28 @@ export function SubmitPanel({
 	const lastFinalId = useRef<number | null>(null);
 	const lastCelebratedId = useRef<number | null>(null);
 	const [acceptedBurstId, setAcceptedBurstId] = useState<number | null>(null);
+
+	/*
+	 * Oldingi masalada tanlangan til.
+	 *
+	 * `useState` boshlang'ich qiymatida emas, effektda o'qiladi: sahifa
+	 * serverda chiziladi va `localStorage` u yerda yo'q — boshlang'ich
+	 * qiymat farq qilsa, hydration xatosi bo'lardi.
+	 *
+	 * Shu masaladagi oxirgi yechim tiklansa (pastdagi effekt), uning tili
+	 * ustun bo'ladi: kod aynan o'sha tilda yozilgan. U tarmoqdan keladi,
+	 * ya'ni bu effektdan KEYIN ishlaydi va tanlovni o'zi almashtiradi.
+	 */
+	const preferenceApplied = useRef(false);
+	useEffect(() => {
+		// Bir marta: keyingi renderlarda tiklangan yechim tilini bosib ketmasin.
+		if (preferenceApplied.current) return;
+		preferenceApplied.current = true;
+		const saved = readPreferredLanguage();
+		if (saved !== null && languages.some((item) => item.code === saved)) {
+			setLanguage(saved);
+		}
+	}, [languages]);
 
 	useEffect(() => {
 		// FAQAT haqiqiy yuborish tarixni o'zgartiradi — sinovlar u yerda
@@ -231,7 +254,12 @@ export function SubmitPanel({
 				<h2 className="text-lg font-bold">{t("title")}</h2>
 				<select
 					value={language}
-					onChange={(event) => setLanguage(event.target.value)}
+					onChange={(event) => {
+						setLanguage(event.target.value);
+						// Faqat qo'lda tanlov eslab qolinadi: tarixdan tiklangan
+						// yechimning tili — bu bir martalik holat, odamning tanlovi emas.
+						savePreferredLanguage(event.target.value);
+					}}
 					aria-label={t("language")}
 					className="ml-auto rounded-control border border-border-strong bg-surface px-2.5 py-1.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
 				>
