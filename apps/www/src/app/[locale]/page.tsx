@@ -124,7 +124,7 @@ async function HomeFooter() {
 								alt="binary.uz"
 								width={1329}
 								height={445}
-								className="h-4 w-auto mix-blend-multiply"
+								className="h-4 w-auto mix-blend-multiply dark:mix-blend-screen dark:invert"
 							/>
 						</Link>
 						<p className="font-mono text-sm text-fg-subtle">

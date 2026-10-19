@@ -69,14 +69,147 @@
   /* Tanga / do'kon */
   --binary-gold: #f5c518;
   --binary-gold-border: #d9a80e;
+
+  /* Ustma-ust qatlamlar soyasi */
+  --binary-shadow: rgb(20 22 26 / 0.09);
+
+  /* Kod muharriri (CodeMirror) — One Light'ga yaqin */
+  --binary-editor-selection: #d7dcf6;
+  --binary-editor-active-line: #f6f6f1;
+  --binary-editor-cursor: #14161a;
+  --binary-syntax-keyword: #a626a4;
+  --binary-syntax-string: #50a14f;
+  --binary-syntax-number: #986801;
+  --binary-syntax-comment: #a0a1a7;
+  --binary-syntax-function: #4078f2;
+  --binary-syntax-type: #c18401;
+  --binary-syntax-property: #e45649;
+  --binary-syntax-operator: #0184bc;
 }
 
-/* Keyingi temalar shu yerga qo'shiladi: [data-theme="dark"] { … }
+/* ── night-owl: Sarah Drasner'ning Night Owl palitrasi ────────────────
  *
- * Muhim: yangi tema YUQORIDAGI ro'yxatning HAMMASINI qayta e'lon
+ * Chuqur ko'k-qora fon (#011627) va pastel urg'ular. Qorong'i temalarda
+ * `fg-inverted` va `accent-fg` QORONG'I: `bg-fg` endi och tabletka
+ * bo'ladi, ustidagi matn esa fon rangida — kontrast saqlanadi.
+ */
+[data-theme="night-owl"] {
+  color-scheme: dark;
+
+  --binary-canvas: #011627;
+  --binary-surface: #04203a;
+  --binary-surface-subtle: #021a30;
+  --binary-surface-muted: #0b2942;
+  --binary-surface-hover: #0e3150;
+
+  --binary-border: #13324d;
+  --binary-border-strong: #1d3b53;
+  --binary-border-hover: #5f7e97;
+
+  --binary-fg: #d6deeb;
+  --binary-fg-secondary: #b4c3d6;
+  --binary-fg-muted: #8aa1b8;
+  --binary-fg-subtle: #637f99;
+  --binary-fg-inverted: #011627;
+
+  --binary-accent: #82aaff;
+  --binary-accent-hover: #a7c3ff;
+  --binary-accent-tint: #0f2c55;
+  --binary-accent-fg: #011627;
+
+  --binary-success: #22da6e;
+  --binary-success-soft: #addb67;
+  --binary-success-tint: #0a3330;
+
+  --binary-danger: #ef5350;
+  --binary-danger-tint: #3a1828;
+
+  --binary-warning: #ffcb8b;
+  --binary-warning-tint: #33291f;
+
+  --binary-gold: #ecc48d;
+  --binary-gold-border: #c9a26b;
+
+  --binary-shadow: rgb(0 6 14 / 0.55);
+
+  --binary-editor-selection: #1d3b53;
+  --binary-editor-active-line: #0a2238;
+  --binary-editor-cursor: #80a4c2;
+  --binary-syntax-keyword: #c792ea;
+  --binary-syntax-string: #ecc48d;
+  --binary-syntax-number: #f78c6c;
+  --binary-syntax-comment: #637777;
+  --binary-syntax-function: #82aaff;
+  --binary-syntax-type: #ffcb8b;
+  --binary-syntax-property: #addb67;
+  --binary-syntax-operator: #7fdbca;
+}
+
+/* ── aura: Dalton Menezes'ning Aura Dark palitrasi ─────────────────────
+ *
+ * Binafsha-qora fon (#15141b), urg'u — binafsha (#a277ff), muvaffaqiyat —
+ * neon yashil (#61ffca).
+ */
+[data-theme="aura"] {
+  color-scheme: dark;
+
+  --binary-canvas: #15141b;
+  --binary-surface: #1c1b24;
+  --binary-surface-subtle: #18171f;
+  --binary-surface-muted: #24222f;
+  --binary-surface-hover: #2a2838;
+
+  --binary-border: #29263c;
+  --binary-border-strong: #3a3653;
+  --binary-border-hover: #6b6588;
+
+  --binary-fg: #edecee;
+  --binary-fg-secondary: #cbc8d3;
+  --binary-fg-muted: #9a96a8;
+  --binary-fg-subtle: #6f6b80;
+  --binary-fg-inverted: #15141b;
+
+  --binary-accent: #a277ff;
+  --binary-accent-hover: #b994ff;
+  --binary-accent-tint: #2a2245;
+  --binary-accent-fg: #15141b;
+
+  --binary-success: #61ffca;
+  --binary-success-soft: #4fd1a5;
+  --binary-success-tint: #15302a;
+
+  --binary-danger: #ff6767;
+  --binary-danger-tint: #3a1d25;
+
+  --binary-warning: #ffca85;
+  --binary-warning-tint: #362c20;
+
+  --binary-gold: #ffca85;
+  --binary-gold-border: #d9a35e;
+
+  --binary-shadow: rgb(0 0 0 / 0.5);
+
+  --binary-editor-selection: #3d375e;
+  --binary-editor-active-line: #1f1d2a;
+  --binary-editor-cursor: #a277ff;
+  --binary-syntax-keyword: #a277ff;
+  --binary-syntax-string: #61ffca;
+  --binary-syntax-number: #f694ff;
+  --binary-syntax-comment: #6d6d6d;
+  --binary-syntax-function: #ffca85;
+  --binary-syntax-type: #82e2ff;
+  --binary-syntax-property: #f694ff;
+  --binary-syntax-operator: #a277ff;
+}
+
+/* Muhim: yangi tema YUQORIDAGI ro'yxatning HAMMASINI qayta e'lon
  * qilishi shart. Yarim to'ldirilgan tema light qiymatlarini meros qilib
  * oladi va natijada o'qilmaydigan aralashma chiqadi. Buni `index.ts`
  * dagi `ThemeName` turi va tema ro'yxati nazorat qiladi. */
+
+/* `dark:` varianti — qorong'i temalarning HAMMASI uchun. Ranglar uchun
+ * emas (ular tokenlarda), rasm kabi tokenga bo'ysunmaydigan narsalar uchun. */
+@custom-variant dark (&:where([data-theme="night-owl"], [data-theme="night-owl"] *, [data-theme="aura"], [data-theme="aura"] *));
 
 @theme inline {
   --color-canvas: var(--binary-canvas);
@@ -123,7 +256,7 @@
   --radius-control: 0.5rem;
   --radius-pill: 1.25rem;
 
-  --shadow-popover: 0 10px 28px rgb(20 22 26 / 0.09);
+  --shadow-popover: 0 10px 28px var(--binary-shadow);
 
   /* Shablonning konteyner keni — nav, main va footer bir xil. */
   --spacing-content: 67.5rem;

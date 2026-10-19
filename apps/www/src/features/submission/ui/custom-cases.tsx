@@ -140,7 +140,7 @@ export function CustomCases({
 								aria-label={t("removeCaseN", { n: index + 1 })}
 								className={`mr-1.5 flex size-5 cursor-pointer items-center justify-center rounded-full text-[13px] leading-none transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
 									index === active
-										? "text-fg-inverted/60 hover:bg-white/10 hover:text-fg-inverted"
+										? "text-fg-inverted/60 hover:bg-fg-inverted/10 hover:text-fg-inverted"
 										: "text-fg-subtle hover:bg-danger-tint hover:text-danger"
 								}`}
 							>

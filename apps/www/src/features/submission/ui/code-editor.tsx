@@ -6,6 +6,7 @@ import { cpp } from "@codemirror/lang-cpp";
 import { go } from "@codemirror/lang-go";
 import { python } from "@codemirror/lang-python";
 import type { Extension } from "@codemirror/state";
+import { editorTheme } from "./editor-theme";
 
 /**
  * CodeMirror brauzerni talab qiladi (DOM, `window`), shuning uchun
@@ -57,6 +58,8 @@ export function CodeEditor({
 				onChange={onChange}
 				extensions={extensions}
 				editable={!disabled}
+				// O'z mavzumiz — tokenlarga bog'langan, temalar bilan almashadi.
+				theme={editorTheme}
 				height="100%"
 				className="h-full text-[13px]"
 				basicSetup={{

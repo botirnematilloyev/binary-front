@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Manrope, Poppins } from "next/font/google";
 import { SessionProvider } from "@binary/session";
+import { themeInitScript } from "@binary/tokens";
 import { AdminGate } from "@/features/admin-auth";
 import "./globals.css";
 
@@ -39,13 +40,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html
 			lang="uz"
+			// Skript `data-theme` ni React'dan oldin qo'yadi — server HTML'idan
+			// farq qiladi, shuning uchun ogohlantirish o'chirilgan.
+			suppressHydrationWarning
 			className={`${manrope.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
 		>
-			{/*
-			 * Tema tanlagich skripti bu yerda YO'Q — admin bir temada
-			 * (light) ishlaydi. `tokens.css` dagi `:root` bloki uni
-			 * `data-theme` atributisiz ham beradi.
-			 */}
+			<head>
+				{/* Sayt bilan bir xil skript; tanlov esa har domen uchun alohida saqlanadi. */}
+				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+			</head>
 			<body className="min-h-dvh">
 				<SessionProvider>
 					{/*

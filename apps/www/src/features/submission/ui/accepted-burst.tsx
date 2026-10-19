@@ -67,7 +67,7 @@ export function AcceptedBurst({ onDone }: { onDone: () => void }) {
 				.accepted-burst__veil {
 					position: absolute;
 					inset: 0;
-					background: rgb(255 255 255 / 0.22);
+					background: color-mix(in srgb, var(--color-canvas) 22%, transparent);
 					backdrop-filter: blur(3px);
 					animation: accepted-veil 2900ms ease both;
 				}
@@ -76,13 +76,13 @@ export function AcceptedBurst({ onDone }: { onDone: () => void }) {
 					position: relative;
 					width: 1px;
 					height: 1px;
-					filter: drop-shadow(0 24px 44px rgb(17 24 39 / 0.22));
+					filter: drop-shadow(0 24px 44px var(--binary-shadow));
 				}
 
 				.accepted-burst__ring {
 					position: absolute;
 					inset: -56px;
-					border: 3px solid rgb(22 163 74 / 0.34);
+					border: 3px solid color-mix(in srgb, var(--color-success) 34%, transparent);
 					border-radius: 999px;
 					animation: accepted-ring 1700ms cubic-bezier(0.16, 1, 0.3, 1) both;
 				}
@@ -96,8 +96,8 @@ export function AcceptedBurst({ onDone }: { onDone: () => void }) {
 					height: 72px;
 					place-items: center;
 					border-radius: 22px;
-					background: rgb(22 163 74);
-					color: white;
+					background: var(--color-success);
+					color: var(--color-canvas);
 					font: 800 20px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
 						"Liberation Mono", "Courier New", monospace;
 					letter-spacing: 0;
@@ -113,8 +113,8 @@ export function AcceptedBurst({ onDone }: { onDone: () => void }) {
 					height: 28px;
 					place-items: center;
 					border-radius: 8px;
-					background: rgb(220 252 231);
-					color: rgb(22 101 52);
+					background: var(--color-success-tint);
+					color: var(--color-success);
 					font: 800 15px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
 						"Liberation Mono", "Courier New", monospace;
 					letter-spacing: 0;
@@ -125,15 +125,15 @@ export function AcceptedBurst({ onDone }: { onDone: () => void }) {
 				}
 
 				.accepted-burst__piece[data-tone="accent"] {
-					background: rgb(219 234 254);
-					color: rgb(37 99 235);
+					background: var(--color-accent-tint);
+					color: var(--color-accent);
 				}
 
 				.accepted-burst__piece[data-tone="line"] {
 					width: 10px;
 					height: 42px;
 					border-radius: 999px;
-					background: rgb(250 204 21);
+					background: var(--color-gold);
 					color: transparent;
 				}
 

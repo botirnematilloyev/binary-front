@@ -249,5 +249,9 @@
     "summaryProblems": "{solved}/{total} masala yechildi",
     "problems": "{solved}/{total} masala",
     "empty": "Bu fanda hali mavzular yo'q."
+  },
+  "theme": {
+    "label": "Mavzu",
+    "light": "Kunduzgi"
   }
 }

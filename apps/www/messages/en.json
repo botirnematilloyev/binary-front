@@ -249,5 +249,9 @@
     "summaryProblems": "{solved}/{total} problems solved",
     "problems": "{solved}/{total} problems",
     "empty": "This subject has no topics yet."
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light"
   }
 }

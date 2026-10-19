@@ -243,5 +243,9 @@
     "summaryProblems": "{solved}/{total} масала ечилди",
     "problems": "{solved}/{total} масала",
     "empty": "Бу фанда ҳали мавзулар йўқ."
+  },
+  "theme": {
+    "label": "Мавзу",
+    "light": "Кундузги"
   }
 }

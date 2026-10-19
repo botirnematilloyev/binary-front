@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { AuthMenu } from "./auth-menu";
 import { LanguageSwitcher } from "./language-switcher";
 import { NavLink } from "./nav-link";
+import { ThemeToggle } from "./theme-toggle";
 
 /**
  * Sayt sarlavhasi — server komponenti.
@@ -43,9 +44,10 @@ export async function SiteHeader() {
 					 * ko'rinardi. Fayl kesildi (belgi endi 80%), shuning
 					 * uchun bir xil balandlikda u uch barobar kattaroq.
 					 *
-					 * `mix-blend-multiply` — rasmning oq foni uchun. U
-					 * FAQAT yorug' mavzuda ishlaydi; qorong'i mavzu
-					 * qo'shilganda shaffof fonli nusxa kerak bo'ladi.
+					 * `mix-blend-multiply` — rasmning oq foni uchun.
+					 * Qorong'i temalarda rasm teskari qilinadi (qora → oq)
+					 * va `screen` bilan aralashtiriladi: endi qora bo'lib
+					 * qolgan fon yo'qoladi, alohida nusxa kerak emas.
 					 */}
 					<Image
 						src="/logo.png"
@@ -53,7 +55,7 @@ export async function SiteHeader() {
 						width={1329}
 						height={445}
 						priority
-						className="h-[38px] w-auto mix-blend-multiply"
+						className="h-[38px] w-auto mix-blend-multiply dark:mix-blend-screen dark:invert"
 					/>
 				</Link>
 
@@ -64,7 +66,10 @@ export async function SiteHeader() {
 				</nav>
 
 				<div className="ml-auto flex shrink-0 items-center gap-3 md:gap-6">
-					<LanguageSwitcher />
+					<div className="flex items-center gap-2">
+						<ThemeToggle />
+						<LanguageSwitcher />
+					</div>
 					<AuthMenu />
 				</div>
 			</Container>

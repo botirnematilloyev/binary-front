@@ -243,5 +243,9 @@
     "summaryProblems": "{solved}/{total} задач решено",
     "problems": "{solved}/{total} задач",
     "empty": "В этом предмете пока нет тем."
+  },
+  "theme": {
+    "label": "Тема",
+    "light": "Светлая"
   }
 }

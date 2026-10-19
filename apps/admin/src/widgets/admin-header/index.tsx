@@ -4,7 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@binary/session";
-import { cn, Container } from "@binary/ui";
+import { cn, Container, ThemeSwitcher } from "@binary/ui";
 
 /*
  * Panel ikkita bo'limga bo'lindi, shuning uchun navigatsiya paydo bo'ldi.
@@ -56,6 +56,7 @@ export function AdminHeader() {
 				</nav>
 
 				<div className="ml-auto flex items-center gap-3">
+					<ThemeSwitcher label="Mavzu" />
 					<span className="text-sm text-fg-muted">
 						{user?.full_name ?? user?.username}
 						{user && (
