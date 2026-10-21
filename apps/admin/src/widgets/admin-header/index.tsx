@@ -16,9 +16,12 @@ import { cn, Container, ThemeSwitcher } from "@binary/ui";
 // element tipi `"/" | "/mavzular"` birlashmasiga kengayadi, `Link` esa
 // aniq bitta marshrutni kutadi. `Route` bilan yozilganda mavjud bo'lmagan
 // yo'l baribir kompilyatsiyada ushlanadi.
-const NAV: { href: Route; label: string }[] = [
+// `adminOnly` — setter'ga ko'rinmaydi: bo'lim shaxsiy ma'lumot
+// ko'rsatadi va backend uni faqat adminga ochadi.
+const NAV: { href: Route; label: string; adminOnly?: boolean }[] = [
 	{ href: "/", label: "Masalalar" },
 	{ href: "/mavzular", label: "Mavzular" },
+	{ href: "/foydalanuvchilar", label: "Foydalanuvchilar", adminOnly: true },
 ];
 
 export function AdminHeader() {
@@ -31,7 +34,7 @@ export function AdminHeader() {
 				<span className="font-display text-[15px] font-bold">binary.uz · admin</span>
 
 				<nav className="flex gap-1">
-					{NAV.map((item) => {
+					{NAV.filter((item) => !item.adminOnly || user?.role === "admin").map((item) => {
 						// Bosh sahifa uchun aniq tenglik: `startsWith` bo'lsa
 						// "/" har doim faol bo'lib qolardi.
 						const active =

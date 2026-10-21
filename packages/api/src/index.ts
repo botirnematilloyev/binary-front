@@ -18,6 +18,7 @@ export {
 export * as problemsApi from "./resources/problems";
 export * as adminProblemsApi from "./resources/admin-problems";
 export * as adminTopicsApi from "./resources/admin-topics";
+export * as adminUsersApi from "./resources/admin-users";
 export * as taxonomyApi from "./resources/taxonomy";
 export * as submissionsApi from "./resources/submissions";
 export * as leaderboardApi from "./resources/leaderboard";
@@ -54,6 +55,15 @@ export type {
 	StatementInput,
 	TestCaseDto,
 } from "./resources/admin-problems";
+
+export type {
+	AccountProvider,
+	AdminSubmissionDto,
+	AdminUserDetailDto,
+	AdminUserSummaryDto,
+	LinkedAccountDto,
+	SolvedProblemDto,
+} from "./resources/admin-users";
 
 export type {
 	ActivityDto,

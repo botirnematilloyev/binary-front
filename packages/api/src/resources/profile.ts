@@ -83,7 +83,7 @@ export function updateMe(input: UpdateMeInput, options: RequestOptions & { token
 	return request("/me", meSchema, { ...options, method: "PATCH", body });
 }
 
-const sessionSchema = z.object({
+export const sessionSchema = z.object({
 	id: z.number().int(),
 	device_name: z.string().nullable(),
 	platform: z.string().nullable(),

@@ -34,7 +34,7 @@ const languageSchema = z.object({
 	version: z.string(),
 });
 
-const submissionSchema = z.object({
+export const submissionSchema = z.object({
 	id: z.number().int(),
 	problem_id: z.number().int(),
 	language: languageSchema,
@@ -155,7 +155,7 @@ export function listSubmissions(
 
 // ---- profil ----
 
-const statsSchema = z.object({
+export const statsSchema = z.object({
 	/** Yechilgan MASALALAR soni — yechimlar soni emas. */
 	solved: z.number().int(),
 	attempted: z.number().int(),
