@@ -141,8 +141,13 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 		<Container className="py-9">
 			<h1 className="text-[26px] font-bold">{t("title")}</h1>
 
-			<div className="mt-6 grid gap-6 lg:grid-cols-[210px_1fr]">
-				<aside>
+			{/*
+			 * `minmax(0,1fr)` — ustun mazmunidan kengaymasin: oddiy `1fr`
+			 * (va bitta ustunli `auto`) eng keng bolaning min-content
+			 * kengligini oladi va mobilda sahifa gorizontal surilardi.
+			 */}
+			<div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[210px_minmax(0,1fr)]">
+				<aside className="min-w-0">
 					<CatalogSidebar
 						subjects={subjects.subjects}
 						topics={topics.topics}
@@ -150,7 +155,7 @@ export default async function ProblemsPage({ params, searchParams }: PageProps) 
 						apiLang={apiLang}
 					/>
 				</aside>
-				<div>
+				<div className="min-w-0">
 					<div className="mb-4">
 						<CatalogToolbar filters={filters} locale={locale} />
 					</div>

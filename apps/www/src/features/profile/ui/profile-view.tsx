@@ -203,8 +203,12 @@ export function ProfileView({ apiLang }: { apiLang: string }) {
 										 * qatorni ikkiga bo'lib, o'rtasida bo'sh
 										 * joy qoldirardi. Sarlavha `1fr` —
 										 * qolganlari o'z kengligini oladi.
+										 *
+										 * `sm` dan pastda sarlavha alohida qatorda:
+										 * uch ustunga bo'linganda telefonda nomdan
+										 * "Ju…" qolardi.
 										 */
-										className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-1 border-b border-border-default py-2 text-sm last:border-0"
+										className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 border-b sm:grid-cols-[minmax(0,1fr)_auto_auto] border-border-default py-2 text-sm last:border-0"
 									>
 										{submission.problem ? (
 											<Link
@@ -212,7 +216,7 @@ export function ProfileView({ apiLang }: { apiLang: string }) {
 													pathname: "/masalalar/[slug]",
 													params: { slug: submission.problem.slug },
 												}}
-												className="truncate font-semibold hover:text-accent"
+												className="col-span-full truncate font-semibold hover:text-accent sm:col-span-1"
 											>
 												{submission.problem.title}
 											</Link>
@@ -222,7 +226,7 @@ export function ProfileView({ apiLang }: { apiLang: string }) {
 											 * yechim tarixi esa qoladi. Havola ham
 											 * bo'lmaydi, chunki borish uchun joy yo'q.
 											 */
-											<span className="truncate font-semibold text-fg-muted">
+											<span className="col-span-full truncate font-semibold text-fg-muted sm:col-span-1">
 												{t("deletedProblem")}
 											</span>
 										)}
@@ -236,7 +240,7 @@ export function ProfileView({ apiLang }: { apiLang: string }) {
 											</Badge>
 										)}
 
-										<span className="font-mono text-[12px] whitespace-nowrap text-fg-subtle">
+										<span className="col-start-2 justify-self-end font-mono text-[12px] whitespace-nowrap text-fg-subtle sm:col-start-auto sm:justify-self-auto">
 											{submission.language.code} ·{" "}
 											{format.dateTime(new Date(submission.created_at * 1000), {
 												day: "2-digit",

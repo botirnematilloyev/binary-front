@@ -359,52 +359,54 @@ export function TopicManager() {
 				</Panel>
 			) : (
 				<Panel className="mt-5">
-					<table className="w-full border-collapse text-sm">
-						<thead>
-							<tr className="border-b border-border-default bg-surface-subtle text-left">
-								<Th className="w-12">ID</Th>
-								<Th>NOMI</Th>
-								<Th className="w-40">FAN</Th>
-								<Th className="w-40">SLUG</Th>
-								<Th className="w-24"> </Th>
-							</tr>
-						</thead>
-						<tbody>
-							{topics.map((topic) => (
-								<tr
-									key={topic.id}
-									className="border-b border-border-default last:border-0 hover:bg-surface-subtle"
-								>
-									<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-subtle">
-										{topic.id}
-									</td>
-									<td className="px-4 py-2.5 font-semibold">{displayName(topic.name)}</td>
-									<td className="px-4 py-2.5 text-fg-secondary">
-										{subjectName(topic.subject_id)}
-									</td>
-									<td className="px-4 py-2.5 font-mono text-[12px] text-fg-muted">
-										{topic.slug}
-									</td>
-									<td className="px-4 py-2.5">
-										<div className="flex justify-end gap-1">
-											<IconButton
-												label="Tahrirlash"
-												tone="accent"
-												icon={<PencilIcon />}
-												onClick={() => startEdit(topic)}
-											/>
-											<IconButton
-												label="O'chirish"
-												tone="danger"
-												icon={<TrashIcon />}
-												onClick={() => void remove(topic)}
-											/>
-										</div>
-									</td>
+					<div className="overflow-x-auto">
+						<table className="w-full min-w-[720px] border-collapse text-sm">
+							<thead>
+								<tr className="border-b border-border-default bg-surface-subtle text-left">
+									<Th className="w-12">ID</Th>
+									<Th>NOMI</Th>
+									<Th className="w-40">FAN</Th>
+									<Th className="w-40">SLUG</Th>
+									<Th className="w-24"> </Th>
 								</tr>
-							))}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{topics.map((topic) => (
+									<tr
+										key={topic.id}
+										className="border-b border-border-default last:border-0 hover:bg-surface-subtle"
+									>
+										<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-subtle">
+											{topic.id}
+										</td>
+										<td className="px-4 py-2.5 font-semibold">{displayName(topic.name)}</td>
+										<td className="px-4 py-2.5 text-fg-secondary">
+											{subjectName(topic.subject_id)}
+										</td>
+										<td className="px-4 py-2.5 font-mono text-[12px] text-fg-muted">
+											{topic.slug}
+										</td>
+										<td className="px-4 py-2.5">
+											<div className="flex justify-end gap-1">
+												<IconButton
+													label="Tahrirlash"
+													tone="accent"
+													icon={<PencilIcon />}
+													onClick={() => startEdit(topic)}
+												/>
+												<IconButton
+													label="O'chirish"
+													tone="danger"
+													icon={<TrashIcon />}
+													onClick={() => void remove(topic)}
+												/>
+											</div>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				</Panel>
 			)}
 		</section>

@@ -30,10 +30,18 @@ export function AdminHeader() {
 
 	return (
 		<header className="border-b border-border-default bg-canvas">
-			<Container className="flex h-[62px] items-center gap-6">
-				<span className="font-display text-[15px] font-bold">binary.uz · admin</span>
+			{/*
+			 * Tor ekranda navigatsiya ikkinchi qatorga tushadi va kerak
+			 * bo'lsa yon tomonga suriladi; ism ham yashiriladi. Ilgari
+			 * hammasi bitta 62px qatorda edi va telefonda sahifa ~690px
+			 * kenglikka cho'zilardi.
+			 */}
+			<Container className="flex flex-wrap items-center gap-x-6 md:h-[62px] md:flex-nowrap">
+				<span className="flex h-[56px] shrink-0 items-center font-display text-[15px] font-bold md:h-auto">
+					binary.uz · admin
+				</span>
 
-				<nav className="flex gap-1">
+				<nav className="order-last -mx-1 flex w-full gap-1 overflow-x-auto px-1 pb-2 [scrollbar-width:none] md:order-none md:mx-0 md:w-auto md:px-0 md:pb-0">
 					{NAV.filter((item) => !item.adminOnly || user?.role === "admin").map((item) => {
 						// Bosh sahifa uchun aniq tenglik: `startsWith` bo'lsa
 						// "/" har doim faol bo'lib qolardi.
@@ -46,7 +54,7 @@ export function AdminHeader() {
 								href={item.href}
 								aria-current={active ? "page" : undefined}
 								className={cn(
-									"rounded-control px-3 py-1.5 text-sm font-semibold transition-colors",
+									"shrink-0 rounded-control px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors",
 									active
 										? "bg-surface-muted text-fg"
 										: "text-fg-secondary hover:bg-surface-hover",
@@ -58,9 +66,12 @@ export function AdminHeader() {
 					})}
 				</nav>
 
-				<div className="ml-auto flex items-center gap-3">
+				<div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
 					<ThemeSwitcher label="Mavzu" />
-					<span className="text-sm text-fg-muted">
+					<span
+						title={user?.full_name ?? user?.username}
+						className="hidden max-w-[220px] truncate text-sm text-fg-muted sm:inline"
+					>
 						{user?.full_name ?? user?.username}
 						{user && (
 							<span className="ml-2 text-[11px] font-bold tracking-wide text-fg-subtle uppercase">

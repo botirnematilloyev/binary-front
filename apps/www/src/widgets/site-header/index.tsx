@@ -30,7 +30,7 @@ export async function SiteHeader() {
 			 * `overflow-x-auto` — oxirgi himoya: joy baribir yetmasa (uzun
 			 * tarjima, yangi bo'lim) qator ustma-ust tushmay, suriladi.
 			 */}
-			<Container className="flex flex-wrap items-center gap-x-6">
+			<Container className="flex flex-wrap items-center gap-x-3 sm:gap-x-6">
 				<Link href="/" className="flex h-[62px] shrink-0 items-center" aria-label={t("home")}>
 					{/*
 					 * `width`/`height` — rasmning HAQIQIY nisbati (1329×445).
@@ -65,7 +65,7 @@ export async function SiteHeader() {
 					<NavLink href="/reyting">{t("rating")}</NavLink>
 				</nav>
 
-				<div className="ml-auto flex shrink-0 items-center gap-3 md:gap-6">
+				<div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 md:gap-6">
 					<div className="flex items-center gap-2">
 						<ThemeToggle />
 						<LanguageSwitcher />

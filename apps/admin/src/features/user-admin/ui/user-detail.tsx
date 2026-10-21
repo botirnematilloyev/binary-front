@@ -167,32 +167,34 @@ export function UserDetail({ id }: { id: number }) {
 				{user.accounts.length === 0 ? (
 					<p className="px-5 pt-2 pb-5 text-sm text-fg-muted">Akkaunt yo'q.</p>
 				) : (
-					<table className="mt-2 w-full border-collapse text-sm">
-						<thead>
-							<tr className="border-y border-border-default bg-surface-subtle text-left">
-								<Th className="w-28">TUR</Th>
-								<Th>IDENTIFIKATOR</Th>
-								<Th>QO'SHIMCHA</Th>
-								<Th className="w-32">HOLAT</Th>
-								<Th className="w-40">QO'SHILGAN</Th>
-							</tr>
-						</thead>
-						<tbody>
-							{user.accounts.map((account) => (
-								<tr key={account.id} className="border-b border-border-default last:border-0">
-									<td className="px-4 py-2.5 font-semibold">{PROVIDER[account.provider]}</td>
-									<td className="px-4 py-2.5 font-mono">{account.identifier}</td>
-									<td className="px-4 py-2.5 text-fg-secondary">{accountExtra(account) ?? <Muted>—</Muted>}</td>
-									<td className="px-4 py-2.5">
-										<Badge tone={account.is_verified ? "success" : "neutral"} size="sm">
-											{account.is_verified ? "Tasdiqlangan" : "Tasdiqlanmagan"}
-										</Badge>
-									</td>
-									<td className="px-4 py-2.5 text-fg-muted">{formatDateTime(account.created_at)}</td>
+					<div className="mt-2 overflow-x-auto">
+						<table className="w-full min-w-[640px] border-collapse text-sm">
+							<thead>
+								<tr className="border-y border-border-default bg-surface-subtle text-left">
+									<Th className="w-28">TUR</Th>
+									<Th>IDENTIFIKATOR</Th>
+									<Th>QO'SHIMCHA</Th>
+									<Th className="w-32">HOLAT</Th>
+									<Th className="w-40">QO'SHILGAN</Th>
 								</tr>
-							))}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{user.accounts.map((account) => (
+									<tr key={account.id} className="border-b border-border-default last:border-0">
+										<td className="px-4 py-2.5 font-semibold">{PROVIDER[account.provider]}</td>
+										<td className="px-4 py-2.5 font-mono">{account.identifier}</td>
+										<td className="px-4 py-2.5 text-fg-secondary">{accountExtra(account) ?? <Muted>—</Muted>}</td>
+										<td className="px-4 py-2.5">
+											<Badge tone={account.is_verified ? "success" : "neutral"} size="sm">
+												{account.is_verified ? "Tasdiqlangan" : "Tasdiqlanmagan"}
+											</Badge>
+										</td>
+										<td className="px-4 py-2.5 text-fg-muted">{formatDateTime(account.created_at)}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				)}
 			</Panel>
 
@@ -203,43 +205,45 @@ export function UserDetail({ id }: { id: number }) {
 				{user.sessions.length === 0 ? (
 					<p className="px-5 pt-2 pb-5 text-sm text-fg-muted">Faol sessiya yo'q.</p>
 				) : (
-					<table className="mt-2 w-full border-collapse text-sm">
-						<thead>
-							<tr className="border-y border-border-default bg-surface-subtle text-left">
-								<Th>QURILMA</Th>
-								<Th className="w-36">IP</Th>
-								<Th className="w-40">OXIRGI FAOLLIK</Th>
-								<Th className="w-40">KIRGAN</Th>
-							</tr>
-						</thead>
-						<tbody>
-							{user.sessions.map((session) => (
-								<tr key={session.id} className="border-b border-border-default last:border-0">
-									<td className="px-4 py-2.5">
-										{session.device_name ?? <Muted>Noma'lum qurilma</Muted>}
-										{(session.platform || session.os) && (
-											<span className="ml-2 text-[12px] text-fg-muted">
-												{[session.platform, session.os].filter(Boolean).join(" · ")}
-											</span>
-										)}
-									</td>
-									<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-muted">
-										{session.ip_address ?? "—"}
-									</td>
-									<td className="px-4 py-2.5 text-fg-secondary">
-										{session.last_active_at ? (
-											<span title={formatDateTime(session.last_active_at)}>
-												{formatAgo(session.last_active_at)}
-											</span>
-										) : (
-											<Muted>—</Muted>
-										)}
-									</td>
-									<td className="px-4 py-2.5 text-fg-muted">{formatDateTime(session.created_at)}</td>
+					<div className="mt-2 overflow-x-auto">
+						<table className="w-full min-w-[640px] border-collapse text-sm">
+							<thead>
+								<tr className="border-y border-border-default bg-surface-subtle text-left">
+									<Th>QURILMA</Th>
+									<Th className="w-36">IP</Th>
+									<Th className="w-40">OXIRGI FAOLLIK</Th>
+									<Th className="w-40">KIRGAN</Th>
 								</tr>
-							))}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{user.sessions.map((session) => (
+									<tr key={session.id} className="border-b border-border-default last:border-0">
+										<td className="px-4 py-2.5">
+											{session.device_name ?? <Muted>Noma'lum qurilma</Muted>}
+											{(session.platform || session.os) && (
+												<span className="ml-2 text-[12px] text-fg-muted">
+													{[session.platform, session.os].filter(Boolean).join(" · ")}
+												</span>
+											)}
+										</td>
+										<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-muted">
+											{session.ip_address ?? "—"}
+										</td>
+										<td className="px-4 py-2.5 text-fg-secondary">
+											{session.last_active_at ? (
+												<span title={formatDateTime(session.last_active_at)}>
+													{formatAgo(session.last_active_at)}
+												</span>
+											) : (
+												<Muted>—</Muted>
+											)}
+										</td>
+										<td className="px-4 py-2.5 text-fg-muted">{formatDateTime(session.created_at)}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				)}
 			</Panel>
 
@@ -326,37 +330,39 @@ function SolvedTable({
 	}
 
 	return (
-		<table className="w-full border-collapse text-sm">
-			<thead>
-				<tr className="border-b border-border-default bg-surface-subtle text-left">
-					<Th className="w-14">ID</Th>
-					<Th>MASALA</Th>
-					<Th className="w-44">BIRINCHI QABUL</Th>
-					<Th className="w-32 text-right">URINISHLAR</Th>
-				</tr>
-			</thead>
-			<tbody>
-				{items.map((item) => (
-					<tr key={item.problem_id} className="border-b border-border-default last:border-0 hover:bg-surface-subtle">
-						<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-subtle">{item.problem_id}</td>
-						<td className="px-4 py-2.5">
-							<ProblemCell problem={item.problem} id={item.problem_id} />
-						</td>
-						<td className="px-4 py-2.5 text-fg-secondary">{formatDateTime(item.first_accepted_at)}</td>
-						<td className="px-4 py-2.5 text-right">
-							<button
-								type="button"
-								onClick={() => onShowAttempts(item)}
-								className="cursor-pointer font-mono font-semibold text-accent hover:underline"
-								title="Shu masala bo'yicha urinishlarni ko'rish"
-							>
-								{item.attempts}
-							</button>
-						</td>
+		<div className="overflow-x-auto">
+			<table className="w-full min-w-[520px] border-collapse text-sm">
+				<thead>
+					<tr className="border-b border-border-default bg-surface-subtle text-left">
+						<Th className="w-14">ID</Th>
+						<Th>MASALA</Th>
+						<Th className="w-44">BIRINCHI QABUL</Th>
+						<Th className="w-32 text-right">URINISHLAR</Th>
 					</tr>
-				))}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{items.map((item) => (
+						<tr key={item.problem_id} className="border-b border-border-default last:border-0 hover:bg-surface-subtle">
+							<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-subtle">{item.problem_id}</td>
+							<td className="px-4 py-2.5">
+								<ProblemCell problem={item.problem} id={item.problem_id} />
+							</td>
+							<td className="px-4 py-2.5 text-fg-secondary">{formatDateTime(item.first_accepted_at)}</td>
+							<td className="px-4 py-2.5 text-right">
+								<button
+									type="button"
+									onClick={() => onShowAttempts(item)}
+									className="cursor-pointer font-mono font-semibold text-accent hover:underline"
+									title="Shu masala bo'yicha urinishlarni ko'rish"
+								>
+									{item.attempts}
+								</button>
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
 	);
 }
 
@@ -415,7 +421,7 @@ function SubmissionsTable({ userId, problemId }: { userId: number; problemId?: n
 	return (
 		<>
 			<div className="overflow-x-auto">
-				<table className="w-full min-w-[820px] border-collapse text-sm">
+				<table className="w-full min-w-[960px] border-collapse text-sm">
 					<thead>
 						<tr className="border-b border-border-default bg-surface-subtle text-left">
 							<Th className="w-16">ID</Th>

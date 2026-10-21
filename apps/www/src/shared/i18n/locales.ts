@@ -21,18 +21,21 @@ export interface LocaleDefinition {
 	hreflang: string;
 	/** Til tanlagichda o'sha tilning O'ZIDA yoziladi, tarjima qilinmaydi. */
 	label: string;
+	/** Tor ekrandagi sarlavha uchun qisqa yozuv — to'liq nom u yerga sig'maydi. */
+	short: string;
 }
 
 export const LOCALES = [
-	{ segment: "uz", apiLang: "uz", hreflang: "uz", label: "O'zbekcha" },
+	{ segment: "uz", apiLang: "uz", hreflang: "uz", label: "O'zbekcha", short: "UZ" },
 	{
 		segment: "uz-cyrl",
 		apiLang: "uz_cyr",
 		hreflang: "uz-Cyrl",
 		label: "Ўзбекча",
+		short: "ЎЗ",
 	},
-	{ segment: "ru", apiLang: "ru", hreflang: "ru", label: "Русский" },
-	{ segment: "en", apiLang: "en", hreflang: "en", label: "English" },
+	{ segment: "ru", apiLang: "ru", hreflang: "ru", label: "Русский", short: "RU" },
+	{ segment: "en", apiLang: "en", hreflang: "en", label: "English", short: "EN" },
 ] as const satisfies readonly LocaleDefinition[];
 
 export type Locale = (typeof LOCALES)[number]["segment"];

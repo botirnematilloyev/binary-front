@@ -53,8 +53,13 @@ export function Heatmap({ activity }: { activity: ActivityDto }) {
 				{t("activityTitle")}
 			</p>
 
-			<div className="mt-3 overflow-x-auto">
-				<div className="flex gap-2">
+			{/*
+			 * `rtl` o'ram — tor ekranda aylantirish O'NG chetdan boshlanadi,
+			 * ya'ni birinchi ko'rinadigani eng yangi haftalar (JS'siz).
+			 * Ichkarida yo'nalish yana `ltr`.
+			 */}
+			<div className="mt-3 overflow-x-auto [direction:rtl]">
+				<div className="flex w-max gap-2 [direction:ltr]">
 					{/* Hafta kunlari. `pt` oy sarlavhalari balandligiga teng,
 					    shunda birinchi qator o'z yorlig'i bilan tekislanadi. */}
 					<div className="flex flex-col gap-[3px] pt-[18px]">

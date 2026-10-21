@@ -32,11 +32,11 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 						    tushunarli va "HOLAT" degan yozuv faqat joy
 						    egallardi. Dizaynda ham shunday. */}
 						<Th className="w-9"> </Th>
-						<Th className="w-20">{t("columnId")}</Th>
+						<Th className="w-16 sm:w-20">{t("columnId")}</Th>
 						<Th>{t("columnProblem")}</Th>
-						<Th className="w-40">{t("columnTopic")}</Th>
-						<Th className="w-28">{t("columnDifficulty")}</Th>
-						<Th className="w-28 text-right">{t("columnSolved")}</Th>
+						<Th className="hidden w-40 sm:table-cell">{t("columnTopic")}</Th>
+						<Th className="w-20 sm:w-28">{t("columnDifficulty")}</Th>
+						<Th className="w-20 text-right sm:w-28">{t("columnSolved")}</Th>
 					</tr>
 				</thead>
 				<tbody>
@@ -45,13 +45,13 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 							key={row.id}
 							className="border-b border-border-default last:border-0 transition-colors hover:bg-surface-subtle"
 						>
-							<td className="pl-4 text-center">
+							<td className="pl-3 text-center sm:pl-4">
 								<SolvedMark problemId={row.id} />
 							</td>
-							<td className="px-4 py-3 font-mono text-[12.5px] text-fg-subtle">
+							<td className="px-2.5 py-3 font-mono text-[12.5px] text-fg-subtle sm:px-4">
 								{row.displayId}
 							</td>
-							<td className="px-4 py-3">
+							<td className="px-2.5 py-3 sm:px-4">
 								{/*
 								 * Havola butun qatorni emas, sarlavhani o'raydi.
 								 * `<tr>` ni `onClick` bilan bosiladigan qilish
@@ -72,10 +72,10 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 							 * va bu ustun tanlash uchun emas, kontekst
 							 * uchun (tanlash yon panelda).
 							 */}
-							<td className="px-4 py-3 text-[12.5px] text-fg-muted">
+							<td className="hidden px-4 py-3 text-[12.5px] text-fg-muted sm:table-cell">
 								{row.topics.join(", ")}
 							</td>
-							<td className="px-4 py-3">
+							<td className="px-2.5 py-3 sm:px-4">
 								<Badge tone={row.difficultyTone} size="sm">
 									{tDifficulty(row.difficulty)}
 								</Badge>
@@ -86,7 +86,7 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 							 * masalani amalda bo'lganidan qiyinroq qilib ko'rsatardi.
 							 */}
 							<td
-								className="px-4 py-3 text-right font-mono text-[13px] text-fg-muted"
+								className="px-2.5 py-3 text-right font-mono text-[13px] text-fg-muted sm:px-4"
 								title={t("solvedHint", { solvers: row.solvers, attempters: row.attempters })}
 							>
 								<span className="text-fg">{row.solvers}</span>/{row.attempters}
@@ -102,7 +102,7 @@ export async function ProblemTable({ rows }: { rows: ProblemRow[] }) {
 function Th({ children, className }: { children: string; className?: string }) {
 	return (
 		<th
-			className={`px-4 py-2.5 text-[11px] font-bold tracking-wide text-fg-subtle ${className ?? ""}`}
+			className={`px-2.5 py-2.5 text-[11px] font-bold tracking-wide text-fg-subtle sm:px-4 ${className ?? ""}`}
 		>
 			{children}
 		</th>

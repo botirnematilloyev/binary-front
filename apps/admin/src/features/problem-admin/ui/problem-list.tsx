@@ -83,14 +83,14 @@ export function ProblemList() {
 					Yangi masala
 				</Link>
 
-				<div className="ml-auto flex gap-1.5">
+				<div className="-mx-1 flex w-full gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] sm:mx-0 sm:ml-auto sm:w-auto sm:px-0">
 					{FILTERS.map((item) => (
 						<button
 							key={item.value}
 							type="button"
 							onClick={() => setFilter(item.value)}
 							aria-pressed={filter === item.value}
-							className={`cursor-pointer rounded-pill px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+							className={`shrink-0 cursor-pointer rounded-pill px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap transition-colors ${
 								filter === item.value
 									? "bg-fg text-fg-inverted"
 									: "border border-border-default text-fg-secondary hover:border-border-hover"
@@ -126,58 +126,62 @@ export function ProblemList() {
 
 			{state.phase === "ready" && state.items.length > 0 && (
 				<Panel className="mt-5">
-					<table className="w-full border-collapse text-sm">
-						<thead>
-							<tr className="border-b border-border-default bg-surface-subtle text-left">
-								<Th className="w-14">ID</Th>
-								<Th>SARLAVHA</Th>
-								<Th className="w-40">SLUG</Th>
-								<Th className="w-24">QIYINLIK</Th>
-								<Th className="w-28">HOLAT</Th>
-								<Th className="w-20"> </Th>
-							</tr>
-						</thead>
-						<tbody>
-							{state.items.map((problem) => (
-								<tr
-									key={problem.id}
-									className="border-b border-border-default last:border-0 hover:bg-surface-subtle"
-								>
-									<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-subtle">
-										{problem.id}
-									</td>
-									<td className="px-4 py-2.5 font-semibold">{problem.title}</td>
-									<td className="px-4 py-2.5 font-mono text-[12px] text-fg-muted">
-										{problem.slug}
-									</td>
-									<td className="px-4 py-2.5">{DIFFICULTY[problem.difficulty]}</td>
-									<td className="px-4 py-2.5">
-										<Badge tone={STATUS[problem.status].tone} size="sm">
-											{STATUS[problem.status].label}
-										</Badge>
-									</td>
-									<td className="px-4 py-2.5">
-										{/*
-										 * BITTA havola. Oldin "Shart" va "Testlar" alohida
-										 * edi va setter qaysi birini bosishni o'ylab
-										 * turardi — ikkalasi ham bir masalaning ichi.
-										 *
-										 * Obyekt shakli, satr emas: `typedRoutes` bilan
-										 * `pathname` mavjud marshrutlarga tekshiriladi,
-										 * query esa erkin qoladi.
-										 */}
-										<div className="flex justify-end">
-											<IconLink
-												href={{ pathname: "/masalalar/tahrir", query: { id: problem.id } }}
-												label="Tahrirlash"
-												icon={<PencilIcon />}
-											/>
-										</div>
-									</td>
+					{/* Tor ekranda jadval o'z ichida suriladi — ustunlar bir so'zdan
+					    qatorlarga ezilib ketmasligi uchun `min-w`. */}
+					<div className="overflow-x-auto">
+						<table className="w-full min-w-[720px] border-collapse text-sm">
+							<thead>
+								<tr className="border-b border-border-default bg-surface-subtle text-left">
+									<Th className="w-14">ID</Th>
+									<Th>SARLAVHA</Th>
+									<Th className="w-40">SLUG</Th>
+									<Th className="w-24">QIYINLIK</Th>
+									<Th className="w-28">HOLAT</Th>
+									<Th className="w-20"> </Th>
 								</tr>
-							))}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{state.items.map((problem) => (
+									<tr
+										key={problem.id}
+										className="border-b border-border-default last:border-0 hover:bg-surface-subtle"
+									>
+										<td className="px-4 py-2.5 font-mono text-[12.5px] text-fg-subtle">
+											{problem.id}
+										</td>
+										<td className="px-4 py-2.5 font-semibold">{problem.title}</td>
+										<td className="px-4 py-2.5 font-mono text-[12px] text-fg-muted">
+											{problem.slug}
+										</td>
+										<td className="px-4 py-2.5">{DIFFICULTY[problem.difficulty]}</td>
+										<td className="px-4 py-2.5">
+											<Badge tone={STATUS[problem.status].tone} size="sm">
+												{STATUS[problem.status].label}
+											</Badge>
+										</td>
+										<td className="px-4 py-2.5">
+											{/*
+											 * BITTA havola. Oldin "Shart" va "Testlar" alohida
+											 * edi va setter qaysi birini bosishni o'ylab
+											 * turardi — ikkalasi ham bir masalaning ichi.
+											 *
+											 * Obyekt shakli, satr emas: `typedRoutes` bilan
+											 * `pathname` mavjud marshrutlarga tekshiriladi,
+											 * query esa erkin qoladi.
+											 */}
+											<div className="flex justify-end">
+												<IconLink
+													href={{ pathname: "/masalalar/tahrir", query: { id: problem.id } }}
+													label="Tahrirlash"
+													icon={<PencilIcon />}
+												/>
+											</div>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				</Panel>
 			)}
 		</section>

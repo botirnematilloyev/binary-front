@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/shared/i18n/locales";
+import { DEFAULT_LOCALE, localeOf, LOCALES, type Locale } from "@/shared/i18n/locales";
 
 /**
  * Til tanlagich — `<details>` va haqiqiy `<a>` havolalar.
@@ -39,7 +39,10 @@ export function LanguageSwitcher() {
 		<details className="relative">
 			<summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-pill border border-border-default px-3 py-1.5 text-[13px] font-semibold text-fg-secondary transition-colors hover:border-border-hover">
 				<span className="sr-only">{t("label")}: </span>
-				{localeLabel(active)}
+				{/* Mobilda qisqa kod: to'liq nom bilan boshqaruvlar logotip
+				    qatoriga sig'masdan alohida qatorga tushardi. */}
+				<span className="sm:hidden">{localeOf(active).short}</span>
+				<span className="hidden sm:inline">{localeOf(active).label}</span>
 				<span aria-hidden className="text-[9px]">
 					▾
 				</span>
@@ -76,8 +79,4 @@ function hrefFor(segment: Locale, pathname: string): string {
 	// e'tiborsiz qoldirsak `/uz/masalalar` chiqadi va u mavjud emas.
 	if (segment === DEFAULT_LOCALE) return pathname;
 	return `/${segment}${pathname === "/" ? "" : pathname}`;
-}
-
-function localeLabel(segment: Locale): string {
-	return LOCALES.find((l) => l.segment === segment)?.label ?? segment;
 }

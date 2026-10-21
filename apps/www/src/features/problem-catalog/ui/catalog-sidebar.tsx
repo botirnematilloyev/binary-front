@@ -43,12 +43,15 @@ export async function CatalogSidebar({
 }) {
 	const t = await getTranslations("problems");
 
+	// `lg` dan pastda ro'yxatlar gorizontal suriladigan chiplar qatori
+	// bo'ladi: tik ro'yxatda 15+ mavzu mobilda masalalarni bir necha
+	// ekran pastga surib yuborardi.
 	return (
 		<Panel className="p-3">
 			<p className="px-2 pb-2 text-[11px] font-bold tracking-wide text-fg-subtle">
 				{t("subjects")}
 			</p>
-			<ul className="flex flex-col gap-0.5">
+			<ul className={listClass}>
 				{/*
 				 * Fanlar uchun "Barchasi" YO'Q: ikki fanning mavzulari birga
 				 * ~35 ta bo'lib, yon panel sahifadan uzun chiqardi. Fan
@@ -79,10 +82,10 @@ export async function CatalogSidebar({
 			 */}
 			{topics.length > 0 && (
 				<>
-					<p className="mt-5 px-2 pb-2 text-[11px] font-bold tracking-wide text-fg-subtle">
+					<p className="mt-3 px-2 pb-2 text-[11px] font-bold tracking-wide text-fg-subtle lg:mt-5">
 						{t("topics")}
 					</p>
-					<ul className="flex flex-col gap-0.5">
+					<ul className={listClass}>
 						<li>
 							{/*
 							 * Mavzular uchun ham "Barchasi" bor, garchi
@@ -142,7 +145,7 @@ function FilterLink({
 			href={{ pathname: "/masalalar", query }}
 			aria-current={active ? "true" : undefined}
 			className={cn(
-				"block rounded-control px-2.5 py-2 text-sm font-semibold transition-colors",
+				"block rounded-control px-2.5 py-2 text-sm font-semibold whitespace-nowrap transition-colors lg:whitespace-normal",
 				active ? "bg-surface-muted text-fg" : "text-fg-secondary hover:bg-surface-hover",
 			)}
 		>
@@ -150,3 +153,6 @@ function FilterLink({
 		</Link>
 	);
 }
+
+const listClass =
+	"-mx-1 flex gap-0.5 overflow-x-auto px-1 [scrollbar-width:none] lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0";
