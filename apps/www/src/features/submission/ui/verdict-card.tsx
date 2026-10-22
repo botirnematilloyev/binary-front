@@ -76,6 +76,8 @@ export function VerdictCard({
 				</p>
 			)}
 
+			{submission.failed_case && <FailedCase failedCase={submission.failed_case} />}
+
 			{/*
 			 * Kompilyator chiqishi faqat mavjud bo'lganda. U yechim
 			 * muallifiga ko'rsatiladi va foydali diagnostika, lekin
@@ -93,6 +95,59 @@ export function VerdictCard({
 				</div>
 			)}
 		</Panel>
+	);
+}
+
+/**
+ * Namuna testida dastur nima qilgani — kirish, kutilgan javob va
+ * haqiqiy chiqish yonma-yon. Faqat "Sinab ko'rish"da keladi.
+ */
+function FailedCase({ failedCase }: { failedCase: NonNullable<SubmissionDto["failed_case"]> }) {
+	const t = useTranslations("submission");
+
+	return (
+		<div className="border-t border-border-default px-4 py-3">
+			<div className="grid gap-3 md:grid-cols-3">
+				<CaseBlock label={t("caseInput")} text={failedCase.input} empty={t("caseEmpty")} />
+				<CaseBlock label={t("caseExpected")} text={failedCase.expected} empty={t("caseEmpty")} />
+				<CaseBlock label={t("caseActual")} text={failedCase.actual} empty={t("caseEmpty")} danger />
+			</div>
+			{failedCase.stderr && (
+				<div className="mt-3">
+					<p className="text-[11px] font-bold tracking-wide text-fg-subtle">{t("caseStderr")}</p>
+					<pre className="mt-1 max-h-60 overflow-auto rounded-control border border-border-default bg-surface-subtle px-3 py-2 font-mono text-[12.5px] leading-relaxed text-danger">
+						{failedCase.stderr}
+					</pre>
+				</div>
+			)}
+		</div>
+	);
+}
+
+function CaseBlock({
+	label,
+	text,
+	empty,
+	danger = false,
+}: {
+	label: string;
+	text: string;
+	empty: string;
+	danger?: boolean;
+}) {
+	return (
+		<div className="min-w-0">
+			<p className="text-[11px] font-bold tracking-wide text-fg-subtle">{label}</p>
+			{/* Bo'sh chiqish ham javob — uni "hech narsa ko'rinmadi" deb
+			    adashtirmaslik uchun aniq yoziladi. */}
+			<pre
+				className={`mt-1 max-h-60 overflow-auto rounded-control border border-border-default bg-surface-subtle px-3 py-2 font-mono text-[12.5px] leading-relaxed ${
+					danger ? "text-danger" : "text-fg-secondary"
+				}`}
+			>
+				{text === "" ? <span className="italic text-fg-subtle">{empty}</span> : text}
+			</pre>
+		</div>
 	);
 }
 

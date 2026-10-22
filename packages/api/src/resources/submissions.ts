@@ -55,6 +55,21 @@ export const submissionSchema = z.object({
 	 * tartibda. Faqat o'z kirishi bilan ishlangan run'da keladi.
 	 */
 	run_outputs: z.array(z.string()).optional(),
+	/**
+	 * Namunalar bo'yicha run'da yiqilgan test: kirish, kutilgan javob va
+	 * dastur aslida nima chop etgani. Namunalar sahifada ochiq, shuning
+	 * uchun bu hech narsani oshkor qilmaydi. Yechimlarda hech qachon
+	 * kelmaydi — yashirin testlar yashirin qoladi. Har maydon backendda
+	 * 4 KB gacha qisqartiriladi.
+	 */
+	failed_case: z
+		.object({
+			input: z.string(),
+			expected: z.string(),
+			actual: z.string(),
+			stderr: z.string().optional(),
+		})
+		.optional(),
 	/** Faqat egasiga qaytadi. */
 	source_code: z.string().optional(),
 	/**
